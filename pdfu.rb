@@ -32,20 +32,22 @@ module PdfU
       @indirect_object.reference_string
     end
   end
-  
+
   class IndirectObject
+    attr_reader :seq, :gen
+
     def initialize(seq, gen, obj=nil)
       @seq, @gen, @obj = seq, gen, obj
     end
-    
+
     def header
       "#{@seq} #{@gen} obj\n"
     end
-    
+
     def body
       @obj ? "#{@obj}\n" : ''
     end
-    
+
     def footer
       "endobj\n"
     end
@@ -53,16 +55,16 @@ module PdfU
     def to_s
       header + body + footer
     end
-    
+
     def reference_string
       "#{@seq} #{@gen} R "
     end
-    
+
     def reference_object
       IndirectObjectRef.new(self)
     end
   end
-    
+
   # direct objects
   class PdfBoolean
     attr_reader :value
@@ -246,6 +248,94 @@ module PdfU
     def body
       "#{super}stream\n#{stream}endstream\n"
     end
+  end
+  
+  class PdfNull
+    def to_s
+      "null "
+    end
+  end
+  
+  class InUseXRefEntry
+    def initialize(byte_offset, gen)
+      @byte_offset, @gen = byte_offset, gen
+    end
+    
+    def to_s
+      "%.10d %.5d n\n" % [@byte_offset, @gen]
+    end
+  end
+  
+  class FreeXRefEntry < IndirectObject
+    attr_reader :seq, :gen
+
+    def to_s
+      "%.10d %.5d f\n" % [seq, gen]
+    end
+  end
+
+  # sub-section of a cross-reference table
+  class XRefSubSection < Array
+    def initialize
+      self << FreeXRefEntry.new(0,65535)
+    end
+
+    def to_s
+      "#{self.first.seq} #{self.size}\n" << super
+    end
+  end
+
+  # cross-reference table, allows quick access to any object in body
+  class XRefTable < Array
+    def size
+      self.inject(0) { |size, ary| size + ary.size }
+    end
+
+    def to_s
+      "xref\n" << self.map { |entry| entry.to_s }.join
+    end
+  end
+
+  # list of indirect objects
+  class Body < Array
+    def write_and_xref(s, xref_sub_section)
+      self.each do |indirect_object|
+        xref_sub_section << InUseXRefEntry.new(s.length, indirect_object.gen)
+        s << indirect_object.to_s
+      end
+      s
+    end
+  end
+
+  # root object of a PDF document, with pointers to other top-level objects
+  class PdfCatalog < PdfDictionaryObject
+    attr_reader :page_mode, :pages, :outlines
+
+    def initialize(seq, gen, page_mode=:use_none, pages=nil, outlines=nil)
+      super(seq, gen)
+      dictionary['Type'] = PdfName.new('Catalog')
+      @page_mode  = page_mode
+      dictionary['PageMode'] = PdfName.new(PAGE_MODES[page_mode])
+      if pages
+        @pages = pages.indirect_object
+        dictionary['Pages'] = pages
+      end
+      if outlines
+        @outlines = outlines.indirect_object
+        dictionary['Outlines'] = outlines
+      end
+    end
+
+    def to_s
+      super
+    end
+
+    PAGE_MODES = {
+      :use_none => 'UseNone',
+      :use_outlines => 'UseOutlines',
+      :use_thumbs => 'UseThumbs',
+      :full_screen => 'FullScreen'
+    }.freeze
   end
 
   class Trailer < PdfDictionary

@@ -154,6 +154,80 @@ class PdfStreamTestCases < Test::Unit::TestCase
   end
 end
 
+class PdfNullTestCases < Test::Unit::TestCase
+  def test_to_s
+    null = PdfNull.new
+    assert_equal("null ", null.to_s)
+  end
+end
+
+class InUseXRefEntryTestCases < Test::Unit::TestCase
+  def test_to_s
+    entry = InUseXRefEntry.new(500,0)
+    assert_equal("0000000500 00000 n\n", entry.to_s)
+  end
+end
+
+class FreeXRefEntryTestCases < Test::Unit::TestCase
+  def test_to_s
+    entry = FreeXRefEntry.new(1,0)
+    assert_equal("0000000001 00000 f\n", entry.to_s)
+  end
+end
+
+class XRefSubSectionTestCases < Test::Unit::TestCase
+  def setup
+    @sub_section = XRefSubSection.new
+    @sub_section << InUseXRefEntry.new(0,0)
+    @sub_section << InUseXRefEntry.new(100,1)
+  end
+
+  def test_to_s
+    assert_equal("0 3\n0000000000 65535 f\n0000000000 00000 n\n0000000100 00001 n\n", @sub_section.to_s)
+  end
+end
+
+class XRefTableTestCases < Test::Unit::TestCase
+  def setup
+    @table = XRefTable.new
+    @sub_section = XRefSubSection.new
+    @sub_section << InUseXRefEntry.new(0,0)
+    @sub_section << InUseXRefEntry.new(100,1)
+    @table << @sub_section
+  end
+
+  def test_to_s
+    assert_equal("xref\n0 3\n0000000000 65535 f\n0000000000 00000 n\n0000000100 00001 n\n", @table.to_s)
+  end
+end
+
+class BodyTestCases < Test::Unit::TestCase
+  def setup
+    @io_int = IndirectObject.new(1,0,PdfInteger.new(7))
+    @io_str = IndirectObject.new(2,0,PdfString.new("Hello"))
+    @body = Body.new
+  end
+  
+  def test_write_and_xref
+    @body << @io_int << @io_str
+    s = ''
+    sub_section = XRefSubSection.new
+    @body.write_and_xref(s, sub_section)
+    assert_equal(@io_int.to_s + @io_str.to_s, s)
+    assert_equal("0 3\n0000000000 65535 f\n0000000000 00000 n\n0000000018 00000 n\n", sub_section.to_s)
+  end
+end
+
+class PdfCatalogTestCases < Test::Unit::TestCase
+  def setup
+    @cat = PdfCatalog.new(1,0) # xxx not finished here
+  end
+
+  def test_to_s
+    assert_equal("1 0 obj\n<<\n/PageMode /UseNone \n/Type /Catalog \n>>\nendobj\n", @cat.to_s)
+  end
+end
+
 class TrailerTestCases < Test::Unit::TestCase
   def setup
     @trailer = Trailer.new
