@@ -243,3 +243,20 @@ class TrailerTestCases < Test::Unit::TestCase
     assert_equal("trailer\n<<\n/Size 3 \n>>\nstartxref\n0\n%%EOF\n", @trailer.to_s)
   end
 end
+
+class RectangleTestCases < Test::Unit::TestCase
+  def setup
+    @rect = Rectangle.new(1,2,3,4)
+  end
+
+  def test_attributes
+    assert_equal(1, @rect.x1)
+    assert_equal(2, @rect.y1)
+    assert_equal(3, @rect.x2)
+    assert_equal(4, @rect.y2)
+  end
+
+  def test_to_s
+    assert_equal("1 2 3 4 ", @rect.to_s)
+  end
+end

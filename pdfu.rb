@@ -354,4 +354,13 @@ module PdfU
       s << "%%EOF\n"
     end
   end
+  
+  class Rectangle < Array
+    attr_reader :x1, :y1, :x2, :y2
+
+    def initialize(x1, y1, x2, y2)
+      @x1, @y1, @x2, @y2 = x1, y1, x2, y2
+      self << PdfInteger.new(x1) << PdfInteger.new(y1) << PdfInteger.new(x2) << PdfInteger.new(y2)
+    end
+  end
 end
