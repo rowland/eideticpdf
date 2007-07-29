@@ -363,4 +363,65 @@ module PdfU
       self << PdfInteger.new(x1) << PdfInteger.new(y1) << PdfInteger.new(x2) << PdfInteger.new(y2)
     end
   end
+
+  # defines Type1, TrueType, etc font
+  class PdfFont <  PdfDictionaryObject
+    def enoding=(encoding)
+      encoding = PdfName.new(encoding) if encoding.is_a?(String)
+      dictionary['Encoding'] = encoding        
+    end
+
+    def widths=(widths)
+      dictionary['Widths'] = widths
+    end
+
+    def font_descriptor=(font_descriptor)
+      dictionary['FontDescriptor'] = font_descriptor
+    end
+
+    def initialize(seq, gen, sub_type, base_font, first_char, last_char, widths, font_descriptor)
+      super(seq, gen)
+        dictionary['Type'] = PdfName.new('Font')
+        dictionary['Subtype'] = PdfName.new(sub_type)
+        dictionary['BaseFont'] = PdfName.new(base_font)
+        dictionary['FirstChar'] = PdfInteger.new(first_char)
+        dictionary['LastChar'] = PdfInteger.new(last_char)
+        dictionary['Widths'] = widths unless widths.nil?
+        dictionary['FontDescriptor'] = font_descriptor unless font_descriptor.nil?
+    end
+  end
+
+  class PdfFontDescriptor < PdfDictionaryObject
+    def initialize(seq, gen,
+      font_name, flags, font_b_box, missing_width, stem_v, stem_h, italic_angle, 
+      cap_height, x_height, 
+      ascent, descent, leading, 
+      max_width, avg_width)
+      super(seq, gen)
+      dictionary['Type'] = PdfName.new('FontDescriptor')
+      dictionary['FontName'] = PdfName.new(font_name)
+      dictionary['Flags'] = PdfInteger.new(flags)
+      dictionary['FontBBox'] = PdfArray.new(font_b_box.map { |i| PdfInteger.new(i) })
+      dictionary['MissingWidth'] = PdfInteger.new(missing_width)
+      dictionary['StemV'] = PdfInteger.new(stem_v)
+      dictionary['StemH'] = PdfInteger.new(stem_h)
+      dictionary['ItalicAngle'] = PdfReal.new(italic_angle)
+      dictionary['CapHeight'] = PdfInteger.new(cap_height)
+      dictionary['XHeight'] = PdfInteger.new(x_height)
+      dictionary['Ascent'] = PdfInteger.new(ascent)
+      dictionary['Descent'] = PdfInteger.new(descent)
+      dictionary['Leading'] = PdfInteger.new(leading)
+      dictionary['MaxWidth'] = PdfInteger.new(max_width)
+      dictionary['AvgWidth'] = PdfInteger.new(avg_width)
+    end
+  end
+
+  class PdfFontEncoding < PdfDictionaryObject
+    def initialize(seq, gen, base_encoding, differences)
+      super(seq, gen)
+      dictionary['Type'] = PdfName.new('Encoding')
+      dictionary['BaseEncoding'] = PdfName.new(base_encoding)
+      dictionary['Differences'] = differences
+    end
+  end  
 end

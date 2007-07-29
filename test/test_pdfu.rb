@@ -260,3 +260,89 @@ class RectangleTestCases < Test::Unit::TestCase
     assert_equal("1 2 3 4 ", @rect.to_s)
   end
 end
+
+module FontFactory
+  def make_font_descriptor
+    PdfFontDescriptor.new(100, 0,
+      'ArialMT', 32, [-665, -325, 2029, 1006], 0, 0, 0, 0, 
+      723, 525, 
+      905, -212, 33, 
+      2000, 0)
+  end
+end
+
+class PdfFontTestCases < Test::Unit::TestCase
+  include FontFactory
+
+  def setup
+    @widths = PdfArray.new([1, 3, 5, 7])
+    @io_widths = IndirectObject.new(2, 0, @widths)
+    @io_widths_ref = @io_widths.reference_object
+    @font_descriptor = make_font_descriptor
+    @font = PdfFont.new(1, 0, 'TrueType', 'ArialMT', 32, 169, @io_widths_ref, @font_descriptor.reference_object)
+  end
+
+  def test_to_s
+    expected = "1 0 obj\n" << 
+      "<<\n" <<
+      "/BaseFont /ArialMT \n" <<
+      "/FirstChar 32 \n" << 
+      "/FontDescriptor 100 0 R \n" <<
+      "/LastChar 169 \n" <<
+      "/Subtype /TrueType \n" <<
+      "/Type /Font \n" <<
+      "/Widths 2 0 R \n" <<
+      ">>\n" <<
+      "endobj\n"
+    assert_equal(expected, @font.to_s)
+  end
+end
+
+class PdfFontDescriptorTestCases < Test::Unit::TestCase
+  include FontFactory
+  
+  def setup
+    @font_descriptor = make_font_descriptor
+  end
+  
+  def test_to_s
+    expected = "100 0 obj\n" <<
+      "<<\n" << 
+      "/Ascent 905 \n" << 
+      "/AvgWidth 0 \n" << 
+      "/CapHeight 723 \n" << 
+      "/Descent -212 \n" << 
+      "/Flags 32 \n" << 
+      "/FontBBox [-665 -325 2029 1006 ] \n" << 
+      "/FontName /ArialMT \n" << 
+      "/ItalicAngle 0.0 \n" << 
+      "/Leading 33 \n" << 
+      "/MaxWidth 2000 \n" << 
+      "/MissingWidth 0 \n" << 
+      "/StemH 0 \n" << 
+      "/StemV 0 \n" << 
+      "/Type /FontDescriptor \n" << 
+      "/XHeight 525 \n" << 
+      ">>\n" << 
+      "endobj\n"
+    assert_equal(expected, @font_descriptor.to_s)
+  end
+end
+
+class PdfFontEncodingTestCases < Test::Unit::TestCase
+  def setup
+    differences = PdfArray.new([PdfInteger.new(32), PdfName.new('space')])
+    @font_encoding = PdfFontEncoding.new(1, 0, "MacRomanEncoding", differences)
+  end
+
+  def test_to_s
+    expected = "1 0 obj\n" <<
+      "<<\n" <<
+      "/BaseEncoding /MacRomanEncoding \n" <<
+      "/Differences [32 /space ] \n" <<
+      "/Type /Encoding \n" <<
+      ">>\n" <<
+      "endobj\n"
+    assert_equal(expected, @font_encoding.to_s)
+  end
+end
