@@ -423,5 +423,13 @@ module PdfU
       dictionary['BaseEncoding'] = PdfName.new(base_encoding)
       dictionary['Differences'] = differences
     end
-  end  
+  end
+  
+  # images and forms
+  class PdfXObject < PdfStream
+    def initialize(seq, gen, stream=nil)
+      super(seq, gen, stream)
+      dictionary['Type'] = PdfName.new('XObject')
+    end
+  end
 end

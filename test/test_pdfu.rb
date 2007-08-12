@@ -346,3 +346,10 @@ class PdfFontEncodingTestCases < Test::Unit::TestCase
     assert_equal(expected, @font_encoding.to_s)
   end
 end
+
+class PdfXObjectTestCases < Test::Unit::TestCase
+  def test_initialize
+    xobj = PdfXObject.new(1,0)
+    assert_equal(PdfName.new('XObject'), xobj.dictionary['Type'])
+  end
+end
