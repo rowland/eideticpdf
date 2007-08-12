@@ -3,14 +3,24 @@
 #  Created by Brent Rowland on 2007-07-13.
 #  Copyright (c) 2007, Eidetic Software. All rights reserved.
 
+require 'pdfu'
+
 module PdfW
   class PageStyle
-    attr_reader :page_size, :crop_size, :orientation, :langscape
+    attr_reader :page_size, :crop_size, :orientation, :landscape
     
-    def initialize(page_size, crop_size, landscape=false, orientation=false)
-      :page_size, :crop_size, :orientation, :langscape
+    PORTRAIT = 0
+    LANDSCAPE = 270
+
+    def initialize(options={})
+      page_size = options[:page_size] || :letter
+      crop_size = options[:crop_size] || page_size
+      @orientation = options[:orientation] || :portrait
+      @page_size = make_size_rectangle(page_size, @orientation)
+      @crop_size = make_size_rectangle(crop_size, @orientation)
+      @landscape = (@orientation == :landscape)
     end
-    
+
   private
     SIZES = {
       :letter => {
@@ -35,8 +45,9 @@ module PdfW
       }.freeze
     }
 
+  protected
     def make_size_rectangle(size, orientation)
-      SIZES[size][orientation]
+      PdfU::Rectangle.new(*(SIZES[size][orientation]))
     end
   end
 end
