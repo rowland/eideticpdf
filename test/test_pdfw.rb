@@ -92,3 +92,71 @@ class PageStyleTestCases < Test::Unit::TestCase
     assert_equal(true, @ps_C5_landscape.landscape)
   end
 end
+
+class MiscWriterTestCases < Test::Unit::TestCase
+  def setup
+    @stream = ''
+    @writer = MiscWriter.new(@stream)
+  end
+
+  def test_set_gray_fill
+    @writer.set_gray_fill(0.4)
+    assert_equal("0.4 g\n", @stream)
+  end
+
+  def test_set_gray_stroke
+    @writer.set_gray_stroke(0.9)
+    assert_equal("0.9 G\n", @stream)
+  end
+
+  def test_set_cmyk_color_fill
+    @writer.set_cmyk_color_fill(0.5, 0.5, 0.5, 0.5)
+    assert_equal("0.5 0.5 0.5 0.5 k\n", @stream)
+  end
+
+  def test_set_cmyk_color_stroke
+    @writer.set_cmyk_color_stroke(0.5, 0.5, 0.5, 0.5)
+    assert_equal("0.5 0.5 0.5 0.5 K\n", @stream)
+  end
+
+  def test_set_rgb_color_fill
+    @writer.set_rgb_color_fill(0.3, 0.6, 0.9)
+    assert_equal("0.3 0.6 0.9 rg\n", @stream)
+  end
+
+  def test_set_rgb_color_stroke
+    @writer.set_rgb_color_stroke(0.3, 0.6, 0.9)
+    assert_equal("0.3 0.6 0.9 RG\n", @stream)
+  end
+
+  def test_set_color_space_fill
+    @writer.set_color_space_fill('DeviceGray')
+    assert_equal("/DeviceGray cs\n", @stream)
+  end
+
+  def test_set_color_space_stroke
+    @writer.set_color_space_stroke('DeviceGray')
+    assert_equal("/DeviceGray CS\n", @stream)
+  end
+
+  def test_set_color_fill
+    @writer.set_color_fill([0.1, 0.2, 0.3, 0.4])
+    assert_equal("0.1 0.2 0.3 0.4 sc\n", @stream)
+  end
+
+  def test_set_color_stroke
+    @writer.set_color_stroke([0.1, 0.2, 0.3, 0.4])
+    assert_equal("0.1 0.2 0.3 0.4 SC\n", @stream)
+  end
+
+  # xxx scn, SCN: patterns and separations
+  def test_set_color_rendering_intent
+    @writer.set_color_rendering_intent("RelativeColorimetric")
+    assert_equal("/RelativeColorimetric ri\n", @stream)
+  end
+
+  def test_x_object
+    @writer.x_object('Image1')
+    assert_equal("/Image1 Do\n", @stream)
+  end
+end
