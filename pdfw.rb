@@ -224,4 +224,78 @@ module PdfW
       "[%s] %d" % [pattern.join(' '), phase]
     end
   end  
+
+  class TextWriter
+    def initialize(stream)
+      @stream = stream
+    end
+    
+    def open
+      @stream << "BT\n"
+    end
+    
+    def close
+      @stream << "ET\n"
+    end
+
+    def set_char_spacing(char_space)
+      @stream << "%s Tc\n" % g(char_space)
+    end
+
+    def set_word_spacing(word_space)
+      @stream << "%s Tw\n" % g(word_space)
+    end
+
+    def set_horiz_scaling(scale)
+      @stream << "%s Tz\n" % g(scale)
+    end
+
+    def set_leading(leading)
+      @stream << "%s TL\n" % g(leading)
+    end
+
+    def set_font_and_size(font_name, size)
+      @stream << "/%s %s Tf\n" % [font_name, g(size)]
+    end
+
+    def set_rendering_mode(render)
+      @stream << "%d Tr\n" % render
+    end
+
+    def set_rise(rise)
+      @stream << "%s Ts" % g(rise)
+    end
+
+    def move_by(tx, ty)
+      @stream << "%s %s Td\n" % [g(tx), g(ty)]
+    end
+
+    def move_by_and_set_leading(tx, ty)
+      @stream << "%s %s TD\n" % [g(tx), g(ty)]
+    end
+
+    def set_matrix(a, b, c, d, x, y)
+      @stream << "%s %s %s %s %s %s Tm\n" % [g(a), g(b), g(c), g(d), g(x), g(y)]
+    end
+
+    def next_line
+      @stream << "T*\n"
+    end
+
+    def show(s)
+      @stream << "(%s) Tj\n" % PdfU::PdfString.escape(s)
+    end
+
+    def next_line_show(s)
+      @stream << "(%s) '" % PdfU::PdfString.escape(s)
+    end
+
+    def set_spacing_next_line_show(char_space, word_space, s)
+      @stream << "%s %s (%s) \"\n" % [g(char_space), g(word_space), PdfU::PdfString.escape(s)]
+    end
+
+    def show_with_dispacements(elements)
+      @stream << "%sTJ\n" % elements
+    end
+  end
 end

@@ -295,4 +295,102 @@ class MiscWriterTestCases < Test::Unit::TestCase
       assert_equal("[1 2 3] 2", @writer.make_line_dash_pattern([1, 2, 3], 2))
     end
   end
+  
+  class TextWriterTestCases < Test::Unit::TestCase
+    def setup
+      @stream = ''
+      @writer = TextWriter.new(@stream)
+    end
+    
+    def test_open
+      @writer.open
+      assert_equal("BT\n", @stream)
+    end
+    
+    def test_close
+      @writer.close
+      assert_equal("ET\n", @stream)
+    end
+
+    def test_set_char_spacing
+      @writer.set_char_spacing(5)
+      assert_equal("5 Tc\n", @stream)
+    end
+
+    def test_set_word_spacing
+      @writer.set_word_spacing(5)
+      assert_equal("5 Tw\n", @stream)
+    end
+
+    def test_set_horiz_scaling
+      @writer.set_horiz_scaling(90)
+      assert_equal("90 Tz\n", @stream)
+    end
+
+    def test_set_leading
+      @writer.set_leading(8)
+      assert_equal("8 TL\n", @stream)
+    end
+
+    def test_set_font_and_size
+      @writer.set_font_and_size("Arial", 12)
+      assert_equal("/Arial 12 Tf\n", @stream)
+    end
+
+    def test_set_rendering_mode
+      @writer.set_rendering_mode(0)
+      assert_equal("0 Tr\n", @stream)
+    end
+
+    def test_set_rise
+      @writer.set_rise(0)
+      assert_equal("0 Ts", @stream)
+    end
+
+    def test_move_by
+      @writer.move_by(7, 11.5)
+      assert_equal("7 11.5 Td\n", @stream)
+    end
+
+    def test_move_by_and_set_leading
+      @writer.move_by_and_set_leading(5.5, 12)
+      assert_equal("5.5 12 TD\n", @stream)
+    end
+
+    def test_set_matrix
+      @writer.set_matrix(1.1, 2, 3.3, 4, 5.5, 6)
+      assert_equal("1.1 2 3.3 4 5.5 6 Tm\n", @stream)
+    end
+
+    def test_next_line
+      @writer.next_line
+      assert_equal("T*\n", @stream)
+    end
+
+    def test_show
+      @writer.show("Hello")
+      assert_equal("(Hello) Tj\n", @stream)
+    end
+
+    def test_next_line_show
+      @writer.next_line_show("Goodbye")
+      assert_equal("(Goodbye) '", @stream)
+    end
+
+    def test_set_spacing_next_line_show
+      @writer.set_spacing_next_line_show(5, 11.5, "Hello and goodbye")
+      assert_equal("5 11.5 (Hello and goodbye) \"\n", @stream)
+    end
+
+    def test_show_with_dispacements
+      a = PdfU::PdfArray.new([
+        PdfU::PdfString.new('H'), 
+        PdfU::PdfInteger.new(120), 
+        PdfU::PdfString.new('e'), 
+        PdfU::PdfInteger.new(80), 
+        PdfU::PdfString.new('y')])
+      @writer.show_with_dispacements(a)
+      assert_equal("[(H) 120 (e) 80 (y) ] TJ\n", @stream)
+    end
+  end
 end
