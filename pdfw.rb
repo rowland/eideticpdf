@@ -11,6 +11,7 @@ module PdfW
   end
 
   def g(value, prec=4)
+    # prec must be >= 1 or gsub will strip significant trailing 0's.
     sprintf("%.*f", prec, value).sub(',','.').gsub(/\.?0*$/,'')
   end
 
@@ -113,4 +114,114 @@ module PdfW
       @stream << "/#{name} Do\n"
     end
   end
+  
+  class GraphWriter
+    def initialize(stream)
+      @stream = stream
+    end
+
+    def save_graphics_state
+      @stream << "q\n"
+    end
+
+    def restore_graphics_state
+      @stream << "Q\n"
+    end
+
+    def concat_matrix(a, b, c, d, x, y)
+      @stream << "%s %s %s %s %s %s cm\n" % [g(a), g(b), g(c), g(d), g(x), g(y)]
+    end
+
+    def set_flatness(flatness)
+      @stream << "%d i\n" % flatness
+    end
+
+    def set_line_cap_style(line_cap_style)
+      @stream << "%d J\n" % line_cap_style
+    end
+
+    def set_line_dash_pattern(line_dash_pattern)
+      @stream << "%s d\n" % line_dash_pattern
+    end
+
+    def set_line_join_style(line_join_style)
+      @stream << "%d j\n" % line_join_style
+    end
+
+    def set_line_width(line_width)
+      @stream << "%s w\n" % g(line_width)
+    end
+
+    def set_miter_limit(miter_limit)
+      @stream << "%s M\n" % g(miter_limit)
+    end
+
+    def move_to(x, y)
+      @stream << "%s %s m\n" % [g(x), g(y)]
+    end
+
+    def line_to(x, y)
+      @stream << "%s %s l\n" % [g(x), g(y)]
+    end
+
+    def curve_to(x1, y1, x2, y2, x3, y3)
+      @stream << "%s %s %s %s %s %s c\n" % [g(x1), g(y1), g(x2), g(y2), g(x3), g(y3)]
+    end
+
+    def rectangle(x, y, width, height)
+      @stream << "%s %s %s %s re\n" % [g(x), g(y), g(width), g(height)]
+    end
+
+    def close_path
+      @stream << "h\n"
+    end
+
+    def new_path
+      @stream << "n\n"
+    end
+
+    def stroke
+      @stream << "S\n"
+    end
+
+    def close_path_and_stroke
+      @stream << "s\n"
+    end
+
+    def fill
+      @stream << "f\n"
+    end
+
+    def eo_fill
+      @stream << "f*\n"
+    end
+
+    def fill_and_stroke
+      @stream << "B\n"
+    end
+
+    def close_path_fill_and_stroke
+      @stream << "b\n"
+    end
+
+    def eo_fill_and_stroke
+      @stream << "B*\n"
+    end
+
+    def close_path_eo_fill_and_stroke
+      @stream << "b*\n"
+    end
+
+    def clip
+      @stream << "W\n"
+    end
+
+    def eo_clip
+      @stream << "W*\n"
+    end
+
+    def make_line_dash_pattern(pattern, phase)
+      "[%s] %d" % [pattern.join(' '), phase]
+    end
+  end  
 end

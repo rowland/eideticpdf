@@ -159,4 +159,140 @@ class MiscWriterTestCases < Test::Unit::TestCase
     @writer.x_object('Image1')
     assert_equal("/Image1 Do\n", @stream)
   end
+
+  class GraphWriterTestCases < Test::Unit::TestCase
+    def setup
+      @stream = ''
+      @writer = GraphWriter.new(@stream)
+    end
+
+    def test_save_graphics_state
+      @writer.save_graphics_state
+      assert_equal("q\n", @stream)
+    end
+
+    def test_restore_graphics_state
+      @writer.restore_graphics_state
+      assert_equal("Q\n", @stream)
+    end
+
+    def test_concat_matrix
+      @writer.concat_matrix(1.1, 2.2, 3.3, 4.4, 5.5, 6.6)
+      assert_equal("1.1 2.2 3.3 4.4 5.5 6.6 cm\n", @stream)
+    end
+
+    def test_set_flatness
+      @writer.set_flatness(50)
+      assert_equal("50 i\n", @stream)
+    end
+
+    def test_set_line_cap_style
+      @writer.set_line_cap_style(0)
+      assert_equal("0 J\n", @stream)
+    end
+
+    def test_set_line_dash_pattern
+      @writer.set_line_dash_pattern('[2 3] 11')
+      assert_equal("[2 3] 11 d\n", @stream)
+    end
+
+    def test_set_line_join_style
+      @writer.set_line_join_style(0)
+      assert_equal("0 j\n", @stream)
+    end
+
+    def test_set_line_width
+      @writer.set_line_width(3)
+      assert_equal("3 w\n", @stream)
+    end
+
+    def test_set_miter_limit
+      @writer.set_miter_limit(3.6)
+      assert_equal("3.6 M\n", @stream)
+    end
+
+    def test_move_to
+      @writer.move_to(4, 5.55)
+      assert_equal("4 5.55 m\n", @stream)
+    end
+
+    def test_line_to
+      @writer.line_to(5.55, 4)
+      assert_equal("5.55 4 l\n", @stream)
+    end
+
+    def test_curve_to
+      @writer.curve_to(1.1, 2.2, 3.3, 4.4, 5.5, 6.6)
+      assert_equal("1.1 2.2 3.3 4.4 5.5 6.6 c\n", @stream)
+    end
+
+    def test_rectangle
+      @writer.rectangle(5.5, 5.5, 4, 6)
+      assert_equal("5.5 5.5 4 6 re\n", @stream)
+    end
+
+    def test_close_path
+      @writer.close_path
+      assert_equal("h\n", @stream)
+    end
+
+    def test_new_path
+      @writer.new_path
+      assert_equal("n\n", @stream)
+    end
+
+    def test_stroke
+      @writer.stroke
+      assert_equal("S\n", @stream)
+    end
+
+    def test_close_path_and_stroke
+      @writer.close_path_and_stroke
+      assert_equal("s\n", @stream)
+    end
+
+    def test_fill
+      @writer.fill
+      assert_equal("f\n", @stream)
+    end
+
+    def test_eo_fill
+      @writer.eo_fill
+      assert_equal("f*\n", @stream)
+    end
+
+    def test_fill_and_stroke
+      @writer.fill_and_stroke
+      assert_equal("B\n", @stream)
+    end
+
+    def test_close_path_fill_and_stroke
+      @writer.close_path_fill_and_stroke
+      assert_equal("b\n", @stream)
+    end
+
+    def test_eo_fill_and_stroke
+      @writer.eo_fill_and_stroke
+      assert_equal("B*\n", @stream)
+    end
+
+    def test_close_path_eo_fill_and_stroke
+      @writer.close_path_eo_fill_and_stroke
+      assert_equal("b*\n", @stream)
+    end
+
+    def test_clip
+      @writer.clip
+      assert_equal("W\n", @stream)
+    end
+
+    def test_eo_clip
+      @writer.eo_clip
+      assert_equal("W*\n", @stream)
+    end
+
+    def test_make_line_dash_pattern
+      assert_equal("[1 2 3] 2", @writer.make_line_dash_pattern([1, 2, 3], 2))
+    end
+  end
 end
