@@ -298,4 +298,224 @@ module PdfW
       @stream << "%sTJ\n" % elements
     end
   end
+
+  class PdfWriter
+  private
+    def arc_small(x, y, r, mid_theta, half_angle, ccwcw, move_to0)
+    end
+
+    def set_text_angle(angle, x, y)
+    end
+
+  protected
+    def next_object_number
+    end
+
+    def define_resources
+    end
+
+    def make_font_descriptor(font_name)
+    end
+
+    def check_set_line_dash_pattern
+    end
+
+    def check_set_line_width
+    end
+
+    # color methods
+    def check_set_line_color
+    end
+
+    def check_set_fill_color
+    end
+
+    def check_set_font_color
+    end
+
+  protected
+    def start_text
+    end
+
+    def end_text
+    end
+
+    def start_graph
+    end
+
+    def end_graph
+    end
+
+    def start_misc
+    end
+
+    def end_misc
+    end
+    
+    attr_reader :tw, :gw
+
+    def page_width
+    end
+
+    def page_height
+    end
+
+  public
+    # currently, should only be called once
+    def write(stream)
+    end
+
+    # document methods
+    def begin_doc(options={})
+    end
+
+    def end_doc
+    end
+
+    # page methods
+    def start_page(options={})
+    end
+
+    def end_page
+    end
+
+    def new_page(options={})
+    end
+
+    # coordinate methods
+    def units
+    end
+
+    def units=(units)
+    end
+
+    def moveTo(x, y)
+    end
+
+    def pen_pos
+    end
+
+    # graphics methods
+    def line_to(x, y)
+    end
+
+    def rectangle(x, y, width, height, border=true, fill=false)
+    end
+
+    def curve(x0, y0, x1, y1, x2, y2, x3, y3)
+    end
+
+    def curve_points(points)
+    end
+
+    def curve_to(points)
+    end
+
+    def circle(x, y, r, border=true, fill=false)
+    end
+
+    def arc(x, y, r, s_angle, e_angle, move_to0=false)
+    end
+
+    def pie(x, y, r, s_angle, e_angle, border=true, fill=false)
+    end
+
+    def arch(x, y, r1, r2, s_angle, e_angle, border=true, fill=false)
+    end
+
+    def fill
+    end
+
+    def stroke
+    end
+
+    def fill_and_stroke
+    end
+
+    def set_line_dash_pattern(pattern, phase)
+    end
+
+    def set_line_width(line_width)
+    end
+
+    # color methods
+    def set_line_color_rgb(red, green, blue)
+    end
+
+    def set_line_color(color)
+    end
+
+    def set_fill_color_rgb(red, green, blue)
+    end
+
+    def set_fill_color(color)
+    end
+
+    def set_font_color_rgb(red, green, blue)
+    end
+
+    def set_font_color(color)
+    end
+
+    # text methods
+    def print(s, angle=0.0)
+    end
+
+    def print_xy(x, y, s, angle=0.0); overload
+    end
+
+    def puts(s='')
+    end
+
+    def puts_xy(x, y, s)
+    end
+
+    def width(s)
+    end
+
+    def height # may not include external leading?
+    end
+
+    def set_v_text_align(vta)
+    end
+
+    # font methods
+    def set_font(
+        name,
+        size,
+        style='',
+        color=nil, # nil means don't set color
+        encoding='WinAnsiEncoding',
+        sub_type='Type1')
+    end
+
+    def set_font_style(style)
+    end
+
+    def set_font_size(size)
+    end
+
+    # image methods
+    def load_image(image_file_name)
+    end
+
+    def print_image_handle(pdf_image_handle, x, y, width=nil, height=nil)
+    end
+
+    def print_image_file(image_file_name, x, y, width=nil, height=nil)
+    end
+
+    def print_link(s, uri)
+    end
+
+    # instantiation
+    def initialize
+    end
+    
+    def open
+    end
+    
+    def close
+    end
+  end
 end
