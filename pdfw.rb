@@ -308,7 +308,7 @@ module PdfW
     end
 
   protected
-    def next_object_number
+    def next_seq
     end
 
     def define_resources
@@ -414,13 +414,13 @@ module PdfW
     def circle(x, y, r, border=true, fill=false)
     end
 
-    def arc(x, y, r, s_angle, e_angle, move_to0=false)
+    def arc(x, y, r, start_angle, end_angle, move_to0=false)
     end
 
-    def pie(x, y, r, s_angle, e_angle, border=true, fill=false)
+    def pie(x, y, r, start_angle, end_angle, border=true, fill=false)
     end
 
-    def arch(x, y, r1, r2, s_angle, e_angle, border=true, fill=false)
+    def arch(x, y, r1, r2, start_angle, end_angle, border=true, fill=false)
     end
 
     def fill
@@ -458,19 +458,19 @@ module PdfW
     end
 
     # text methods
-    def print(s, angle=0.0)
+    def print(text, angle=0.0)
     end
 
-    def print_xy(x, y, s, angle=0.0); overload
+    def print_xy(x, y, text, angle=0.0)
     end
 
-    def puts(s='')
+    def puts(text='')
     end
 
-    def puts_xy(x, y, s)
+    def puts_xy(x, y, text)
     end
 
-    def width(s)
+    def width(text)
     end
 
     def height # may not include external leading?
@@ -480,13 +480,11 @@ module PdfW
     end
 
     # font methods
-    def set_font(
-        name,
-        size,
-        style='',
-        color=nil, # nil means don't set color
-        encoding='WinAnsiEncoding',
-        sub_type='Type1')
+    def set_font(name, size, options = {})
+      style = options[:style] || ''
+      color = options[:color]
+      encoding = options[:encoding] || 'WinAnsiEncoding'
+      sub_type = options[:sub_type] || 'Type1'
     end
 
     def set_font_style(style)
