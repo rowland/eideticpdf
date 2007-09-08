@@ -76,6 +76,10 @@ module PdfU
     def to_s
       value ? 'true ' : 'false '
     end
+    
+    def ==(other)
+      other.respond_to?(:value) && self.value == other.value
+    end
   end
 
   class PdfInteger
@@ -94,7 +98,7 @@ module PdfU
     end
     
     def ==(other)
-      self.value == other.value
+      other.respond_to?(:value) && self.value == other.value
     end
   end
 
@@ -149,7 +153,7 @@ module PdfU
     end
     
     def ==(other)
-      self.name == other.name
+      other.respond_to?(:name) && self.name == other.name
     end
   end
   
@@ -227,16 +231,16 @@ module PdfU
   
   class PdfStream < PdfDictionaryObject
     attr_reader :stream
-    
+
     def initialize(seq, gen, stream=nil)
       super(seq, gen)
       @stream = (stream || '').dup
     end
-    
+
     def length=(length)
       dictionary['Length'] = PdfInteger.new(length)
     end
-    
+
     def filter=(filter)
       if filter.is_a?(PdfArray)
         dictionary['Filter'] = filter
@@ -244,7 +248,7 @@ module PdfU
         dictionary['Filter'] = PdfName.new(filter)
       end
     end
-    
+
     def body
       "#{super}stream\n#{stream}endstream\n"
     end
@@ -432,4 +436,65 @@ module PdfU
       dictionary['Type'] = PdfName.new('XObject')
     end
   end
+  
+  class PdfImage < PdfXObject
+    attr_reader :width, :height
+
+    def initialize(seq, gen, stream=nil)
+      super(seq, gen, stream)
+      dictionary['Subtype'] = PdfName.new('Image')
+    end
+
+    def body
+      dictionary['Length'] = PdfInteger.new(stream.length)
+      super
+    end
+
+    def filter=(filter)
+      dictionary['Filter'] = PdfName.new(filter)
+    end
+
+    def filters=(filters)
+      dictionary['Filter'] = filters
+    end
+
+    def width=(width)
+      @width = width
+      dictionary['Width'] = PdfInteger.new(width)
+    end
+
+    def height=(height)
+      @height = height
+      dictionary['Height'] = PdfInteger.new(height)
+    end
+
+    def bits_per_component=(bits)
+      dictionary['BitsPerComponent'] = PdfInteger.new(bits)
+    end
+
+    def color_space=(color_space)
+      if color_space.is_a?(String)
+        dictionary['ColorSpace'] = PdfName.new(color_space)
+      else
+        # array or dictionary
+        dictionary['ColorSpace'] = color_space
+      end
+    end
+
+    def decode=(decode)
+      dictionary['Decode'] = decode
+    end
+
+    def interpolate=(interpolate)
+      dictionary['Interpolate'] = PdfBoolean.new(interpolate)
+    end
+
+    def image_mask=(image_mask)
+      dictionary['ImageMask'] = PdfBoolean.new(image_mask)
+    end
+
+    def intent=(intent)
+      dictionary['Intent'] = PdfName.new(intent)
+    end
+  end  
 end

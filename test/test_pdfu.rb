@@ -136,19 +136,19 @@ class PdfStreamTestCases < Test::Unit::TestCase
     @ps.length = 4
     @ps.filter = 'bogus'
   end
-  
+
   def test_length
     assert_equal(PdfInteger.new(4), @ps.dictionary['Length'])
   end
-  
+
   def test_filter
     assert_equal(PdfName.new('bogus'), @ps.dictionary['Filter'])
   end
-  
+
   def test_body
     assert_equal("<<\n/Filter /bogus \n/Length 4 \n>>\nstream\ntestendstream\n", @ps.body)
   end
-  
+
   def test_to_s
     assert_equal("1 0 obj\n<<\n/Filter /bogus \n/Length 4 \n>>\nstream\ntestendstream\nendobj\n", @ps.to_s)
   end
@@ -353,3 +353,74 @@ class PdfXObjectTestCases < Test::Unit::TestCase
     assert_equal(PdfName.new('XObject'), xobj.dictionary['Type'])
   end
 end
+
+class PdfImageTestCases < Test::Unit::TestCase
+  def setup
+    @image = PdfImage.new(1,0,'test')
+  end
+
+  def test_initialize
+    assert_equal(PdfName.new('XObject'), @image.dictionary['Type'])
+    assert_equal(PdfName.new('Image'), @image.dictionary['Subtype'])
+  end
+
+  def test_body
+    assert_equal("<<\n/Length 4 \n/Subtype /Image \n/Type /XObject \n>>\nstream\ntestendstream\n", @image.body)
+    assert_equal(PdfInteger.new(4), @image.dictionary['Length'])
+  end
+
+  def test_filter=
+    @image.filter = 'ASCIIHexDecode'
+    assert_equal(PdfName.new('ASCIIHexDecode'), @image.dictionary['Filter'])
+  end
+
+  def test_filters=
+    filters = PdfArray.new ['ASCII85Decode', 'LZWDecode'].map { |s| PdfName.new(s) }
+    @image.filters = filters
+    assert_equal(filters, @image.dictionary['Filter'])
+  end
+
+  def test_width
+    @image.width = 320
+    assert_equal(320, @image.width)
+    assert_equal(PdfInteger.new(320), @image.dictionary['Width'])
+  end
+
+  def test_height
+    @image.height = 200
+    assert_equal(200, @image.height)
+    assert_equal(PdfInteger.new(200), @image.dictionary['Height'])
+  end
+
+  def test_bits_per_component=
+    @image.bits_per_component = 8
+    assert_equal(PdfInteger.new(8), @image.dictionary['BitsPerComponent'])
+  end
+
+  def test_color_space=
+    @image.color_space = 'DeviceCMYK'
+    assert_equal(PdfName.new('DeviceCMYK'), @image.dictionary['ColorSpace'])
+    # todo: test other types of values, such as indirect objects
+  end
+
+  def test_decode=
+    decode = PdfArray.new [1, 0].map { |i| PdfInteger.new(i )}
+    @image.decode = decode
+    assert_equal(decode, @image.dictionary['Decode'])
+  end
+
+  def test_interpolate=
+    @image.interpolate = true
+    assert_equal(PdfBoolean.new(true), @image.dictionary['Interpolate'])
+  end
+
+  def test_image_mask=
+    @image.image_mask = false
+    assert_equal(PdfBoolean.new(false), @image.dictionary['ImageMask'])
+  end
+
+  def test_intent=
+    @image.intent = 'AbsoluteColorimetric'
+    assert_equal(PdfName.new('AbsoluteColorimetric'), @image.dictionary['Intent'])
+  end
+end  
