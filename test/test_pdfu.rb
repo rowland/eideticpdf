@@ -68,6 +68,16 @@ class PdfIntegerTestCases < Test::Unit::TestCase
     seven = PdfInteger.new(7)
     assert_equal('7 ', seven.to_s)
   end
+
+  def test_ary1
+    a = PdfInteger.ary([1, 2, 3])
+    assert_equal("[1 2 3 ] ", a.to_s)
+  end
+
+  def test_ary2
+    a = PdfInteger.ary([1, 2, [3, 4]])
+    assert_equal("[1 2 [3 4 ] ] ", a.to_s)
+  end
 end
 
 class PdfRealTestCases < Test::Unit::TestCase
@@ -113,7 +123,7 @@ class PdfDictionaryTestCases < Test::Unit::TestCase
       PdfName.new('foo') => PdfString.new('bar'),
       PdfName.new('baz') => PdfInteger.new(7)
     }
-    d = PdfDictionary.new.update(h)
+    d = PdfDictionary.new(h)
     assert_equal("<<\n/baz 7 \n/foo (bar) \n>>\n", d.to_s)
   end
 end
@@ -422,5 +432,91 @@ class PdfImageTestCases < Test::Unit::TestCase
   def test_intent=
     @image.intent = 'AbsoluteColorimetric'
     assert_equal(PdfName.new('AbsoluteColorimetric'), @image.dictionary['Intent'])
+  end
+end  
+
+class PdfAnnotTestCases < Test::Unit::TestCase
+  def setup
+    @rect = Rectangle.new(1,2,3,4)
+    @annot = PdfAnnot.new(1, 0, 'Text', @rect)
+  end
+
+  def test_initialize
+    assert_equal(1, @annot.seq)
+    assert_equal(0, @annot.gen)
+    assert_equal(PdfName.new('Annot'), @annot.dictionary['Type'])
+    assert_equal(PdfName.new('Text'), @annot.dictionary['Subtype'])
+    assert_equal(@rect, @annot.dictionary['Rect'])
+  end
+
+  def test_border=
+    border = [0, 0, 1]
+    @annot.border = border
+    assert_equal(PdfInteger.ary(border), @annot.dictionary['Border'])
+  end
+
+  def test_color=
+    color = [0.2, 0.4, 0.6]
+    @annot.color = color
+    assert_equal(PdfReal.ary(color), @annot.dictionary['C'])
+  end
+
+  def test_title=
+    @annot.title = 'Joe'
+    assert_equal(PdfString.new('Joe'), @annot.dictionary['T'])
+  end
+
+  def test_mod_date=
+    t = Time.local(2007, 9, 8, 14, 30, 0, 0)
+    @annot.mod_date = t
+    assert_equal(PdfString.new('20070908143000'), @annot.dictionary['M'])
+  end
+
+  def test_flags=
+    @annot.flags = 0
+    assert_equal(PdfInteger.new(0), @annot.dictionary['F'])
+  end
+
+  def test_highlight=
+    @annot.highlight = :none
+    assert_equal(PdfName.new('N'), @annot.dictionary['H'])
+    @annot.highlight = :invert
+    assert_equal(PdfName.new('I'), @annot.dictionary['H'])
+    @annot.highlight = :outline
+    assert_equal(PdfName.new('O'), @annot.dictionary['H'])
+    @annot.highlight = :push
+    assert_equal(PdfName.new('P'), @annot.dictionary['H'])
+
+    @annot.highlight = 'N'
+    assert_equal(PdfName.new('N'), @annot.dictionary['H'])
+    @annot.highlight = 'I'
+    assert_equal(PdfName.new('I'), @annot.dictionary['H'])
+    @annot.highlight = 'O'
+    assert_equal(PdfName.new('O'), @annot.dictionary['H'])
+    @annot.highlight = 'P'
+    assert_equal(PdfName.new('P'), @annot.dictionary['H'])
+  end
+
+  def test_border_style=
+    border_style = {
+      'Type' => PdfName.new('Border'),
+      'W' => PdfInteger.new(1),
+      'S' => PdfName.new('D'),
+      'D' => PdfInteger.ary([3, 2])
+    }
+    @annot.border_style = border_style
+    assert_equal(PdfDictionary.new(border_style).to_s, @annot.dictionary['BS'].to_s)
+  end
+
+  def test_appearance_dictionary=
+    io = IndirectObject.new(1, 0)
+    appearance = { 'N' => io.reference_object }
+    @annot.appearance_dictionary = appearance
+    assert_equal("<<\n/N 1 0 R \n>>\n", @annot.dictionary['AP'].to_s)
+  end
+
+  def test_appearance_state=
+    @annot.appearance_state = 'Yes'
+    assert_equal(PdfName.new('Yes'), @annot.dictionary['AS'])
   end
 end  

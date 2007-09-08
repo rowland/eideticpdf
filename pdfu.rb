@@ -81,14 +81,8 @@ module PdfU
       other.respond_to?(:value) && self.value == other.value
     end
   end
-
-  class PdfInteger
-    attr_reader :value
-    
-    def initialize(value)
-      @value = value.to_i
-    end
-    
+  
+  class PdfNumber
     def to_s
       "#{value} "
     end
@@ -96,21 +90,51 @@ module PdfU
     def eql?(other)
       self.value.eql?(other.value)
     end
-    
+
     def ==(other)
       other.respond_to?(:value) && self.value == other.value
     end
   end
 
-  class PdfReal
+  class PdfInteger < PdfNumber
     attr_reader :value
-    
+
+    def initialize(value)
+      @value = value.to_i
+    end
+
+    def self.ary(int_ary)
+      p_ary = int_ary.map do |i|
+        if i.respond_to?(:to_i)
+          PdfInteger.new(i.to_i)
+        elsif i.respond_to?(:to_ary)
+          PdfInteger.ary(i.to_ary)
+        else
+          i
+        end
+      end
+      PdfArray.new p_ary
+    end
+  end
+
+  class PdfReal < PdfNumber
+    attr_reader :value
+
     def initialize(value)
       @value = value.to_f
     end
-    
-    def to_s
-      "#{value} "
+
+    def self.ary(float_ary)
+      p_ary = float_ary.map do |f|
+        if f.respond_to?(:to_f)
+          PdfReal.new(f.to_f)
+        elsif f.respond_to?(:to_ary)
+          PdfReal.ary(f.to_ary)
+        else
+          f
+        end
+      end
+      PdfArray.new p_ary
     end
   end
 
@@ -120,6 +144,14 @@ module PdfU
     
     def initialize(value)
       @value = value.to_s
+    end
+
+    def eql?(other)
+      self.value.eql?(other.value)
+    end
+
+    def ==(other)
+      other.respond_to?(:value) && self.value == other.value
     end
     
     def to_s
@@ -135,15 +167,15 @@ module PdfU
   # name of PDF entity, written as /Name
   class PdfName
     attr_reader :name
-    
+
     def initialize(name)
       @name = name.to_s
     end
-    
+
     def to_s
       "/#{name} "
     end
-    
+
     def hash
       self.to_s.hash
     end
@@ -151,12 +183,12 @@ module PdfU
     def eql?(other)
       self.name.eql?(other.name)
     end
-    
+
     def ==(other)
       other.respond_to?(:name) && self.name == other.name
     end
   end
-  
+
   class PdfArray
     include Enumerable
 
@@ -170,7 +202,7 @@ module PdfU
     def to_s
       "[#{wrapped_values}] "
     end
-    
+
     def each
       if wrap.zero?
         yield values
@@ -178,22 +210,33 @@ module PdfU
         0.step(values.size, wrap) { |i| yield values[i, wrap] }
       end
     end
+
+    def eql?(other)
+      self.values.eql?(other.values) && self.wrap.eql?(other.wrap)
+    end
+
+    def ==(other)
+      (other.respond_to?(:values) && self.values == other.values) &&
+      (other.respond_to?(:wrap) && self.wrap == other.wrap)
+    end
+
   private        
     def wrapped_values
       # return values.join if @wrap.nil? or @wrap.zero?
       self.map { |segment| segment.join }.join("\n")
     end
   end
-  
+
   class PdfDictionary
-    def initialize
+    def initialize(other={})
       @hash = {}
+      update(other)
     end
 
     def [](key)
       @hash[name_from_key(key)]
     end
-    
+
     def []=(key, value)
       @hash[name_from_key(key)] = value
     end
@@ -209,6 +252,7 @@ module PdfU
       s << @hash.keys.sort { |a,b| a.to_s <=> b.to_s }.map { |key| "#{key}#{@hash[key]}\n" }.join
       s << ">>\n"
     end
+
   private
     def name_from_key(key)
       key.is_a?(PdfName) ? key : PdfName.new(key)
@@ -358,7 +402,7 @@ module PdfU
       s << "%%EOF\n"
     end
   end
-  
+
   class Rectangle < Array
     attr_reader :x1, :y1, :x2, :y2
 
@@ -495,6 +539,61 @@ module PdfU
 
     def intent=(intent)
       dictionary['Intent'] = PdfName.new(intent)
+    end
+  end
+  
+  class PdfAnnot < PdfDictionaryObject
+    def initialize(seq, gen, sub_type, rect)
+      super(seq, gen)
+      dictionary['Type'] = PdfName.new('Annot')
+      dictionary['Subtype'] = PdfName.new(sub_type)
+      dictionary['Rect'] = rect
+    end
+
+    def border=(border)
+      dictionary['Border'] = PdfInteger.ary(border)
+    end
+
+    def color=(color)
+      dictionary['C'] = PdfReal.ary(color)
+    end
+
+    def title=(title)
+      dictionary['T'] = PdfString.new(title)
+    end
+
+    def mod_date=(mod_date)
+      dictionary['M'] = PdfString.new(mod_date.strftime("%Y%m%d%H%M%S"))
+    end
+
+    def flags=(flags)
+      dictionary['F'] = PdfInteger.new(flags)
+    end
+
+    def highlight=(highlight)
+      dictionary['H'] = PdfName.new(highlights[highlight] || highlight)
+    end
+
+    def border_style=(border_style)
+      dictionary['BS'] = PdfDictionary.new(border_style)
+    end
+
+    def appearance_dictionary=(appearance)
+      dictionary['AP'] = PdfDictionary.new(appearance)
+    end
+
+    def appearance_state=(state)
+      dictionary['AS'] = PdfName.new(state)
+    end
+  
+  private
+    def highlights
+      @highlights ||= {
+        :none => 'N',
+        :invert => 'I',
+        :outline => 'O',
+        :push => 'P'
+      }
     end
   end  
 end
