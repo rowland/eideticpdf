@@ -134,8 +134,7 @@ class PdfDictionaryObjectTestCases < Test::Unit::TestCase
       'foo' => PdfString.new('bar'),
       'baz' => PdfInteger.new(7)
     }
-    pdo = PdfDictionaryObject.new(1,0)
-    pdo.dictionary.update(h)
+    pdo = PdfDictionaryObject.new(1,0,h)
     assert_equal("<<\n/baz 7 \n/foo (bar) \n>>\n", pdo.body)
   end
 end
@@ -509,7 +508,7 @@ class PdfAnnotTestCases < Test::Unit::TestCase
   end
 
   def test_appearance_dictionary=
-    io = IndirectObject.new(1, 0)
+    io = IndirectObject.new(1,0)
     appearance = { 'N' => io.reference_object }
     @annot.appearance_dictionary = appearance
     assert_equal("<<\n/N 1 0 R \n>>\n", @annot.dictionary['AP'].to_s)
@@ -520,3 +519,61 @@ class PdfAnnotTestCases < Test::Unit::TestCase
     assert_equal(PdfName.new('Yes'), @annot.dictionary['AS'])
   end
 end  
+
+class PdfTextAnnotTestCases < Test::Unit::TestCase
+  def setup
+    @rect = Rectangle.new(1,2,3,4)
+    @annot = PdfTextAnnot.new(1, 0, @rect, 'Hello')
+  end
+  
+  def test_initialize
+    assert_equal(PdfName.new('Text'), @annot.dictionary['Subtype'])
+    assert_equal(PdfString.new('Hello'), @annot.dictionary['Contents'])
+  end
+  
+  def test_open=
+    @annot.open = true
+    assert_equal(PdfBoolean.new(true), @annot.dictionary['Open'])
+    @annot.open = false
+    assert_equal(PdfBoolean.new(false), @annot.dictionary['Open'])
+  end
+end
+
+class PdfLinkAnnotTestCases < Test::Unit::TestCase
+end
+
+class PdfMovieAnnotTestCases < Test::Unit::TestCase
+end
+
+class PdfSoundAnnotTestCases < Test::Unit::TestCase
+end
+
+class PdfURIActionTestCases < Test::Unit::TestCase
+end
+
+class PdfAnnotBorderTestCases < Test::Unit::TestCase
+end
+
+class PdfResourcesTestCases < Test::Unit::TestCase
+  def setup
+    @res = PdfResources.new(1,0)
+  end
+
+  def test_proc_set=
+    a = PdfName.ary ['PDF','Text','ImageB','ImageC']
+    @res.proc_set = a
+    assert_equal(a, @res.dictionary['ProcSet'])
+  end
+  
+  def test_fonts
+    io = IndirectObject.new(2,0)
+    @res.fonts['F1'] = io.reference_object
+    assert_equal("1 0 obj\n<<\n/Font <<\n/F1 2 0 R \n>>\n\n>>\nendobj\n", @res.to_s)
+  end
+  
+  def test_x_objects
+    io = IndirectObject.new(2,0)
+    @res.x_objects['Im1'] = io.reference_object
+    assert_equal("1 0 obj\n<<\n/XObject <<\n/Im1 2 0 R \n>>\n\n>>\nendobj\n", @res.to_s)
+  end
+end

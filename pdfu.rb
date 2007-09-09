@@ -20,14 +20,14 @@ module PdfU
       VERSIONS[@version]
     end
   end
-    
+
   class IndirectObjectRef
     attr_reader :indirect_object
-    
+
     def initialize(indirect_object)
       @indirect_object = indirect_object
     end
-    
+
     def to_s
       @indirect_object.reference_string
     end
@@ -68,20 +68,20 @@ module PdfU
   # direct objects
   class PdfBoolean
     attr_reader :value
-    
+
     def initialize(value)
       @value = value
     end
-    
+
     def to_s
       value ? 'true ' : 'false '
     end
-    
+
     def ==(other)
       other.respond_to?(:value) && self.value == other.value
     end
   end
-  
+
   class PdfNumber
     def to_s
       "#{value} "
@@ -141,7 +141,7 @@ module PdfU
   # text written between ()'s with '(', ')', and '\' escaped with '\'
   class PdfString
     attr_reader :value
-    
+
     def initialize(value)
       @value = value.to_s
     end
@@ -153,14 +153,27 @@ module PdfU
     def ==(other)
       other.respond_to?(:value) && self.value == other.value
     end
-    
+
     def to_s
       "(#{PdfString.escape(value)}) "
     end
-    
+
     def self.escape(string)
       #string.gsub(/[()\\]/,"\\\\1")
       string.gsub('\\','\\\\\\').gsub('(','\\(').gsub(')','\\)')
+    end
+
+    def self.ary(string_ary)
+      p_ary = string_ary.map do |s|
+        if s.respond_to?(:to_str)
+          PdfString.new(s.to_str)
+        elsif s.respond_to?(:to_ary)
+          PdfString.ary(s.to_ary)
+        else
+          s
+        end
+      end
+      PdfArray.new p_ary
     end
   end
 
@@ -186,6 +199,19 @@ module PdfU
 
     def ==(other)
       other.respond_to?(:name) && self.name == other.name
+    end
+
+    def self.ary(string_ary)
+      p_ary = string_ary.map do |s|
+        if s.respond_to?(:to_str)
+          PdfName.new(s.to_str)
+        elsif s.respond_to?(:to_ary)
+          PdfName.ary(s.to_ary)
+        else
+          s
+        end
+      end
+      PdfArray.new p_ary
     end
   end
 
@@ -220,7 +246,7 @@ module PdfU
       (other.respond_to?(:wrap) && self.wrap == other.wrap)
     end
 
-  private        
+  private
     def wrapped_values
       # return values.join if @wrap.nil? or @wrap.zero?
       self.map { |segment| segment.join }.join("\n")
@@ -228,9 +254,9 @@ module PdfU
   end
 
   class PdfDictionary
-    def initialize(other={})
+    def initialize(hash={})
       @hash = {}
-      update(other)
+      update(hash)
     end
 
     def [](key)
@@ -258,21 +284,21 @@ module PdfU
       key.is_a?(PdfName) ? key : PdfName.new(key)
     end
   end
-  
+
   class PdfDictionaryObject < IndirectObject
-    def initialize(seq, gen)
-      super(seq, gen, PdfDictionary.new)
+    def initialize(seq, gen, hash={})
+      super(seq, gen, PdfDictionary.new(hash))
     end
-    
+
     def dictionary
       @obj
     end
-    
+
     def body
       dictionary.to_s
     end
   end
-  
+
   class PdfStream < PdfDictionaryObject
     attr_reader :stream
 
@@ -297,23 +323,23 @@ module PdfU
       "#{super}stream\n#{stream}endstream\n"
     end
   end
-  
+
   class PdfNull
     def to_s
       "null "
     end
   end
-  
+
   class InUseXRefEntry
     def initialize(byte_offset, gen)
       @byte_offset, @gen = byte_offset, gen
     end
-    
+
     def to_s
       "%.10d %.5d n\n" % [@byte_offset, @gen]
     end
   end
-  
+
   class FreeXRefEntry < IndirectObject
     attr_reader :seq, :gen
 
@@ -416,7 +442,7 @@ module PdfU
   class PdfFont <  PdfDictionaryObject
     def enoding=(encoding)
       encoding = PdfName.new(encoding) if encoding.is_a?(String)
-      dictionary['Encoding'] = encoding        
+      dictionary['Encoding'] = encoding
     end
 
     def widths=(widths)
@@ -441,9 +467,9 @@ module PdfU
 
   class PdfFontDescriptor < PdfDictionaryObject
     def initialize(seq, gen,
-      font_name, flags, font_b_box, missing_width, stem_v, stem_h, italic_angle, 
-      cap_height, x_height, 
-      ascent, descent, leading, 
+      font_name, flags, font_b_box, missing_width, stem_v, stem_h, italic_angle,
+      cap_height, x_height,
+      ascent, descent, leading,
       max_width, avg_width)
       super(seq, gen)
       dictionary['Type'] = PdfName.new('FontDescriptor')
@@ -472,7 +498,7 @@ module PdfU
       dictionary['Differences'] = differences
     end
   end
-  
+
   # images and forms
   class PdfXObject < PdfStream
     def initialize(seq, gen, stream=nil)
@@ -480,7 +506,7 @@ module PdfU
       dictionary['Type'] = PdfName.new('XObject')
     end
   end
-  
+
   class PdfImage < PdfXObject
     attr_reader :width, :height
 
@@ -541,7 +567,7 @@ module PdfU
       dictionary['Intent'] = PdfName.new(intent)
     end
   end
-  
+
   class PdfAnnot < PdfDictionaryObject
     def initialize(seq, gen, sub_type, rect)
       super(seq, gen)
@@ -585,7 +611,7 @@ module PdfU
     def appearance_state=(state)
       dictionary['AS'] = PdfName.new(state)
     end
-  
+
   private
     def highlights
       @highlights ||= {
@@ -595,5 +621,84 @@ module PdfU
         :push => 'P'
       }
     end
-  end  
+  end
+
+  class PdfTextAnnot < PdfAnnot
+    def initialize(seq, gen, rect, contents)
+      super(seq, gen, 'Text', rect)
+      dictionary['Contents'] = PdfString.new(contents)
+    end
+
+    def open=(open)
+      dictionary['Open'] = PdfBoolean.new(open)
+    end
+  end
+
+  class PdfLinkAnnot < PdfAnnot
+    def initialize(seq, gen, rect)
+      super(seq, gen, 'Link', rect)
+    end
+
+    def dest=(dest)
+      value = if dist.is_a?(String)
+        PdfName.new(dest)
+      elsif dist.is_a?(Array)
+        PdfArray.new(dest)
+      else
+        dest
+      end
+      dictionary['Dest'] = value
+    end
+
+    def action=(action)
+      dictionary['A'] = action.is_a?(Hash) ? PdfDictionary.new(action) : action
+    end
+  end
+
+  class PdfMovieAnnot < PdfAnnot
+    def initialize(seq, gen, rect, movie)
+      # movie: Hash
+      super(seq, gen, 'Movie', rect)
+      dictionary['Movie'] = PdfDictionary.new(movie)
+    end
+
+    def activation=(activation)
+      # activation: Hash or boolean
+      dictionary['A'] = activation.is_a?(Hash) ? PdfDictionary.new(activation) : PdfBoolean.new(activation)
+    end
+  end
+
+  class PdfSoundAnnot <  PdfAnnot
+    def initialize(seq, gen, rect, sound)
+      # sound: PdfStream
+    end
+  end
+
+  class PdfURIAction < PdfDictionary
+    def initialize(uri)
+    end
+  end
+
+  class PdfAnnotBorder < PdfDictionary
+    def initialize(sub_type)
+    end
+  end
+
+  # defines resources used by a page or collection of pages
+  class PdfResources < PdfDictionaryObject
+    def proc_set=(pdf_object)
+      # pdf_object: PdfArray or IndirectObjectRef
+      dictionary['ProcSet'] = pdf_object
+    end
+    
+    def fonts
+      @fonts ||= PdfDictionary.new
+      dictionary['Font'] ||= @fonts
+    end
+
+    def x_objects
+      @x_objects ||= PdfDictionary.new
+      dictionary['XObject'] ||= @x_objects
+    end
+  end
 end
