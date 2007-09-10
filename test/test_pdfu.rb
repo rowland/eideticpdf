@@ -33,19 +33,19 @@ class IndirectObjectTestCases < Test::Unit::TestCase
   def setup
     @io = IndirectObject.new(1,0)
   end
-  
+
   def test_header
     assert_equal("1 0 obj\n", @io.header)
   end
-  
+
   def test_body
     assert_equal('', @io.body)
   end
-  
+
   def test_footer
     assert_equal("endobj\n", @io.footer)
   end
-  
+
   def test_to_s
     assert_equal("1 0 obj\n" + "endobj\n", @io.to_s)
   end
@@ -56,7 +56,7 @@ class PdfBooleanTestCases < Test::Unit::TestCase
     @t = PdfBoolean.new(true)
     @f = PdfBoolean.new(false)
   end
-  
+
   def test_to_s
     assert_equal('true ', @t.to_s)
     assert_equal('false ', @f.to_s)
@@ -92,7 +92,7 @@ class PdfStringTestCases < Test::Unit::TestCase
     string = PdfString.new('a\b(cd)')
     assert_equal(%q/(a\\\\b\(cd\)) /, string.to_s)
   end
-  
+
   def test_escape
     assert_equal('a\\\\b\(cd\)', PdfString.escape('a\\b(cd)'))
   end
@@ -216,7 +216,7 @@ class BodyTestCases < Test::Unit::TestCase
     @io_str = IndirectObject.new(2,0,PdfString.new("Hello"))
     @body = Body.new
   end
-  
+
   def test_write_and_xref
     @body << @io_int << @io_str
     s = ''
@@ -266,16 +266,16 @@ class RectangleTestCases < Test::Unit::TestCase
   end
 
   def test_to_s
-    assert_equal("1 2 3 4 ", @rect.to_s)
+    assert_equal("[1 2 3 4 ] ", @rect.to_s)
   end
 end
 
 module FontFactory
   def make_font_descriptor
     PdfFontDescriptor.new(100, 0,
-      'ArialMT', 32, [-665, -325, 2029, 1006], 0, 0, 0, 0, 
-      723, 525, 
-      905, -212, 33, 
+      'ArialMT', 32, [-665, -325, 2029, 1006], 0, 0, 0, 0,
+      723, 525,
+      905, -212, 33,
       2000, 0)
   end
 end
@@ -292,10 +292,10 @@ class PdfFontTestCases < Test::Unit::TestCase
   end
 
   def test_to_s
-    expected = "1 0 obj\n" << 
+    expected = "1 0 obj\n" <<
       "<<\n" <<
       "/BaseFont /ArialMT \n" <<
-      "/FirstChar 32 \n" << 
+      "/FirstChar 32 \n" <<
       "/FontDescriptor 100 0 R \n" <<
       "/LastChar 169 \n" <<
       "/Subtype /TrueType \n" <<
@@ -309,30 +309,30 @@ end
 
 class PdfFontDescriptorTestCases < Test::Unit::TestCase
   include FontFactory
-  
+
   def setup
     @font_descriptor = make_font_descriptor
   end
-  
+
   def test_to_s
     expected = "100 0 obj\n" <<
-      "<<\n" << 
-      "/Ascent 905 \n" << 
-      "/AvgWidth 0 \n" << 
-      "/CapHeight 723 \n" << 
-      "/Descent -212 \n" << 
-      "/Flags 32 \n" << 
-      "/FontBBox [-665 -325 2029 1006 ] \n" << 
-      "/FontName /ArialMT \n" << 
-      "/ItalicAngle 0.0 \n" << 
-      "/Leading 33 \n" << 
-      "/MaxWidth 2000 \n" << 
-      "/MissingWidth 0 \n" << 
-      "/StemH 0 \n" << 
-      "/StemV 0 \n" << 
-      "/Type /FontDescriptor \n" << 
-      "/XHeight 525 \n" << 
-      ">>\n" << 
+      "<<\n" <<
+      "/Ascent 905 \n" <<
+      "/AvgWidth 0 \n" <<
+      "/CapHeight 723 \n" <<
+      "/Descent -212 \n" <<
+      "/Flags 32 \n" <<
+      "/FontBBox [-665 -325 2029 1006 ] \n" <<
+      "/FontName /ArialMT \n" <<
+      "/ItalicAngle 0.0 \n" <<
+      "/Leading 33 \n" <<
+      "/MaxWidth 2000 \n" <<
+      "/MissingWidth 0 \n" <<
+      "/StemH 0 \n" <<
+      "/StemV 0 \n" <<
+      "/Type /FontDescriptor \n" <<
+      "/XHeight 525 \n" <<
+      ">>\n" <<
       "endobj\n"
     assert_equal(expected, @font_descriptor.to_s)
   end
@@ -432,7 +432,7 @@ class PdfImageTestCases < Test::Unit::TestCase
     @image.intent = 'AbsoluteColorimetric'
     assert_equal(PdfName.new('AbsoluteColorimetric'), @image.dictionary['Intent'])
   end
-end  
+end
 
 class PdfAnnotTestCases < Test::Unit::TestCase
   def setup
@@ -518,19 +518,19 @@ class PdfAnnotTestCases < Test::Unit::TestCase
     @annot.appearance_state = 'Yes'
     assert_equal(PdfName.new('Yes'), @annot.dictionary['AS'])
   end
-end  
+end
 
 class PdfTextAnnotTestCases < Test::Unit::TestCase
   def setup
     @rect = Rectangle.new(1,2,3,4)
     @annot = PdfTextAnnot.new(1, 0, @rect, 'Hello')
   end
-  
+
   def test_initialize
     assert_equal(PdfName.new('Text'), @annot.dictionary['Subtype'])
     assert_equal(PdfString.new('Hello'), @annot.dictionary['Contents'])
   end
-  
+
   def test_open=
     @annot.open = true
     assert_equal(PdfBoolean.new(true), @annot.dictionary['Open'])
@@ -546,6 +546,13 @@ class PdfMovieAnnotTestCases < Test::Unit::TestCase
 end
 
 class PdfSoundAnnotTestCases < Test::Unit::TestCase
+  def test_initialize
+    rect = Rectangle.new(1,2,3,4)
+    stream = PdfStream.new(1, 0, 'test')
+    sound = PdfSoundAnnot.new(2, 0, rect, stream)
+    assert_equal(PdfName.new('Sound'), sound.dictionary['Subtype'])
+    assert_equal(stream, sound.dictionary['Sound'])
+  end
 end
 
 class PdfURIActionTestCases < Test::Unit::TestCase
@@ -564,16 +571,80 @@ class PdfResourcesTestCases < Test::Unit::TestCase
     @res.proc_set = a
     assert_equal(a, @res.dictionary['ProcSet'])
   end
-  
+
   def test_fonts
     io = IndirectObject.new(2,0)
     @res.fonts['F1'] = io.reference_object
     assert_equal("1 0 obj\n<<\n/Font <<\n/F1 2 0 R \n>>\n\n>>\nendobj\n", @res.to_s)
   end
-  
+
   def test_x_objects
     io = IndirectObject.new(2,0)
     @res.x_objects['Im1'] = io.reference_object
     assert_equal("1 0 obj\n<<\n/XObject <<\n/Im1 2 0 R \n>>\n\n>>\nendobj\n", @res.to_s)
+  end
+end
+
+class PdfPageBaseTestCases < Test::Unit::TestCase
+  def setup
+    @io = IndirectObject.new(1, 0)
+    @base = PdfPageBase.new(2, 0, @io.reference_object)
+  end
+
+  def test_initialize
+    assert_equal('1 0 R ', @base.dictionary['Parent'].to_s)
+  end
+
+  def test_media_box=
+    r = Rectangle.new(1, 2, 3, 4)
+    @base.media_box = r
+    assert_equal('[1 2 3 4 ] ', @base.dictionary['MediaBox'].to_s)
+  end
+
+  def test_resources=
+    resources = PdfResources.new(3, 0)
+    @base.resources = resources.reference_object
+    assert_equal('3 0 R ', @base.dictionary['Resources'].to_s)
+  end
+
+  def test_crop_box=
+    r = Rectangle.new(1, 2, 3, 4)
+    @base.crop_box = r
+    assert_equal('[1 2 3 4 ] ', @base.dictionary['CropBox'].to_s)
+  end
+
+  def test_rotate=
+    @base.rotate = 90
+    assert_equal(PdfInteger.new(90), @base.dictionary['Rotate'])
+  end
+
+  def test_duration=
+    @base.duration = 5
+    assert_equal('5 ', @base.dictionary['Dur'].to_s)
+    @base.duration = 6.5
+    assert_equal('6.5 ', @base.dictionary['Dur'].to_s)
+  end
+
+  def test_hidden=
+    @base.hidden = true
+    assert_equal('true ', @base.dictionary['Hid'].to_s)
+  end
+
+  def test_transition=
+    t = {
+      'Type' => PdfName.new('Trans'),
+      'D' => PdfReal.new(3.5),
+      'S' => PdfName.new('Split'),
+      'Dm' => PdfName.new('V'),
+      'M' => PdfName.new('O')
+    }
+    @base.transition = t
+    assert_equal("<<\n/D 3.5 \n/Dm /V \n/M /O \n/S /Split \n/Type /Trans \n>>\n", @base.dictionary['Trans'].to_s)
+  end
+
+  def test_additional_actions=
+    aa = { 'Foo' => PdfName.new('Bar') }
+    @base.additional_actions = aa
+    assert_equal("<<\n/Foo /Bar \n>>\n", @base.dictionary['AA'].to_s)
   end
 end

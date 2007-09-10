@@ -83,6 +83,12 @@ module PdfU
   end
 
   class PdfNumber
+    attr_reader :value
+    
+    def initialize(value)
+      @value = value
+    end
+
     def to_s
       "#{value} "
     end
@@ -97,8 +103,6 @@ module PdfU
   end
 
   class PdfInteger < PdfNumber
-    attr_reader :value
-
     def initialize(value)
       @value = value.to_i
     end
@@ -118,8 +122,6 @@ module PdfU
   end
 
   class PdfReal < PdfNumber
-    attr_reader :value
-
     def initialize(value)
       @value = value.to_f
     end
@@ -429,12 +431,13 @@ module PdfU
     end
   end
 
-  class Rectangle < Array
+  class Rectangle < PdfArray
     attr_reader :x1, :y1, :x2, :y2
 
     def initialize(x1, y1, x2, y2)
+      super([x1, y1, x2, y2].map { |i| PdfInteger.new(i) })
       @x1, @y1, @x2, @y2 = x1, y1, x2, y2
-      self << PdfInteger.new(x1) << PdfInteger.new(y1) << PdfInteger.new(x2) << PdfInteger.new(y2)
+#      self << PdfInteger.new(x1) << PdfInteger.new(y1) << PdfInteger.new(x2) << PdfInteger.new(y2)
     end
   end
 
@@ -671,6 +674,8 @@ module PdfU
   class PdfSoundAnnot <  PdfAnnot
     def initialize(seq, gen, rect, sound)
       # sound: PdfStream
+      super(seq, gen, 'Sound', rect)
+      dictionary['Sound'] = sound
     end
   end
 
@@ -701,4 +706,53 @@ module PdfU
       dictionary['XObject'] ||= @x_objects
     end
   end
+  
+  # common elements between a page and a collection of pages
+  class PdfPageBase < PdfDictionaryObject
+    def initialize(seq, gen, parent=nil)
+      # parent: IndirectObjectRef
+      super(seq, gen)
+      dictionary['Parent'] = parent
+    end
+
+    def media_box=(media_box)
+      # media_box: Rectangle
+      dictionary['MediaBox'] = media_box
+    end
+
+    def resources=(resources)
+      # resources: IndirectObjectRef
+      dictionary['Resources'] = resources
+    end
+
+    def crop_box=(crop_box)
+      # crop_box: Rectangle
+      dictionary['CropBox'] = crop_box
+    end
+
+    def rotate=(rotate)
+      # rotate: integer
+      dictionary['Rotate'] = PdfInteger.new(rotate)
+    end
+
+    def duration=(duration)
+      # duration: integer or float
+      dictionary['Dur'] = PdfNumber.new(duration)
+    end
+
+    def hidden=(hidden)
+      # hidden: boolean
+      dictionary['Hid'] = PdfBoolean.new(hidden)
+    end
+
+    def transition=(transition)
+      # transition: hash
+      dictionary['Trans'] = PdfDictionary.new(transition)
+    end
+
+    def additional_actions=(additional_actions)
+      # additional_actions: hash
+      dictionary['AA'] = PdfDictionary.new(additional_actions)
+    end
+  end  
 end
