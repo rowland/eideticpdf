@@ -31,6 +31,14 @@ module PdfU
     def to_s
       @indirect_object.reference_string
     end
+
+    def eql?(other)
+      self.indirect_object.eql?(other.indirect_object)
+    end
+
+    def ==(other)
+      other.respond_to?(:indirect_object) && self.indirect_object == other.indirect_object
+    end
   end
 
   class IndirectObject
@@ -307,10 +315,11 @@ module PdfU
     def initialize(seq, gen, stream=nil)
       super(seq, gen)
       @stream = (stream || '').dup
-    end
-
-    def length=(length)
       dictionary['Length'] = PdfInteger.new(length)
+    end
+    
+    def length
+      stream.length
     end
 
     def filter=(filter)
@@ -322,6 +331,7 @@ module PdfU
     end
 
     def body
+      dictionary['Length'] = PdfInteger.new(length)
       "#{super}stream\n#{stream}endstream\n"
     end
   end
@@ -712,7 +722,7 @@ module PdfU
     def initialize(seq, gen, parent=nil)
       # parent: IndirectObjectRef
       super(seq, gen)
-      dictionary['Parent'] = parent
+      dictionary['Parent'] = parent.reference_object unless parent.nil?
     end
 
     def media_box=(media_box)
@@ -754,5 +764,59 @@ module PdfU
       # additional_actions: hash
       dictionary['AA'] = PdfDictionary.new(additional_actions)
     end
-  end  
+  end
+
+  # one page of a PDF document, not counting resources defined in a parent
+  class PdfPage < PdfPageBase
+    def initialize(seq, gen, parent)
+      super(seq, gen, parent)
+      dictionary['Type'] = PdfName.new('Page')
+    end
+
+    def body
+      if contents.size > 1
+        dictionary['Contents'] = PdfArray.new(contents.map { |stream| stream.reference_object })
+      elsif contents.size == 1
+        dictionary['Contents'] = contents.first.reference_object
+      end
+      dictionary['Length'] = PdfInteger.new(contents.inject(0) { |length, stream| length + stream.length })
+      super
+    end
+
+    # PdfStream's
+    def contents
+      @contents ||= []
+    end
+
+    def thumb=(thumb)
+      # thumb: stream
+      dictionary['Thumb'] = thumb.reference_object
+    end
+
+    def annots=(annots)
+      # annots: array of dictionary objects
+      dictionary['Annots'] = PdfArray.new(annots.map { |annot| annot.reference_object })
+    end
+
+    def beads=(beads)
+      # beads: array of dictionary objects
+      dictionary['B'] = PdfArray.new(beads.map { |bead| bead.reference_object })
+    end
+  end
+  
+  # collection of pages
+  class PdfPages < PdfPageBase
+    attr_reader :kids # array of refs to PdfPageBase
+
+    def initialize(seq, gen, parent=nil)
+      super(seq, gen, parent)
+      @kids = []
+      dictionary['Type'] = PdfName.new('Pages')
+    end
+
+    def to_s
+      dictionary['Kids'] = PdfArray.new(@kids.map { |page| page.reference_object })
+      super
+    end
+  end
 end

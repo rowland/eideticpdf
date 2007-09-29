@@ -142,7 +142,7 @@ end
 class PdfStreamTestCases < Test::Unit::TestCase
   def setup
     @ps = PdfStream.new(1,0,'test')
-    @ps.length = 4
+#    @ps.length = 4
     @ps.filter = 'bogus'
   end
 
@@ -588,7 +588,7 @@ end
 class PdfPageBaseTestCases < Test::Unit::TestCase
   def setup
     @io = IndirectObject.new(1, 0)
-    @base = PdfPageBase.new(2, 0, @io.reference_object)
+    @base = PdfPageBase.new(2, 0, @io)
   end
 
   def test_initialize
@@ -646,5 +646,69 @@ class PdfPageBaseTestCases < Test::Unit::TestCase
     aa = { 'Foo' => PdfName.new('Bar') }
     @base.additional_actions = aa
     assert_equal("<<\n/Foo /Bar \n>>\n", @base.dictionary['AA'].to_s)
+  end
+end
+
+class PdfPageTestCases < Test::Unit::TestCase
+  def setup
+    pages = PdfPages.new(1, 0)
+    @page = PdfPage.new(2, 0, pages)
+    @stream = PdfStream.new(3, 0, 'test')
+    @page.contents << @stream
+  end
+
+  def test_initialize
+    assert_equal(PdfName.new('Page'), @page.dictionary['Type'])
+  end
+
+  def test_body
+    assert_equal("<<\n/Contents 3 0 R \n/Length 4 \n/Parent 1 0 R \n/Type /Page \n>>\n", @page.body)
+  end
+
+  def test_contents
+    @page.body # Cause dictionary to be updated.
+    assert_equal(@stream.reference_object, @page.dictionary['Contents'])
+
+    @page.contents << @stream
+    @page.body
+    assert_equal(PdfArray.new([@stream.reference_object, @stream.reference_object]), @page.dictionary['Contents'])    
+  end
+
+  # xxx these methods to be implemented if necessary
+  def test_thumb=
+    @page.thumb = @stream
+    assert_equal(@stream.reference_object, @page.dictionary['Thumb'])
+  end
+
+  def test_annots=
+    rect = Rectangle.new(1,2,3,4)
+    annot = PdfTextAnnot.new(4, 0, rect, 'Hello')
+    @page.annots = [annot]
+    annots = PdfArray.new([annot.reference_object])
+    assert_equal(annots, @page.dictionary['Annots'])
+  end
+
+  def test_beads=
+    b1 = IndirectObject.new(4, 0)
+    b2 = IndirectObject.new(5, 0)
+    @page.beads = [b1, b2]
+    assert_equal(PdfArray.new([b1.reference_object, b2.reference_object]), @page.dictionary['B'])
+  end
+end
+
+class PdfPagesTestCases < Test::Unit::TestCase
+  def setup
+    @pages = PdfPages.new(1, 0)
+    @page = PdfPage.new(2, 0, @pages)
+  end
+
+  def test_initialize
+    assert_equal(PdfName.new('Pages'), @pages.dictionary['Type'])
+    assert_equal([], @pages.kids)
+  end
+
+  def test_to_s
+    @pages.kids << @page
+    assert_equal("1 0 obj\n<<\n/Kids [2 0 R ] \n/Type /Pages \n>>\nendobj\n", @pages.to_s)
   end
 end
