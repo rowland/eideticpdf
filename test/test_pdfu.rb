@@ -16,8 +16,8 @@ class HeaderTestCases < Test::Unit::TestCase
   end
 
   def test_to_s
-    assert_equal('%PDF-1.3', @header.to_s)
-    assert_equal('%PDF-1.1', @header11.to_s)
+    assert_equal("%PDF-1.3\n", @header.to_s)
+    assert_equal("%PDF-1.1\n", @header11.to_s)
   end
 end
 

@@ -6,10 +6,11 @@
 module PdfU
   class Header
     VERSIONS = {
-      1.0 => '%PDF-1.0',
-      1.1 => '%PDF-1.1',
-      1.2 => '%PDF-1.2',
-      1.3 => '%PDF-1.3'
+      1.0 => "%PDF-1.0\n",
+      1.1 => "%PDF-1.1\n",
+      1.2 => "%PDF-1.2\n",
+      1.3 => "%PDF-1.3\n",
+      1.4 => "%PDF-1.4\n"
     }
 
     def initialize(version=1.3)
@@ -317,7 +318,7 @@ module PdfU
       @stream = (stream || '').dup
       dictionary['Length'] = PdfInteger.new(length)
     end
-    
+
     def length
       stream.length
     end
@@ -401,6 +402,10 @@ module PdfU
       @xref_table_size = size
       self['Size'] = PdfInteger.new(size)
     end
+    
+    def root=(root)
+      self['Root'] = root.reference_object
+    end
 
     def to_s
       s = "trailer\n"
@@ -417,7 +422,6 @@ module PdfU
     def initialize(x1, y1, x2, y2)
       super([x1, y1, x2, y2].map { |i| PdfInteger.new(i) })
       @x1, @y1, @x2, @y2 = x1, y1, x2, y2
-#      self << PdfInteger.new(x1) << PdfInteger.new(y1) << PdfInteger.new(x2) << PdfInteger.new(y2)
     end
   end
 
@@ -844,14 +848,15 @@ module PdfU
     end
 
     def to_s
-      x_ref_table = XRefTable.new
-      x_ref_sub_section = XRefSubSection.new
-      x_ref_table << x_ref_sub_section
+      xref_table = XRefTable.new
+      xref_sub_section = XRefSubSection.new
+      xref_table << xref_sub_section
 
       s = @header.to_s
-      @body.write_and_xref(s, x_ref_sub_section)
-      @trailer.x_ref_table_start = s.length
-      @trailer.x_ref_table_size = x_ref_sub_section
+      @body.write_and_xref(s, xref_sub_section)
+      @trailer.xref_table_start = s.length
+      @trailer.xref_table_size = xref_sub_section.size
+      s << xref_table.to_s
       s << @trailer.to_s
     end
   end
