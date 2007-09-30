@@ -286,9 +286,8 @@ class PdfFontTestCases < Test::Unit::TestCase
   def setup
     @widths = PdfArray.new([1, 3, 5, 7])
     @io_widths = IndirectObject.new(2, 0, @widths)
-    @io_widths_ref = @io_widths.reference_object
     @font_descriptor = make_font_descriptor
-    @font = PdfFont.new(1, 0, 'TrueType', 'ArialMT', 32, 169, @io_widths_ref, @font_descriptor.reference_object)
+    @font = PdfFont.new(1, 0, 'TrueType', 'ArialMT', 32, 169, @io_widths, @font_descriptor)
   end
 
   def test_to_s
@@ -603,7 +602,7 @@ class PdfPageBaseTestCases < Test::Unit::TestCase
 
   def test_resources=
     resources = PdfResources.new(3, 0)
-    @base.resources = resources.reference_object
+    @base.resources = resources
     assert_equal('3 0 R ', @base.dictionary['Resources'].to_s)
   end
 

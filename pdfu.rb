@@ -473,8 +473,8 @@ module PdfU
         dictionary['BaseFont'] = PdfName.new(base_font)
         dictionary['FirstChar'] = PdfInteger.new(first_char)
         dictionary['LastChar'] = PdfInteger.new(last_char)
-        dictionary['Widths'] = widths unless widths.nil?
-        dictionary['FontDescriptor'] = font_descriptor unless font_descriptor.nil?
+        dictionary['Widths'] = widths.reference_object unless widths.nil?
+        dictionary['FontDescriptor'] = font_descriptor.reference_object unless font_descriptor.nil?
     end
   end
 
@@ -732,7 +732,7 @@ module PdfU
 
     def resources=(resources)
       # resources: IndirectObjectRef
-      dictionary['Resources'] = resources
+      dictionary['Resources'] = resources.reference_object
     end
 
     def crop_box=(crop_box)
