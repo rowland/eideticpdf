@@ -229,11 +229,13 @@ end
 
 class PdfCatalogTestCases < Test::Unit::TestCase
   def setup
-    @cat = PdfCatalog.new(1,0) # xxx not finished here
+    @pages = PdfPages.new(1, 0)
+    @outlines = PdfOutlines.new(2, 0)
+    @cat = PdfCatalog.new(3, 0, :use_none, @pages, @outlines)
   end
 
   def test_to_s
-    assert_equal("1 0 obj\n<<\n/PageMode /UseNone \n/Type /Catalog \n>>\nendobj\n", @cat.to_s)
+    assert_equal("3 0 obj\n<<\n/Outlines 2 0 R \n/PageMode /UseNone \n/Pages 1 0 R \n/Type /Catalog \n>>\nendobj\n", @cat.to_s)
   end
 end
 
@@ -245,6 +247,7 @@ class TrailerTestCases < Test::Unit::TestCase
   end
 
   def test_xref_table_size
+    assert_equal(3, @trailer.xref_table_size)
     assert_equal(3, @trailer['Size'].value)
   end
 
@@ -709,5 +712,43 @@ class PdfPagesTestCases < Test::Unit::TestCase
   def test_to_s
     @pages.kids << @page
     assert_equal("1 0 obj\n<<\n/Kids [2 0 R ] \n/Type /Pages \n>>\nendobj\n", @pages.to_s)
+  end
+end
+
+class PdfOutlinesTestCases < Test::Unit::TestCase
+  def setup
+    @outlines = PdfOutlines.new(1, 0)
+  end
+
+  def test_initialize
+    assert_equal(PdfName.new('Outlines'), @outlines.dictionary['Type'])
+  end
+
+  def test_to_s
+    assert_equal("1 0 obj\n<<\n/Count 0 \n/Type /Outlines \n>>\nendobj\n", @outlines.to_s)
+  end
+end
+
+class PdfFileTestCases < Test::Unit::TestCase
+  def setup
+    @file = PdfFile.new
+  end
+
+  def test_initialize
+    assert_not_nil(@file.body)
+    assert_not_nil(@file.trailer)
+  end
+
+  def test_header
+    assert_equal('%PDF-1.3', @file.header.to_s)
+  end
+
+  def test_body
+  end
+
+  def test_trailer
+  end
+
+  def test_to_s
   end
 end

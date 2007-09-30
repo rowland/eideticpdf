@@ -393,42 +393,12 @@ module PdfU
     end
   end
 
-  # root object of a PDF document, with pointers to other top-level objects
-  class PdfCatalog < PdfDictionaryObject
-    attr_reader :page_mode, :pages, :outlines
-
-    def initialize(seq, gen, page_mode=:use_none, pages=nil, outlines=nil)
-      super(seq, gen)
-      dictionary['Type'] = PdfName.new('Catalog')
-      @page_mode  = page_mode
-      dictionary['PageMode'] = PdfName.new(PAGE_MODES[page_mode])
-      if pages
-        @pages = pages.indirect_object
-        dictionary['Pages'] = pages
-      end
-      if outlines
-        @outlines = outlines.indirect_object
-        dictionary['Outlines'] = outlines
-      end
-    end
-
-    def to_s
-      super
-    end
-
-    PAGE_MODES = {
-      :use_none => 'UseNone',
-      :use_outlines => 'UseOutlines',
-      :use_thumbs => 'UseThumbs',
-      :full_screen => 'FullScreen'
-    }.freeze
-  end
-
   class Trailer < PdfDictionary
     attr_accessor :xref_table_start
     attr_reader :xref_table_size
 
     def xref_table_size=(size)
+      @xref_table_size = size
       self['Size'] = PdfInteger.new(size)
     end
 
@@ -817,6 +787,72 @@ module PdfU
     def to_s
       dictionary['Kids'] = PdfArray.new(@kids.map { |page| page.reference_object })
       super
+    end
+  end
+
+  class PdfOutlines < PdfDictionaryObject
+    def initialize(seq, gen)
+      super(seq, gen)
+      dictionary['Type'] = PdfName.new('Outlines')
+    end
+
+    def to_s
+      dictionary['Count'] = PdfInteger.new(0)
+      super
+    end
+  end
+
+  # root object of a PDF document, with pointers to other top-level objects
+  class PdfCatalog < PdfDictionaryObject
+    attr_reader :page_mode, :pages, :outlines
+
+    def initialize(seq, gen, page_mode=:use_none, pages=nil, outlines=nil)
+      super(seq, gen)
+      dictionary['Type'] = PdfName.new('Catalog')
+      @page_mode  = page_mode
+      dictionary['PageMode'] = PdfName.new(PAGE_MODES[page_mode])
+      if pages
+        @pages = pages
+        dictionary['Pages'] = pages.reference_object
+      end
+      if outlines
+        @outlines = outlines
+        dictionary['Outlines'] = outlines.reference_object
+      end
+    end
+
+    def to_s
+      super
+    end
+
+    PAGE_MODES = {
+      :use_none => 'UseNone',
+      :use_outlines => 'UseOutlines',
+      :use_thumbs => 'UseThumbs',
+      :full_screen => 'FullScreen'
+    }.freeze
+  end
+
+  # root of object tree representing a PDF document
+  class PdfFile
+    attr_reader :header, :body, :trailer
+
+    def initialize
+      @header = Header.new
+      @body = Body.new
+      @trailer = Trailer.new
+    end
+
+    def to_s
+      x_ref_table = XRefTable.new
+      x_ref_sub_section = XRefSubSection.new
+      x_ref_table << x_ref_sub_section
+
+      s = @header.to_s
+      @body.write_and_xref(s, x_ref_sub_section)
+      @trailer.x_ref_table_start = s.length
+      @trailer.x_ref_table_size = x_ref_sub_section
+      s << @trailer.to_s
     end
   end
 end
