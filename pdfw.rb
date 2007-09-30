@@ -10,6 +10,10 @@ module PdfW
 
   Location = Struct.new(:x, :y)
 
+  def to_points(units, measurement)
+    UNIT_CONVERSION[units] * measurement
+  end
+
   def convert_units(loc, from_units, to_units)
     Location.new(
       loc.x * UNIT_CONVERSION[from_units] / UNIT_CONVERSION[to_units],
@@ -327,9 +331,21 @@ module PdfW
     end
 
     def start_graph
+      raise Exception.new("Already in graph") if @in_graph
+      end_text if @in_text
+      @last_loc = Location.new(0, 0)
+      @gw = GraphWriter.new(@stream)
+      @in_graph = true
     end
 
     def end_graph
+      raise Exception.new("Not in graph") unless @in_graph
+      if @in_path
+        @gw.stroke
+        @in_path = false
+      end
+      @gw = nil
+      @in_graph = false
     end
 
     def start_misc
@@ -341,9 +357,11 @@ module PdfW
     attr_reader :tw, :gw
 
     def page_width
+      @page_width / UNIT_CONVERSION[@units]
     end
 
     def page_height
+      @page_height / UNIT_CONVERSION[@units]
     end
 
     # color methods
@@ -356,6 +374,12 @@ module PdfW
     def check_set_font_color
     end
 
+    def check_set_line_dash_pattern
+    end
+
+    def check_set_line_width
+    end
+
   public
     attr_reader :doc, :units
     attr_reader :stream, :annotations
@@ -364,6 +388,7 @@ module PdfW
       # doc: PdfDocumentWriter
       @doc = doc
       @page_style = PageStyle.new(options)
+      @loc = Location.new(0, 0)
       @units = options[:units] || :pt
       @page_width = @page_style.page_size.x2
       @page_height = @page_style.page_size.y2
@@ -402,6 +427,7 @@ module PdfW
     end
 
     def move_to(x, y)
+      @loc = Location.new(x, page_height - y)
     end
 
     def pen_pos
@@ -409,6 +435,21 @@ module PdfW
 
     # graphics methods
     def line_to(x, y)
+      start_graph unless @in_graph
+      unless @last_loc != @loc
+        @gw.stroke if @in_path
+        @in_path = false
+      end
+
+      check_set_line_color
+      check_set_line_width
+      check_set_line_dash_pattern
+      
+      @gw.move_to(to_points(@units, @loc.x), to_points(@units, @loc.y)) unless @in_path
+      move_to(x, y)
+      @gw.line_to(to_points(@units, @loc.x), to_points(@units, @loc.y))
+      @in_path = true
+      @last_loc = @loc
     end
 
     def rectangle(x, y, width, height, border=true, fill=false)
@@ -753,12 +794,6 @@ module PdfW
     end
 
     def make_font_descriptor(font_name)
-    end
-
-    def check_set_line_dash_pattern
-    end
-
-    def check_set_line_width
     end
   end
 end
