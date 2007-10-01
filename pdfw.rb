@@ -453,6 +453,30 @@ module PdfW
     end
 
     def rectangle(x, y, width, height, border=true, fill=false)
+      start_graph unless @in_graph
+      @gw.stroke if @in_path
+
+      check_set_line_color
+      check_set_line_width
+      check_set_line_dash_pattern
+      check_set_fill_color
+      
+      @gw.rectangle(
+          to_points(@units, x),
+          @page_height - to_points(@units, y + height),
+          to_points(@units, width),
+          to_points(@units, height))
+
+      if (border and fill)
+        @gw.fill_and_stroke
+      elsif border then
+        @gw.stroke
+      elsif fill then
+        @gw.fill
+      end
+
+      @in_path = false
+      move_to(x + width, y)
     end
 
     def curve(x0, y0, x1, y1, x2, y2, x3, y3)
