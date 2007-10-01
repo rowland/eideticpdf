@@ -20,6 +20,35 @@ module PdfW
       loc.y * UNIT_CONVERSION[from_units] / UNIT_CONVERSION[to_units])
   end
 
+  Signs = Struct.new(:x, :y)
+
+  SIGNS = [ Signs.new(1, -1), Signs.new(-1, -1), Signs.new(-1, 1), Signs.new(1, 1) ]
+
+  def get_quadrant_bezier_points(quadrant, x, y, r)
+    a = 4.0 / 3.0 * (Math.sqrt(2) - 1.0)
+    bp = []
+    if (quadrant % 2 == 1) # quadrant is odd
+      # (1,0)
+      bp << Location.new(x + (r * SIGNS[quadrant - 1].x), y)
+      # (1,a)
+      bp << Location.new(bp[0].x, y + (a * r * SIGNS[quadrant - 1].y))
+      # (a,1)
+      bp << Location.new(x + (a * r * SIGNS[quadrant - 1].x), y + (r * SIGNS[quadrant - 1].y))
+      # (0,1)
+      bp << Location.new(x, bp[2].y)
+    else # quadrant is even
+      # (0,1)
+      bp << Location.new(x, y + (r * SIGNS[quadrant - 1].y))
+      # (a,1)
+      bp << Location.new(x + (a * r * SIGNS[quadrant - 1].x), bp[0].y)
+      # (1,a)
+      bp << Location.new(x + (r * SIGNS[quadrant - 1].x), y + (a * r * SIGNS[quadrant - 1].y))
+      # (1,0)
+      bp << Location.new(bp[2].x, y)
+    end
+    bp
+  end
+
   def f(value, prec=2)
     sprintf("%.*f", prec, value).sub(',','.')
   end
@@ -483,12 +512,56 @@ module PdfW
     end
 
     def curve_points(points)
+      raise Exception.new("Need at least 4 points for curve") if points.size < 4
+      start_graph unless @in_graph
+      move_to(points[0].x, points[0].y)
+      unless @last_loc == @loc
+        if @in_path
+          @gw.stroke
+          @in_path = false
+        end
+      end
+      
+      check_set_line_color
+      check_set_line_width
+      check_set_line_dash_pattern
+      
+      @gw.move_to(to_points(@units, @loc.x), to_points(@units, @loc.y)) unless @in_path
+      i = 1
+      while i + 2 < points.size
+        @gw.curve_to(
+          to_points(@units, points[i].x),
+          @page_height - to_points(@units, points[i].y),
+          to_points(@units, points[i+1].x),
+          @page_height - to_points(@units, points[i+1].y),
+          to_points(@units, points[i+2].x),
+          @page_height - to_points(@units, points[i+2].y)
+        )
+        move_to(points[i+2].x, points[i+2].y)
+        @last_loc = @loc
+        i += 3
+      end
+      @in_path = true
     end
 
     def curve_to(points)
     end
 
     def circle(x, y, r, border=true, fill=false)
+      1.upto(4) do |q|
+        bp = get_quadrant_bezier_points(q,x,y,r)
+        curve_points(bp)
+      end
+      check_set_fill_color
+      if (border and fill)
+        @gw.fill_and_stroke
+      elsif border
+        @gw.stroke
+      elsif fill
+        @gw.fill
+      end
+
+      @in_path = false
     end
 
     def arc(x, y, r, start_angle, end_angle, move_to0=false)
