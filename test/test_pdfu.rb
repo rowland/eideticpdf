@@ -541,11 +541,11 @@ class PdfTextAnnotTestCases < Test::Unit::TestCase
   end
 end
 
-class PdfLinkAnnotTestCases < Test::Unit::TestCase
-end
+#class PdfLinkAnnotTestCases < Test::Unit::TestCase
+#end
 
-class PdfMovieAnnotTestCases < Test::Unit::TestCase
-end
+#class PdfMovieAnnotTestCases < Test::Unit::TestCase
+#end
 
 class PdfSoundAnnotTestCases < Test::Unit::TestCase
   def test_initialize
@@ -557,11 +557,11 @@ class PdfSoundAnnotTestCases < Test::Unit::TestCase
   end
 end
 
-class PdfURIActionTestCases < Test::Unit::TestCase
-end
+#class PdfURIActionTestCases < Test::Unit::TestCase
+#end
 
-class PdfAnnotBorderTestCases < Test::Unit::TestCase
-end
+#class PdfAnnotBorderTestCases < Test::Unit::TestCase
+#end
 
 class PdfResourcesTestCases < Test::Unit::TestCase
   def setup
@@ -740,15 +740,18 @@ class PdfFileTestCases < Test::Unit::TestCase
   end
 
   def test_header
-    assert_equal('%PDF-1.3', @file.header.to_s)
+    assert_equal("%PDF-1.3\n", @file.header.to_s)
   end
 
   def test_body
+    assert_equal("", @file.body.to_s)
   end
 
   def test_trailer
+    assert_equal("trailer\n<<\n>>\nstartxref\n\n%%EOF\n", @file.trailer.to_s)
   end
 
   def test_to_s
+    assert_equal("%PDF-1.3\nxref\n0 1\n0000000000 65535 f\ntrailer\n<<\n/Size 1 \n>>\nstartxref\n9\n%%EOF\n", @file.to_s)
   end
 end
