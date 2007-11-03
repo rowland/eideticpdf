@@ -881,12 +881,7 @@ module PdfW
   protected
     def define_resources
       @resources = PdfU::PdfResources.new(next_seq, 0)
-      @resources.proc_set = PdfU::PdfArray.new [
-        PdfU::PdfName.new('PDF'),
-        PdfU::PdfName.new('Text'),
-        PdfU::PdfName.new('ImageB'),
-        PdfU::PdfName.new('ImageC')
-      ]
+      @resources.proc_set = PdfU::PdfName.ary ['PDF','Text','ImageB','ImageC']
       @file.body << @resources
     end
 
