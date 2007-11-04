@@ -307,6 +307,11 @@ class PdfFontTestCases < Test::Unit::TestCase
       "endobj\n"
     assert_equal(expected, @font.to_s)
   end
+  
+  def test_encoding=
+    @font.encoding = 'WinAnsiEncoding'
+    assert_equal(PdfName.new('WinAnsiEncoding'), @font.dictionary['Encoding'])
+  end
 end
 
 class PdfFontDescriptorTestCases < Test::Unit::TestCase

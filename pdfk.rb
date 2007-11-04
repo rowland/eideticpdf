@@ -4,6 +4,7 @@
 #  Copyright (c) 2007, Eidetic Software. All rights reserved.
 
 module PdfK
+  FontMetrics = Struct.new(:widths, :ascent, :descent)
   NUM_BASE_FONTS = 41
   NUM_ASIAN_FONTS = 7
   NUM_FONTS = NUM_BASE_FONTS + NUM_ASIAN_FONTS
@@ -1117,7 +1118,8 @@ module PdfK
       722,  722,  556,  500,  523,  523,  523,  523,  523,  523, # 220 
       644,  523,  523,  523,  523,  523,  241,  241,  241,  241, # 230 
       523,  523,  523,  523,  523,  523,  523,  564,  523,  523, # 240 
-      523,  523,  523,  523,  523,  523]]                        # 250 
+      523,  523,  523,  523,  523,  523]                         # 250 
+  ]
 
   FONT_ASCENDERS = [
     718, 718, 718, 718, 683, 676, 683, 699, 629, 626,
@@ -1135,7 +1137,8 @@ module PdfK
     880, # 45 MHei-Medium
     880, # 46 MSung-Light
     # Chinese Simplified
-    880] # 47 STSong-Light
+    880 # 47 STSong-Light
+  ]
 
   FONT_CAP_HEIGHTS = [
     718, 718, 718, 718, 662, 676, 653, 669,
@@ -1154,7 +1157,8 @@ module PdfK
     880, # 45 MHei-Medium
     880, # 46 MSung-Light
     # Chinese Simplified 
-    880] # 47 STSong-Light
+    880  # 47 STSong-Light
+  ]
 
   FONT_DESCENDERS = [
     -207, -207, -207, -207, -217, -205, -205, -205,
@@ -1173,7 +1177,8 @@ module PdfK
     -120, # 45 MHei-Medium
     -120, # 46 MSung-Light
     # Chinese Simplified
-    -120] # 47 STSong-Light
+    -120  # 47 STSong-Light
+  ] 
 
   FONT_FLAGS = [
     32,		# Helvetica 
@@ -1228,7 +1233,8 @@ module PdfK
     4,	# 45 MHei-Medium 
     6,	# 46 MSung-Light 
     # Chinese Simplified 
-    6]	# 47 STSong-Light
+    6 	# 47 STSong-Light
+  ]
 
   FONT_BBOXES = [
     [ -166, -225, 1000, 931 ],
@@ -1282,7 +1288,8 @@ module PdfK
     [ -45, -250, 1015, 887 ],	  # 45 MHei-Medium 
     [ -160, -249, 1015, 888 ],	# 46 MSung-Light
     # Chinese Simplified
-    [ -25, -254, 1000, 880 ]]	  # 47 STSong-Light
+    [ -25, -254, 1000, 880 ]	  # 47 STSong-Light
+  ]
 
 # PDF Spec v1.2 specifies ItalicAngle to be integer, but Adobe's own Distiller
 # puts float values into PDF.  So, we keep this as float too, because some fonts
@@ -1340,7 +1347,8 @@ module PdfK
       0,	# 45 MHei-Medium
       0,	# 46 MSung-Light
     # Chinese Simplified
-      0]	# 47 STSong-Light
+      0 	# 47 STSong-Light
+  ]
 
 # (Required) The width of vertical stems in characters.
   FONT_STEM_VS = [
@@ -1396,7 +1404,8 @@ module PdfK
     93,	  # 45 MHei-Medium 
     93,	  # 46 MSung-Light 
     # Chinese Simplified
-    93]   # 47 STSong-Light
+    93   # 47 STSong-Light
+  ]
 
   FONT_X_HEIGHTS = [
     523,
@@ -1450,9 +1459,10 @@ module PdfK
     616,	# 45 MHei-Medium 
     616,	# 46 MSung-Light 
     # Chinese Simplified 
-    616]	# 47 STSong-Light
+    616 	# 47 STSong-Light
+  ]
 
-# ==== Stuff for CIDFontType2 only ===============================
+# Stuff for CIDFontType2 only
 
   FONT_MISSING_WIDTHS = [
     0,	# 0  Helvetica
@@ -1509,8 +1519,8 @@ module PdfK
     500,	# 45 MHei-Medium 
     500,	# 46 MSung-Light 
     # Chinese Simplified 
-    500]	# 47 STSong-Light
-
+    500	# 47 STSong-Light
+  ]
 
   FONT_STEM_HS = [
     0,	# 0  Helvetica
@@ -1567,7 +1577,8 @@ module PdfK
     93,	# 45 MHei-Medium
     93,	# 46 MSung-Light 
     # Chinese Simplified 
-    93] # 47 STSong-Light
+    93 # 47 STSong-Light
+  ]
 
   FONT_LEADINGS = [
     0,	# 0  Helvetica
@@ -1624,8 +1635,8 @@ module PdfK
     250,	# 45 MHei-Medium 
     250,	# 46 MSung-Light 
     # Chinese Simplified 
-    250]	# 47 STSong-Light
-
+    250	# 47 STSong-Light
+  ]
 
   FONT_MAX_WIDTHS = [
     0,	# 0  Helvetica
@@ -1682,7 +1693,8 @@ module PdfK
     1000,	# 45 MHei-Medium 
     1000,	# 46 MSung-Light 
     # Chinese Simplified
-    1000]	# 47 STSong-Light
+    1000	# 47 STSong-Light
+  ]
 
   FONT_AVG_WIDTHS = [
     0,	# 0  Helvetica
@@ -1739,7 +1751,8 @@ module PdfK
     1000,	# 45 MHei-Medium 
     1000,	# 46 MSung-Light 
     # Chinese Simplified 
-    1000]	# 47 STSong-Light
+    1000	# 47 STSong-Light
+  ]
 
 # for /W array in /DescendantFonts spec
   CID_FONT_WIDTHS = [
@@ -1796,7 +1809,8 @@ module PdfK
     '[ 1 95 500 13648 13742 500 ]',	# 45 MHei-Medium - OK 
     '[ 1 95 500 13648 13742 500 ]',	# 46 MSung-Light - OK 
     # Chinese Simplified 
-    '[ 1 95 500 814 939 500 7712 [ 500 ] 7716 [ 500 ] ]'] # 47 STSong-Light - OK
+    '[ 1 95 500 814 939 500 7712 [ 500 ] 7716 [ 500 ] ]' # 47 STSong-Light - OK
+  ]
 
 # for /CIDSystemInfo << >>
   CID_SYS_INFO = [
@@ -1854,7 +1868,7 @@ module PdfK
     '/Registry (Adobe) /Ordering (CNS1) /Supplement 0',	# 46 MSung-Light 
     # Chinese Simplified 
     '/Registry (Adobe) /Ordering (GB1) /Supplement 2'	# 47 STSong-Light
-    ]
+  ]
 
 # Currently contains only /Panose <....>  for font descripter in CJK fonts
   FONT_STYLE_LIST = [
@@ -1917,7 +1931,7 @@ module PdfK
     '/Panose <010502020400000000000000>',	# 46 MSung-Light
     # Chinese Simplified
     '/Panose <010502020400000000000000>'	# 47 STSong-Light
-    ]
+  ]
 
   GLYPHS = {
     0x0041 => 'A',
@@ -3021,10 +3035,18 @@ module PdfK
     'Helvetica-Condensed-Oblique',
     'Helvetica-Condensed-BoldObl',
     'CPDF-Monospace',
-    'CPDF-SmallCap']
+    'CPDF-SmallCap'
+  ]
 
+module_function
   def font_index(font_name)
     FONT_NAMES.index(font_name)
+  end
+
+  def font_metrics(font_name)
+    index = font_index(font_name)
+    raise Exception.new("Unknown font #{font_name}.") unless index
+    FontMetrics.new(FONT_WIDTHS[index], FONT_ASCENDERS[index], FONT_DESCENDERS[index])
   end
 
   def glyph_name(codepoint)

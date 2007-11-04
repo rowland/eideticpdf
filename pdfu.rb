@@ -427,7 +427,7 @@ module PdfU
 
   # defines Type1, TrueType, etc font
   class PdfFont <  PdfDictionaryObject
-    def enoding=(encoding)
+    def encoding=(encoding)
       encoding = PdfName.new(encoding) if encoding.is_a?(String)
       dictionary['Encoding'] = encoding
     end
@@ -442,13 +442,17 @@ module PdfU
 
     def initialize(seq, gen, sub_type, base_font, first_char, last_char, widths, font_descriptor)
       super(seq, gen)
-        dictionary['Type'] = PdfName.new('Font')
-        dictionary['Subtype'] = PdfName.new(sub_type)
-        dictionary['BaseFont'] = PdfName.new(base_font)
-        dictionary['FirstChar'] = PdfInteger.new(first_char)
-        dictionary['LastChar'] = PdfInteger.new(last_char)
-        dictionary['Widths'] = widths.reference_object unless widths.nil?
-        dictionary['FontDescriptor'] = font_descriptor.reference_object unless font_descriptor.nil?
+      dictionary['Type'] = PdfName.new('Font')
+      dictionary['Subtype'] = PdfName.new(sub_type)
+      dictionary['BaseFont'] = PdfName.new(base_font)
+      dictionary['FirstChar'] = PdfInteger.new(first_char)
+      dictionary['LastChar'] = PdfInteger.new(last_char)
+      dictionary['Widths'] = widths.reference_object unless widths.nil?
+      dictionary['FontDescriptor'] = font_descriptor.reference_object unless font_descriptor.nil?
+    end
+    
+    def self.standard_encoding?(encoding)
+      ['WinAnsiEncoding','StandardEncoding','MacRomanEncoding','MacExpertEncoding'].include?(encoding)
     end
   end
 
@@ -679,7 +683,7 @@ module PdfU
       # pdf_object: PdfArray or IndirectObjectRef
       dictionary['ProcSet'] = pdf_object
     end
-    
+
     def fonts
       @fonts ||= PdfDictionary.new
       dictionary['Font'] ||= @fonts
@@ -789,6 +793,7 @@ module PdfU
     end
 
     def to_s
+      dictionary['Count'] = PdfInteger.new(@kids.size)
       dictionary['Kids'] = PdfArray.new(@kids.map { |page| page.reference_object })
       super
     end

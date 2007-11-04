@@ -344,7 +344,7 @@ class MiscWriterTestCases < Test::Unit::TestCase
 
     def test_set_rise
       @writer.set_rise(0)
-      assert_equal("0 Ts", @stream)
+      assert_equal("0 Ts\n", @stream)
     end
 
     def test_move_by

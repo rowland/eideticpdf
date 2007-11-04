@@ -4,6 +4,7 @@
 #  Copyright (c) 2007, Eidetic Software. All rights reserved.
 
 require 'pdfu'
+require 'pdfk'
 
 module PdfW
   UNIT_CONVERSION = { :pt => 1, :in => 72, :cm => 28.35 }
@@ -57,6 +58,12 @@ module PdfW
     # prec must be >= 1 or gsub will strip significant trailing 0's.
     sprintf("%.*f", prec, value).sub(',','.').gsub(/\.?0*$/,'')
   end
+  
+  def radians_from_degrees(degrees)
+    degrees * Math::PI / 180.0
+  end
+
+  Font = Struct.new(:name, :size, :style, :color, :encoding, :sub_type, :widths, :ascent, :descent, :height)
 
   class PageStyle
     attr_reader :page_size, :crop_size, :orientation, :landscape, :rotate
@@ -308,7 +315,7 @@ module PdfW
     end
 
     def set_rise(rise)
-      @stream << "%s Ts" % g(rise)
+      @stream << "%s Ts\n" % g(rise)
     end
 
     def move_by(tx, ty)
@@ -350,13 +357,28 @@ module PdfW
     end
 
     def set_text_angle(angle, x, y)
+      theta = radians_from_degrees(angle)
+      v_cos = Math::cos(theta)
+      v_sin = Math::sin(theta)
+      @tw.set_matrix(v_cos, v_sin, -v_sin, v_cos, to_points(@units, x), to_points(@units, y))
+      @text_angle = angle
     end
 
   protected
     def start_text
+      raise Exception.new("Already in text.") if @in_text
+      raise Exception.new("Not in page.") unless @doc.in_page
+      end_graph if @in_graph
+      @last_loc = Location.new(0, 0)
+      @tw = TextWriter.new(@stream)
+      @tw.open
+      @in_text = true
     end
 
     def end_text
+      raise Exception.new("Not in text.") unless @in_text
+      @tw.close
+      @in_text = false
     end
 
     def start_graph
@@ -397,6 +419,26 @@ module PdfW
     def check_set_line_color
     end
 
+    def check_set_v_text_align(force=false)
+      if force or @last_v_text_align != @v_text_align
+        if @v_text_align == :top
+          @tw.set_rise(-@font.height * 0.001 * @font.size)
+        else
+          @tw.set_rise(0.0)
+        end
+        @last_v_text_align = @v_text_align
+      end
+    end
+
+    def check_set_font
+      if (@last_page_font != @page_font) or (@last_font != @font)
+        @tw.set_font_and_size(@page_font, @font.size)
+        check_set_v_text_align(true)
+        @last_page_font = @page_font
+        @last_font = @font
+      end
+    end
+
     def check_set_fill_color
     end
 
@@ -412,6 +454,7 @@ module PdfW
   public
     attr_reader :doc, :units
     attr_reader :stream, :annotations
+    attr_accessor :v_text_align
 
     def initialize(doc, options)
       # doc: PdfDocumentWriter
@@ -429,6 +472,7 @@ module PdfW
       @doc.file.body << @page
       @stream = ''
       @annotations = []
+      @char_spacing = @word_spacing = 0.0
       start_misc
     end
 
@@ -608,10 +652,35 @@ module PdfW
     end
 
     # text methods
-    def print(text, angle=0.0)
+    def print(text, options={})
+      return if text.empty?
+      angle = options[:angle] || 0.0
+      raise Exception.new("No font set.") unless @font
+      start_text unless @in_text
+      if (@text_angle != angle) or (angle != 0.0)
+        set_text_angle(angle, @loc.x, @loc.y)
+      elsif @loc != @last_loc
+        @tw.move_by(to_points(@units, @loc.x - @last_loc.x), to_points(@units, @loc.y - @last_loc.y))
+      end
+      check_set_font
+      check_set_font_color
+      check_set_v_text_align
+
+      @tw.show(text)
+      @last_loc = @loc
+      if angle == 0.0
+        @loc.x += width(text)
+      else
+        ds = width(s)
+        rad_angle = radians_from_degrees(angle)
+        @loc.y += Math::sin(rad_angle) * ds
+        @loc.x += Math::cos(rad_angle) * ds
+      end
     end
 
-    def print_xy(x, y, text, angle=0.0)
+    def print_xy(x, y, text, options={})
+      move_to(x, y)
+      print(text, options)
     end
 
     def puts(text='')
@@ -621,6 +690,10 @@ module PdfW
     end
 
     def width(text)
+      result = 0.0
+      fsize = @font.size * 0.001
+      text.each_byte { |b| result += fsize * @font.widths[b] + @char_spacing; result += @word_spacing if b == 32 }
+      (result - @char_spacing) / UNIT_CONVERSION[@units]
     end
 
     def height # may not include external leading?
@@ -631,10 +704,41 @@ module PdfW
 
     # font methods
     def set_font(name, size, options = {})
-      style = options[:style] || ''
-      color = options[:color]
-      encoding = options[:encoding] || 'WinAnsiEncoding'
-      sub_type = options[:sub_type] || 'Type1'
+      @font = Font.new
+      @font.name = name
+      @font.size = size
+      @font.style = options[:style] || ''
+      @font.color = options[:color]
+      @font.encoding = options[:encoding] || 'WinAnsiEncoding'
+      @font.sub_type = options[:sub_type] || 'Type1'
+      punc = (@font.sub_type == 'TrueType') ? ',' : '-'
+      full_name = name.gsub(' ','')
+      full_name << punc << @font.style unless @font.style.empty?
+      font_key = "#{full_name}/#{@font.encoding}-#{@font.sub_type}"
+      @page_font = @doc.fonts[font_key]
+      if @font.sub_type == 'Type1'
+        metrics = PdfK::font_metrics(full_name)
+        @font.widths = metrics.widths
+        @font.ascent = metrics.ascent
+        @font.descent = metrics.descent
+        @font.height = @font.ascent + @font.descent.abs
+      else
+        raise Exception.new("Unsupported subtype #{@font.sub_type}.")
+      end
+      unless @page_font
+        widths = nil
+        descriptor = nil
+        @page_font = "F#{@doc.fonts.size}"
+        f = PdfU::PdfFont.new(@doc.next_seq, 0, @font.sub_type, full_name, 0, 255, widths, descriptor)
+        @doc.file.body << f
+        if PdfU::PdfFont.standard_encoding?(@font.encoding)
+          f.encoding = @font.encoding
+        else
+          raise Exception.new("Unsupported encoding #{@font.encoding}")
+        end
+        @doc.resources.fonts[@page_font] = f.reference_object
+        @doc.fonts[font_key] = @page_font
+      end
     end
 
     def set_font_style(style)
@@ -664,6 +768,8 @@ module PdfW
 
     attr_reader :cur_page, :pages
     attr_reader :catalog, :file, :resources
+    attr_reader :fonts, :images, :encodings
+    attr_reader :in_page
 
     # instantiation
     def initialize
@@ -718,6 +824,8 @@ module PdfW
     end
 
     def new_page(options={})
+      end_page
+      start_page(options)
     end
     
     # coordinate methods
@@ -820,12 +928,12 @@ module PdfW
     end
 
     # text methods
-    def print(text, angle=0.0)
-      cur_page.print(text, angle)
+    def print(text, options={})
+      cur_page.print(text, options)
     end
 
-    def print_xy(x, y, text, angle=0.0)
-      cur_page.print_xy(x, y, text, angle)
+    def print_xy(x, y, text, options={})
+      cur_page.print_xy(x, y, text, options)
     end
 
     def puts(text='')
