@@ -522,7 +522,7 @@ module PdfW
       move_to(x, y)
       @gw.line_to(to_points(@units, @loc.x), to_points(@units, @loc.y))
       @in_path = true
-      @last_loc = @loc
+      @last_loc = @loc.clone
     end
 
     def rectangle(x, y, width, height, border=true, fill=false)
@@ -582,7 +582,7 @@ module PdfW
           @page_height - to_points(@units, points[i+2].y)
         )
         move_to(points[i+2].x, points[i+2].y)
-        @last_loc = @loc
+        @last_loc = @loc.clone
         i += 3
       end
       @in_path = true
@@ -667,7 +667,7 @@ module PdfW
       check_set_v_text_align
 
       @tw.show(text)
-      @last_loc = @loc
+      @last_loc = @loc.clone
       if angle == 0.0
         @loc.x += width(text)
       else
@@ -684,6 +684,9 @@ module PdfW
     end
 
     def puts(text='')
+      save_loc = @loc.clone
+      print(text)
+      @loc = Location.new(save_loc.x, save_loc.y - height)
     end
 
     def puts_xy(x, y, text)
@@ -697,6 +700,7 @@ module PdfW
     end
 
     def height # may not include external leading?
+      0.001 * @font.height * @font.size / UNIT_CONVERSION[@units]
     end
 
     def set_v_text_align(vta)
