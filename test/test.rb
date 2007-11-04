@@ -20,13 +20,19 @@ docw.line_to(1, 1)
 docw.rectangle(2, 2, 4.5, 7)
 # test circle
 docw.circle(4.25, 5.5, 3.25)
-docw.end_page
-docw.start_page(:units => :in)
+docw.new_page(:units => :cm)
 docw.move_to(1, 1)
 docw.set_font("Helvetica", 12)
 docw.print("Hello, World!")
+docw.new_page(:units => :cm)
+docw.move_to(1, 1)
+PdfK::FONT_NAMES.each do |font_name|
+  docw.set_font(font_name, 12)
+  docw.puts(font_name)
+end
 docw.end_page
 docw.end_doc
 
 File.open("test.pdf","w") { |f| f.write(docw) }
-print docw
+`open test.pdf`
+#print docw

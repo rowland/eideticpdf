@@ -731,7 +731,18 @@ module PdfW
       end
       unless @page_font
         widths = nil
-        descriptor = nil
+        if metrics.needs_descriptor
+          descriptor = PdfU::PdfFontDescriptor.new(@doc.next_seq, 0, full_name, metrics.flags, metrics.b_box, 
+            metrics.missing_width, metrics.stem_v, metrics.stem_h, metrics.italic_angle,
+            metrics.cap_height, metrics.x_height, metrics.ascent, metrics.descent, metrics.leading,
+            metrics.max_width, metrics.avg_width)
+          @doc.file.body << descriptor
+          widths = PdfU::IndirectObject.new(@doc.next_seq, 0, PdfU::PdfInteger.ary(metrics.widths))
+          @doc.file.body << widths
+        else
+          descriptor = nil
+          widths = nil
+        end
         @page_font = "F#{@doc.fonts.size}"
         f = PdfU::PdfFont.new(@doc.next_seq, 0, @font.sub_type, full_name, 0, 255, widths, descriptor)
         @doc.file.body << f
