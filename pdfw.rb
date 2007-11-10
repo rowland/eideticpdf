@@ -674,7 +674,7 @@ module PdfW
       if angle == 0.0
         @loc.x += width(text)
       else
-        ds = width(s)
+        ds = width(text)
         rad_angle = radians_from_degrees(angle)
         @loc.y += Math::sin(rad_angle) * ds
         @loc.x += Math::cos(rad_angle) * ds

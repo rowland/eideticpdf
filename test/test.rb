@@ -69,16 +69,34 @@ def print_text(w)
   w.move_to(1, 1)
   w.set_font("Helvetica", 12)
   w.print("Print Text")
+  
+  # test vertical text alignment
   w.move_to(1, 3); w.line_to(9,3)
   w.v_text_align = :bottom
   w.move_to(1, 3); w.print("Text above the line.")
   w.v_text_align = :top
   w.move_to(5, 3); w.print("Text below the line.")
+  
+  # test angled text display
+  
   w.end_page
+end
+
+def print_angled_text(w)
+  w.page(:units => :in) do |p|
+    p.set_font("Helvetica", 12)
+    angle = 0
+    while angle < 360
+      p.move_to(4.25, 5.5)
+      p.print("     Text at #{angle} degrees", :angle => angle)
+      angle += 45
+    end
+  end
 end
 
 docw = PdfDocumentWriter.new
 docw.doc do |w|
+  print_angled_text(w)
   print_text(w)
   circles_and_rectangles(w)
   cm_grid(w)
