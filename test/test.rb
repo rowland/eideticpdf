@@ -7,53 +7,76 @@ $: << File.dirname(__FILE__) + '/../'
 require 'pdfw'
 include PdfW
 
-def inch_lines(w)
-  w.start_page(:units => :in)
-  w.set_font("Courier", 10)
-  w.print_xy(0.25, 0.25, "Inch Squares")
+def grid(w, width, height, xoff, yoff, step=1)
   # vertical lines
-  0.upto(8) do |x|
-    puts "w.move_to(#{x + 0.25}, #{0.5})"
-    w.move_to(x + 0.25, 0.5)
-    puts "w.line_to(#{x + 0.25}, #{10.5})"
-    w.line_to(x + 0.25, 10.5)
+  0.step(width, step) do |x|
+    w.move_to(x + xoff, yoff)
+    w.line_to(x + xoff, height + yoff)
   end
   # horizontal lines
-  0.upto(10) do |y|
-    "w.move_to(#{0.25}, #{y + 0.5})"
-    w.move_to(0.25, y + 0.5)
-    "w.line_to(#{8.25}, #{y + 0.5})"
-    w.line_to(8.25, y + 0.5)
+  0.step(height, step) do |y|
+    w.move_to(xoff, y + yoff)
+    w.line_to(width + xoff, y + yoff)
   end
+end
+
+def inch_grid(w, width=8, height=10, xoff=0.25, yoff=0.5)
+  w.page(:units => :in) do |p|
+    p.set_font("Helvetica", 10)
+    p.print_xy(0.25, 0.25, "Inch Squares")
+    grid(p, width, height, xoff, yoff)
+  end
+end
+
+def cm_grid(w, width=20, height=26, xoff=0.75, yoff=1)
+  w.page(:units => :cm) do |p|
+    p.set_font("Helvetica", 10)
+    p.print_xy(0.5, 0.5, "Centimeter Squares")
+    grid(p, width, height, xoff, yoff)
+  end
+end
+
+def dp_grid(w, width=8000, height=10000, xoff=250, yoff=500)
+  # set custom point scale
+  PdfW::UNIT_CONVERSION[:dp] = 0.072
+  w.start_page(:units => :dp)
+  w.set_font("Helvetica", 10)
+  w.print_xy(250, 250, "Dave Points Squares")
+  grid(w, width, height, xoff, yoff, 1000)
   w.end_page
 end
 
-docw = PdfDocumentWriter.new
-docw.begin_doc
-inch_lines(docw)
-docw.start_page(:units => :in)
-# test move_to and line_to
-docw.move_to(1, 1)
-docw.line_to(7.5, 1)
-docw.line_to(7.5, 10)
-docw.line_to(1, 10)
-docw.line_to(1, 1)
-# test rectangle
-docw.rectangle(2, 2, 4.5, 7)
-# test circle
-docw.circle(4.25, 5.5, 3.25)
-docw.new_page(:units => :cm)
-docw.move_to(1, 1)
-docw.set_font("Helvetica", 12)
-docw.print("Hello, World!")
-docw.new_page(:units => :cm)
-docw.move_to(1, 1)
-PdfK::FONT_NAMES.each do |font_name|
-  docw.set_font(font_name, 12)
-  docw.puts(font_name)
+def circles_and_rectangles(w)
+  w.start_page(:units => :in)
+  w.rectangle(1, 1, 6.5, 9)
+  w.rectangle(2, 2, 4.5, 7)
+  w.circle(4.25, 5.5, 3.25)
+  w.end_page
 end
-docw.end_page
-docw.end_doc
+
+def font_names(w)
+  w.page(:units => :cm) do |p|
+    p.move_to(1, 1)
+    PdfK::FONT_NAMES.each do |font_name|
+      p.set_font(font_name, 12)
+      p.puts(font_name)
+    end
+  end
+end
+
+docw = PdfDocumentWriter.new
+docw.doc do |w|
+  circles_and_rectangles(w)
+  cm_grid(w)
+  inch_grid(w)
+  dp_grid(w)
+  font_names(w)
+
+  w.start_page(:units => :cm)
+  w.move_to(1, 1)
+  w.set_font("Helvetica", 12)
+  w.print("Print Text")
+end
 
 File.open("test.pdf","w") { |f| f.write(docw) }
 `open test.pdf`

@@ -820,7 +820,14 @@ module PdfW
     end
 
     def end_doc
+      end_page if @in_page
       @pages.each { |page| page.close unless page.closed? }
+    end
+    
+    def doc(options={})
+      begin_doc(options)
+      yield(self)
+      end_doc
     end
 
     # page methods
@@ -829,6 +836,7 @@ module PdfW
       @cur_page = PdfPageWriter.new(self, @options.clone.update(options))
       @pages << @cur_page
       @in_page = true
+      return @cur_page
     end
 
     def end_page
@@ -836,6 +844,12 @@ module PdfW
       @cur_page.close
       @cur_page = nil
       @in_page = false
+    end
+    
+    def page(options={})
+      cur_page = start_page(options)
+      yield(cur_page)
+      end_page
     end
 
     def new_page(options={})
