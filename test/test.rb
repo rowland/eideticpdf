@@ -64,18 +64,27 @@ def font_names(w)
   end
 end
 
+def print_text(w)
+  w.start_page(:units => :cm)
+  w.move_to(1, 1)
+  w.set_font("Helvetica", 12)
+  w.print("Print Text")
+  w.move_to(1, 3); w.line_to(9,3)
+  w.v_text_align = :bottom
+  w.move_to(1, 3); w.print("Text above the line.")
+  w.v_text_align = :top
+  w.move_to(5, 3); w.print("Text below the line.")
+  w.end_page
+end
+
 docw = PdfDocumentWriter.new
 docw.doc do |w|
+  print_text(w)
   circles_and_rectangles(w)
   cm_grid(w)
   inch_grid(w)
   dp_grid(w)
   font_names(w)
-
-  w.start_page(:units => :cm)
-  w.move_to(1, 1)
-  w.set_font("Helvetica", 12)
-  w.print("Print Text")
 end
 
 File.open("test.pdf","w") { |f| f.write(docw) }

@@ -7,6 +7,8 @@ require 'pdfu'
 require 'pdfk'
 
 module PdfW
+  include PdfU
+
   UNIT_CONVERSION = { :pt => 1, :in => 72, :cm => 28.35 }
 
   Location = Struct.new(:x, :y)
@@ -108,7 +110,7 @@ module PdfW
 
   protected
     def make_size_rectangle(size, orientation)
-      PdfU::Rectangle.new(*(SIZES[size][orientation]))
+      Rectangle.new(*(SIZES[size][orientation]))
     end
   end
 
@@ -335,15 +337,15 @@ module PdfW
     end
 
     def show(s)
-      @stream << "(%s) Tj\n" % PdfU::PdfString.escape(s)
+      @stream << "(%s) Tj\n" % PdfString.escape(s)
     end
 
     def next_line_show(s)
-      @stream << "(%s) '" % PdfU::PdfString.escape(s)
+      @stream << "(%s) '" % PdfString.escape(s)
     end
 
     def set_spacing_next_line_show(char_space, word_space, s)
-      @stream << "%s %s (%s) \"\n" % [g(char_space), g(word_space), PdfU::PdfString.escape(s)]
+      @stream << "%s %s (%s) \"\n" % [g(char_space), g(word_space), PdfString.escape(s)]
     end
 
     def show_with_dispacements(elements)
@@ -462,9 +464,10 @@ module PdfW
       @page_style = PageStyle.new(options)
       @loc = Location.new(0, 0)
       @units = options[:units] || :pt
+      @v_text_align = options[:v_text_align] || :top
       @page_width = @page_style.page_size.x2
       @page_height = @page_style.page_size.y2
-      @page = PdfU::PdfPage.new(@doc.next_seq, 0, @doc.catalog.pages)
+      @page = PdfPage.new(@doc.next_seq, 0, @doc.catalog.pages)
       @page.media_box = @page_style.page_size.clone
       @page.crop_box = @page_style.crop_size.clone
       @page.rotate = @page_style.rotate
@@ -480,7 +483,7 @@ module PdfW
       end_text if @in_text
       end_graph if @in_graph
       end_misc if @in_misc
-      pdf_stream = PdfU::PdfStream.new(@doc.next_seq, 0, @stream)
+      pdf_stream = PdfStream.new(@doc.next_seq, 0, @stream)
       @doc.file.body << pdf_stream
       @page.annots = @annotations if @annotations.size.nonzero?
       @page.contents << pdf_stream
@@ -703,9 +706,6 @@ module PdfW
       0.001 * @font.height * @font.size / UNIT_CONVERSION[@units]
     end
 
-    def set_v_text_align(vta)
-    end
-
     # font methods
     def set_font(name, size, options = {})
       @font = Font.new
@@ -732,21 +732,21 @@ module PdfW
       unless @page_font
         widths = nil
         if metrics.needs_descriptor
-          descriptor = PdfU::PdfFontDescriptor.new(@doc.next_seq, 0, full_name, metrics.flags, metrics.b_box, 
+          descriptor = PdfFontDescriptor.new(@doc.next_seq, 0, full_name, metrics.flags, metrics.b_box, 
             metrics.missing_width, metrics.stem_v, metrics.stem_h, metrics.italic_angle,
             metrics.cap_height, metrics.x_height, metrics.ascent, metrics.descent, metrics.leading,
             metrics.max_width, metrics.avg_width)
           @doc.file.body << descriptor
-          widths = PdfU::IndirectObject.new(@doc.next_seq, 0, PdfU::PdfInteger.ary(metrics.widths))
+          widths = IndirectObject.new(@doc.next_seq, 0, PdfInteger.ary(metrics.widths))
           @doc.file.body << widths
         else
           descriptor = nil
           widths = nil
         end
         @page_font = "F#{@doc.fonts.size}"
-        f = PdfU::PdfFont.new(@doc.next_seq, 0, @font.sub_type, full_name, 0, 255, widths, descriptor)
+        f = PdfFont.new(@doc.next_seq, 0, @font.sub_type, full_name, 0, 255, widths, descriptor)
         @doc.file.body << f
-        if PdfU::PdfFont.standard_encoding?(@font.encoding)
+        if PdfFont.standard_encoding?(@font.encoding)
           f.encoding = @font.encoding
         else
           raise Exception.new("Unsupported encoding #{@font.encoding}")
@@ -810,10 +810,10 @@ module PdfW
       @options = options
       @pages = []
       @next_seq = 0
-      @file = PdfU::PdfFile.new
-      pages = PdfU::PdfPages.new(next_seq, 0)
-      outlines = PdfU::PdfOutlines.new(next_seq, 0)
-      @catalog = PdfU::PdfCatalog.new(next_seq, 0, :use_none, pages, outlines)
+      @file = PdfFile.new
+      pages = PdfPages.new(next_seq, 0)
+      outlines = PdfOutlines.new(next_seq, 0)
+      @catalog = PdfCatalog.new(next_seq, 0, :use_none, pages, outlines)
       @file.body << pages << outlines << @catalog
       @file.trailer.root = @catalog
       define_resources
@@ -981,8 +981,12 @@ module PdfW
       cur_page.height
     end
 
-    def set_v_text_align(vta)
-      cur_page.set_v_text_align(vta)
+    def v_text_align
+      cur_page.v_text_align
+    end
+
+    def v_text_align=(vta)
+      cur_page.v_text_align = vta
     end
 
     # font methods
@@ -1017,8 +1021,8 @@ module PdfW
 
   protected
     def define_resources
-      @resources = PdfU::PdfResources.new(next_seq, 0)
-      @resources.proc_set = PdfU::PdfName.ary ['PDF','Text','ImageB','ImageC']
+      @resources = PdfResources.new(next_seq, 0)
+      @resources.proc_set = PdfName.ary ['PDF','Text','ImageB','ImageC']
       @file.body << @resources
     end
 
