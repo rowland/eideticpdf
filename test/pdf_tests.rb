@@ -6,3 +6,4 @@
 $: << File.dirname(__FILE__)
 require 'test_pdfu'
 require 'test_pdfw'
+require 'test_pdfk'
