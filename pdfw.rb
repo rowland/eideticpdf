@@ -509,7 +509,7 @@ module PdfW
     # graphics methods
     def line_to(x, y)
       start_graph unless @in_graph
-      unless @last_loc != @loc
+      unless @last_loc == @loc
         @gw.stroke if @in_path
         @in_path = false
       end
