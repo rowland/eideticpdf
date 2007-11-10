@@ -716,7 +716,7 @@ class PdfPagesTestCases < Test::Unit::TestCase
 
   def test_to_s
     @pages.kids << @page
-    assert_equal("1 0 obj\n<<\n/Kids [2 0 R ] \n/Type /Pages \n>>\nendobj\n", @pages.to_s)
+    assert_equal("1 0 obj\n<<\n/Count 1 \n/Kids [2 0 R ] \n/Type /Pages \n>>\nendobj\n", @pages.to_s)
   end
 end
 
