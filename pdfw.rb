@@ -424,7 +424,9 @@ module PdfW
     def check_set_v_text_align(force=false)
       if force or @last_v_text_align != @v_text_align
         if @v_text_align == :top
-          @tw.set_rise(-@font.height * 0.001 * @font.size)
+          @tw.set_rise(-@font.ascent * 0.001 * @font.size)
+        elsif @v_text_align == :middle
+          @tw.set_rise(-@font.ascent * 0.001 * @font.size / 2.0)
         else
           @tw.set_rise(0.0)
         end

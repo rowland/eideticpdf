@@ -71,11 +71,13 @@ def print_text(w)
   w.print("Print Text")
   
   # test vertical text alignment
-  w.move_to(1, 3); w.line_to(9,3)
+  w.move_to(1, 3); w.line_to(20,3)
   w.v_text_align = :bottom
-  w.move_to(1, 3); w.print("Text above the line.")
+  w.move_to(1, 3); w.print("v_text_align = :bottom")
   w.v_text_align = :top
-  w.move_to(5, 3); w.print("Text below the line.")
+  w.move_to(6, 3); w.print("V_TEXT_ALIGN = :top")
+  w.v_text_align = :middle
+  w.move_to(11, 3); w.print("v_text_align = :middle")
   
   # test angled text display
   
