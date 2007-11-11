@@ -80,10 +80,9 @@ module PdfW
       @page_size = make_size_rectangle(page_size, @orientation)
       @crop_size = make_size_rectangle(crop_size, @orientation)
       @landscape = (@orientation == :landscape)
-      @rotate = ROTATIONS[@orientation]
+      # @rotate = ROTATIONS[@orientation]
     end
 
-  private
     SIZES = {
       :letter => {
         :portrait => [0,0,612,792].freeze,
@@ -98,7 +97,7 @@ module PdfW
         :landscape => [0,0,842,595].freeze
       }.freeze,
       :B5 => {
-        :portrait => [0,0,499,70].freeze,
+        :portrait => [0,0,499,708].freeze,
         :landscape => [0,0,708,499].freeze
       }.freeze,
       :C5 => {
@@ -409,25 +408,21 @@ module PdfW
 
     attr_reader :tw, :gw
 
-    def page_width
-      @page_width / UNIT_CONVERSION[@units]
-    end
-
-    def page_height
-      @page_height / UNIT_CONVERSION[@units]
-    end
-
     # color methods
     def check_set_line_color
     end
 
     def check_set_v_text_align(force=false)
       if force or @last_v_text_align != @v_text_align
-        if @v_text_align == :top
+        if @v_text_align == :above
+          @tw.set_rise(-@font.height * 0.001 * @font.size)
+        elsif @v_text_align == :top
           @tw.set_rise(-@font.ascent * 0.001 * @font.size)
         elsif @v_text_align == :middle
           @tw.set_rise(-@font.ascent * 0.001 * @font.size / 2.0)
-        else
+        elsif @v_text_align == :below
+          @tw.set_rise(-@font.descent * 0.001 * @font.size)
+        else # @v_text_align == :base
           @tw.set_rise(0.0)
         end
         @last_v_text_align = @v_text_align
@@ -464,7 +459,7 @@ module PdfW
       # doc: PdfDocumentWriter
       @doc = doc
       @page_style = PageStyle.new(options)
-      @loc = Location.new(0, 0)
+      @loc = Location.new(0, @page_style.page_size.y2)
       @units = options[:units] || :pt
       @v_text_align = options[:v_text_align] || :top
       @page_width = @page_style.page_size.x2
@@ -502,6 +497,14 @@ module PdfW
       @loc = convert_units(@loc, @units, units)
       @last_loc = convert_units(@last_loc, @units, units)
       @units = units
+    end
+
+    def page_width
+      @page_width / UNIT_CONVERSION[@units].to_f
+    end
+
+    def page_height
+      @page_height / UNIT_CONVERSION[@units].to_f
     end
 
     def move_to(x, y)
@@ -836,6 +839,7 @@ module PdfW
     def start_page(options={})
       raise Exception.new("Already in page") if @in_page
       @cur_page = PdfPageWriter.new(self, @options.clone.update(options))
+      # move_to(0, 0)
       @pages << @cur_page
       @in_page = true
       return @cur_page

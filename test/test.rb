@@ -46,6 +46,21 @@ def dp_grid(w, width=8000, height=10000, xoff=250, yoff=500)
   w.end_page
 end
 
+def pt_units(w)
+  w.page(:units => :pt, :orientation => :portrait) do |p|
+    p.rectangle(1,1,p.page_width-3, p.page_height-2)
+    p.set_font("Courier", 10)
+    p.print_xy(5, 5, "Point Units")
+    
+    y = 24; size = 12
+    while y < 700
+      p.set_font("Helvetica", size)
+      p.print_xy(5, y, "Size: #{size}, y: #{y}")
+      y += size; size += 12
+    end
+  end
+end
+
 def circles_and_rectangles(w)
   w.start_page(:units => :in)
   w.rectangle(1, 1, 6.5, 9)
@@ -72,15 +87,21 @@ def print_text(w)
   
   # test vertical text alignment
   w.move_to(1, 3); w.line_to(20,3)
-  w.v_text_align = :bottom
-  w.move_to(1, 3); w.print("v_text_align = :bottom")
-  w.v_text_align = :top
-  w.move_to(6, 3); w.print("V_TEXT_ALIGN = :top")
+  w.move_to(1, 3)
+
+  w.v_text_align = :base
+  w.print("v_text_align = ")
+  w.v_text_align = :below
+  w.print(":below ")
+  w.v_text_align = :base
+  w.print(":base ")
   w.v_text_align = :middle
-  w.move_to(11, 3); w.print("v_text_align = :middle")
-  
-  # test angled text display
-  
+  w.print(":middle ")
+  w.v_text_align = :top
+  w.print(":top ")
+  w.v_text_align = :above
+  w.print(":above ")
+
   w.end_page
 end
 
@@ -96,11 +117,21 @@ def print_angled_text(w)
   end
 end
 
+def landscape_orientation(w)
+  w.page(:units => :in, :orientation => :landscape) do |p|
+    p.set_font("Times-Roman", 12)
+    p.print_xy(0.5, 0.5, "Landscape Orientation")
+    p.rectangle(1, 1, p.page_width - 2, p.page_height - 2)
+  end
+end
+
 docw = PdfDocumentWriter.new
 docw.doc do |w|
-  print_angled_text(w)
   print_text(w)
+  landscape_orientation(w)
+  print_angled_text(w)
   circles_and_rectangles(w)
+  pt_units(w)
   cm_grid(w)
   inch_grid(w)
   dp_grid(w)
