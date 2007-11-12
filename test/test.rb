@@ -84,7 +84,7 @@ def print_text(w)
   w.move_to(1, 1)
   w.set_font("Helvetica", 12)
   w.print("Print Text")
-  
+
   # test vertical text alignment
   w.move_to(1, 3); w.line_to(20,3)
   w.move_to(1, 3)
@@ -125,8 +125,32 @@ def landscape_orientation(w)
   end
 end
 
+def line_widths_and_patterns(w)
+  w.page(:units => :cm) do |p|
+    p.set_font("Courier", 10)
+    p.print_xy(1, 1, "Line Widths and Patterns")
+
+    0.upto(10) do |i|
+      p.line_width = "#{i}pt"
+      p.move_to(1, 2 + i)
+      p.line_to(p.page_width - 5, 2 + i)
+      p.print("  #{i} points")
+    end
+
+    0.upto(8) do |i|
+      pattern = [:solid,:dotted,:dashed][i % 3]
+      p.line_width = "#{i}pt"
+      p.line_dash_pattern = pattern
+      p.move_to(1, 13 + i)
+      p.line_to(p.page_width - 5, 13 + i)
+      p.print("  #{pattern}")
+    end
+  end
+end
+
 docw = PdfDocumentWriter.new
 docw.doc do |w|
+  line_widths_and_patterns(w)
   print_text(w)
   landscape_orientation(w)
   print_angled_text(w)

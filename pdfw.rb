@@ -16,11 +16,15 @@ module PdfW
   def to_points(units, measurement)
     UNIT_CONVERSION[units] * measurement
   end
+  
+  def from_points(units, measurement)
+    measurement / UNIT_CONVERSION[units].to_f
+  end
 
   def convert_units(loc, from_units, to_units)
     Location.new(
-      loc.x * UNIT_CONVERSION[from_units] / UNIT_CONVERSION[to_units],
-      loc.y * UNIT_CONVERSION[from_units] / UNIT_CONVERSION[to_units])
+      loc.x * UNIT_CONVERSION[from_units] / UNIT_CONVERSION[to_units].to_f,
+      loc.y * UNIT_CONVERSION[from_units] / UNIT_CONVERSION[to_units].to_f)
   end
 
   Signs = Struct.new(:x, :y)
@@ -445,9 +449,29 @@ module PdfW
     end
 
     def check_set_line_dash_pattern
+      unless @line_dash_pattern == @last_line_dash_pattern
+        start_graph unless @in_graph
+        if @in_path
+          gw.stroke
+          @in_path = false
+        end
+
+        gw.set_line_dash_pattern(@line_dash_pattern)
+        @last_line_dash_pattern = @line_dash_pattern
+      end      
     end
 
     def check_set_line_width
+      unless @line_width == @last_line_width
+        start_graph unless @in_graph
+        if @in_path
+          gw.stroke
+          @in_path = false
+        end
+
+        gw.set_line_width(@line_width)
+        @last_line_width = @line_width
+      end      
     end
 
   public
@@ -500,11 +524,11 @@ module PdfW
     end
 
     def page_width
-      @page_width / UNIT_CONVERSION[@units].to_f
+      from_points(@units, @page_width)
     end
 
     def page_height
-      @page_height / UNIT_CONVERSION[@units].to_f
+      from_points(@units, @page_height)
     end
 
     def move_to(x, y)
@@ -634,10 +658,31 @@ module PdfW
     def fill_and_stroke
     end
 
-    def set_line_dash_pattern(pattern, phase)
+    def line_dash_pattern
+      @line_dash_pattern
     end
 
-    def set_line_width(line_width)
+    def line_dash_pattern=(pattern)
+      @line_dash_pattern = case pattern
+        when :solid  then '[] 0'
+        when :dotted then '[1 2] 0'
+        when :dashed then '[4 2] 0'
+      else
+        pattern.to_s
+      end
+    end
+
+    def line_width
+      from_points(@units, @line_width)
+    end
+
+    def line_width=(width)
+      if width.respond_to?(:to_str) and width =~ /\D+/
+        u, width = $&.to_sym, width.to_f
+      else
+        u = @units
+      end        
+      @line_width = to_points(u, width)
     end
 
     # color methods
@@ -704,11 +749,11 @@ module PdfW
       result = 0.0
       fsize = @font.size * 0.001
       text.each_byte { |b| result += fsize * @font.widths[b] + @char_spacing; result += @word_spacing if b == 32 }
-      (result - @char_spacing) / UNIT_CONVERSION[@units]
+      from_points(@units, result - @char_spacing)
     end
 
     def height # may not include external leading?
-      0.001 * @font.height * @font.size / UNIT_CONVERSION[@units]
+      0.001 * @font.height * @font.size / UNIT_CONVERSION[@units].to_f
     end
 
     # font methods
@@ -929,12 +974,20 @@ module PdfW
       cur_page.fill_and_stroke
     end
 
-    def set_line_dash_pattern(pattern, phase)
-      cur_page.set_line_dash_pattern(pattern, phase)
+    def line_dash_pattern
+      cur_page.line_dash_pattern
     end
 
-    def set_line_width(line_width)
-      cur_page.set_line_width(line_width)
+    def line_dash_pattern=(pattern)
+      cur_page.line_dash_pattern = pattern
+    end
+
+    def line_width
+      cur_page.line_width
+    end
+
+    def line_width=(width)
+      cur_page.line_width = width
     end
 
     # color methods
