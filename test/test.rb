@@ -145,6 +145,27 @@ def line_widths_and_patterns(w)
       p.line_to(p.page_width - 5, 13 + i)
       p.print("  #{pattern}")
     end
+    
+    p.line_width = "3pt"
+    p.line_dash_pattern = :solid
+    p.print_xy(1, 22, "Line Colors")
+    y = 23.0
+  
+    p.line_color = 0x0000FF
+    p.move_to(1, 23)
+    p.line_to(p.page_width - 5, 23)
+    p.line_color = 0x00FF00
+    p.move_to(1, 23.5)
+    p.line_to(p.page_width - 5, 23.5)
+    p.line_color = 0xFF0000
+    p.move_to(1, 24)
+    p.line_to(p.page_width - 5, 24)
+    p.line_color = 0xFF00FF
+    p.move_to(1, 24.5)
+    p.line_to(p.page_width - 5, 24.5)
+    p.line_color = 0xFFFF00
+    p.move_to(1, 25)
+    p.line_to(p.page_width - 5, 25)
   end
 end
 
@@ -175,12 +196,12 @@ end
 
 docw = PdfDocumentWriter.new
 docw.doc do |w|
-  arcs(w)
   line_widths_and_patterns(w)
   print_text(w)
   landscape_orientation(w)
   print_angled_text(w)
   circles_and_rectangles(w)
+  arcs(w)
   pt_units(w)
   cm_grid(w)
   inch_grid(w)

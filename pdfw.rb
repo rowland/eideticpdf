@@ -433,15 +433,34 @@ module PdfW
     end
 
     def start_misc
+      raise Exception.new("Already in misc") if @in_misc
+      @mw = MiscWriter.new(@stream)
+      @in_misc = true
     end
 
     def end_misc
+      raise Exception.new("Not in misc") unless @in_misc
+      @mw = nil
+      @in_misc = false
     end
 
-    attr_reader :tw, :gw
+    attr_reader :tw, :gw, :mw
 
     # color methods
     def check_set_line_color
+      unless @line_color == @last_line_color
+        r = @line_color & 0xFF
+        g = (@line_color >> 8) & 0xFF
+        b = (@line_color >> 16) & 0xFF
+        if @in_path
+          gw.stroke
+          @in_path = false
+        end
+        if @in_misc
+          mw.set_rgb_color_stroke(r / 255.0, g / 255.0, b / 255.0)
+          @last_line_color = @line_color
+        end
+      end
     end
 
     def check_set_v_text_align(force=false)
@@ -757,10 +776,13 @@ module PdfW
     end
 
     # color methods
-    def set_line_color_rgb(red, green, blue)
-    end
-
-    def set_line_color(color)
+    def line_color=(color)
+      if color.is_a?(Array)
+        red, green, blue = color
+        @line_color = (blue << 16) | (green << 8) | red
+      else
+        @line_color = color.to_i
+      end        
     end
 
     def set_fill_color_rgb(red, green, blue)
@@ -1062,12 +1084,12 @@ module PdfW
     end
 
     # color methods
-    def set_line_color_rgb(red, green, blue)
-      cur_page.set_line_color_rgb(red, green, blue)
+    def line_color
+      cur_page.line_color
     end
 
-    def set_line_color(color)
-      cur_page.set_line_color(color)
+    def line_color=(color)
+      cur_page.line_color = color
     end
 
     def set_fill_color_rgb(red, green, blue)
