@@ -68,6 +68,15 @@ module PdfW
   def radians_from_degrees(degrees)
     degrees * Math::PI / 180.0
   end
+  
+  def rotate_xy_coordinate(x, y, angle)
+    theta = radians_from_degrees(angle)
+    r_cos = Math::cos(theta)
+    r_sin = Math::sin(theta)
+    x_rot = (r_cos * x) - (r_sin * y)
+    y_rot = (r_sin * x) + (r_cos * y)
+    [x_rot, y_rot]
+  end  
 
   Font = Struct.new(:name, :size, :style, :color, :encoding, :sub_type, :widths, :ascent, :descent, :height)
 
@@ -359,6 +368,25 @@ module PdfW
   class PdfPageWriter
   private
     def arc_small(x, y, r, mid_theta, half_angle, ccwcw, move_to0)
+      half_theta = radians_from_degrees(half_angle.abs)
+      v_cos = Math::cos(half_theta)
+      v_sin = Math::sin(half_theta)
+
+      x0 = r * v_cos
+      y0 = -ccwcw * r * v_sin
+      x1 = r * (4.0 - v_cos) / 3.0
+      x2 = x1
+      y1 = r * ccwcw * (1.0 - v_cos) * (v_cos - 3.0) / (3.0 * v_sin)
+      y2 = -y1
+      x3 = r * v_cos
+      y3 = ccwcw * r * v_sin
+
+      x0, y0 = rotate_xy_coordinate(x0, y0, mid_theta)
+      x1, y1 = rotate_xy_coordinate(x1, y1, mid_theta)
+      x2, y2 = rotate_xy_coordinate(x2, y2, mid_theta)
+      x3, y3 = rotate_xy_coordinate(x3, y3, mid_theta)
+      line_to(x+x0, y-y0) unless move_to0
+      curve(x+x0, y-y0, x+x1, y-y1, x+x2, y-y2, x+x3, y-y3)
     end
 
     def set_text_angle(angle, x, y)
@@ -585,6 +613,29 @@ module PdfW
     end
 
     def curve(x0, y0, x1, y1, x2, y2, x3, y3)
+      start_graph unless @in_graph
+
+      move_to(x0, y0)
+      unless @last_loc == @loc
+        if @in_path
+          gw.stroke
+          @in_path = false
+        end
+      end
+      check_set_line_color
+      check_set_line_width
+      check_set_line_dash_pattern
+      gw.move_to(to_points(@units, @loc.x), to_points(@units, @loc.y)) unless @in_path
+      gw.curve_to(
+          to_points(@units, x1),
+          @page_height - to_points(@units, y1),
+          to_points(@units, x2),
+          @page_height - to_points(@units, y2),
+          to_points(@units, x3),
+          @page_height - to_points(@units, y3))
+      move_to(x3, y3)
+      @last_loc = @loc
+      @in_path = true
     end
 
     def curve_points(points)
@@ -641,6 +692,26 @@ module PdfW
     end
 
     def arc(x, y, r, start_angle, end_angle, move_to0=false)
+      return if start_angle == end_angle
+
+      move_to0 = true unless @in_path
+      num_arcs = 1
+      ccwcw = 1.0
+      arc_span = end_angle - start_angle
+      if end_angle < start_angle
+        ccwcw = -1.0
+      end
+      while arc_span.abs / num_arcs.to_f > 90.0
+        num_arcs += 1
+      end
+      angle_bump = arc_span / num_arcs.to_f
+      half_bump = 0.5 * angle_bump
+      cur_angle = start_angle + half_bump
+      num_arcs.times do
+        arc_small(x, y, r, cur_angle, half_bump, ccwcw, move_to0)
+        move_to0 = false
+        cur_angle = cur_angle + angle_bump
+      end
     end
 
     def pie(x, y, r, start_angle, end_angle, border=true, fill=false)

@@ -148,8 +148,34 @@ def line_widths_and_patterns(w)
   end
 end
 
+def arcs(w)
+  w.page(:units => :in) do |p|
+    p.set_font("Courier", 10)
+    p.print_xy(0.5, 0.5, "Arcs")
+
+    x1, x2, y1, y2 = 4.0, 4.5, 2.25, 2.75
+    s = 0
+    [0.75, 1.00, 1.25].each do |r|
+      p.arc(x2, y1, r, s, s+90, true)
+      p.arc(x1, y1, r, s+90, s+180, true)
+      p.arc(x1, y2, r, s+180, s+270, true)
+      p.arc(x2, y2, r, s+270, s+360, true)
+    end
+
+    x1, x2, x3, y1, y2, y3 = 4.0, 4.25, 4.5, 8.25, 8.5, 8.75
+    s = 45
+    [0.75, 1.00, 1.25].each do |r|
+      p.arc(x2, y1, r, s, s+90, true)
+      p.arc(x1, y2, r, s+90, s+180, true)
+      p.arc(x2, y3, r, s+180, s+270, true)
+      p.arc(x3, y2, r, s+270, s+360, true)
+    end
+  end
+end
+
 docw = PdfDocumentWriter.new
 docw.doc do |w|
+  arcs(w)
   line_widths_and_patterns(w)
   print_text(w)
   landscape_orientation(w)
