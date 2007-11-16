@@ -397,6 +397,16 @@ module PdfW
       @text_angle = angle
     end
 
+    def rgb_from_color(color)
+      b = @line_color & 0xFF
+      g = (@line_color >> 8) & 0xFF
+      r = (@line_color >> 16) & 0xFF
+      [r, g, b]
+    end
+    
+    def color_from_rgb(r, g, b)
+      (r << 16) | (g << 8) | b
+    end
   protected
     def start_text
       raise Exception.new("Already in text.") if @in_text
@@ -449,9 +459,7 @@ module PdfW
     # color methods
     def check_set_line_color
       unless @line_color == @last_line_color
-        r = @line_color & 0xFF
-        g = (@line_color >> 8) & 0xFF
-        b = (@line_color >> 16) & 0xFF
+        r, g, b = rgb_from_color(@line_color)
         if @in_path
           gw.stroke
           @in_path = false
@@ -778,8 +786,8 @@ module PdfW
     # color methods
     def line_color=(color)
       if color.is_a?(Array)
-        red, green, blue = color
-        @line_color = (blue << 16) | (green << 8) | red
+        r, g, b = color
+        @line_color = color_from_rgb(r, g, b)
       else
         @line_color = color.to_i
       end        

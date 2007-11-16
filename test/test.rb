@@ -150,20 +150,32 @@ def line_widths_and_patterns(w)
     p.line_dash_pattern = :solid
     p.print_xy(1, 22, "Line Colors")
     y = 23.0
-  
+    
+    # blue
     p.line_color = 0x0000FF
+    p.line_color = [0,0,255]
     p.move_to(1, 23)
     p.line_to(p.page_width - 5, 23)
+
+    # green
     p.line_color = 0x00FF00
+    p.line_color = [0,255,0]
     p.move_to(1, 23.5)
     p.line_to(p.page_width - 5, 23.5)
+
+    # red
     p.line_color = 0xFF0000
+    #p.line_color = [255,0,0]
     p.move_to(1, 24)
     p.line_to(p.page_width - 5, 24)
-    p.line_color = 0xFF00FF
+
+    # fuchsia
+    p.line_color = [0xFF, 0, 0xFF]
     p.move_to(1, 24.5)
     p.line_to(p.page_width - 5, 24.5)
-    p.line_color = 0xFFFF00
+
+    # yellow
+    p.line_color = [0xFF, 0xFF, 0]
     p.move_to(1, 25)
     p.line_to(p.page_width - 5, 25)
   end
