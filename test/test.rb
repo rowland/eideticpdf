@@ -206,8 +206,40 @@ def arcs(w)
   end
 end
 
+def filled_rectangles(w)
+  page_no = 0
+  rows, cols = 18, 3
+  left, top = 0.75, 1.0
+  col_width, row_height, label_width = 2.0, 0.5, 1.25
+  names = PdfK::NAMED_COLORS.keys.sort
+  lists = []
+  while names.size > 0
+    lists << names.slice!(0, rows)
+  end
+  pages = []
+  while lists.size > 0
+    pages << lists.slice!(0, cols)
+  end
+  pages.each_with_index do |page, page_index|
+    w.start_page(:units => :in)
+    w.set_font("Helvetica", 10)
+    w.print_xy(0.5, 0.5, "Filled Rectangles #{page_index + 1}")
+    w.line_height = 1.3
+    page.each_with_index do |list, list_index|
+      list.each_with_index do |name, name_index|
+        w.move_to(left + list_index * col_width, top + name_index * row_height)
+        w.puts(name.scan(/[A-Z][a-z]*/))
+        w.fill_color = PdfK::NAMED_COLORS[name]
+        w.rectangle(left + list_index * col_width + label_width, top + name_index * row_height, 0.5, 0.4, true, true)
+      end
+    end
+    w.end_page
+  end
+end
+
 docw = PdfDocumentWriter.new
 docw.doc do |w|
+  filled_rectangles(w)
   line_widths_and_patterns(w)
   print_text(w)
   landscape_orientation(w)

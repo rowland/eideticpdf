@@ -64,7 +64,7 @@ module PdfW
     # prec must be >= 1 or gsub will strip significant trailing 0's.
     sprintf("%.*f", prec, value).sub(',','.').gsub(/\.?0*$/,'')
   end
-  
+
   def radians_from_degrees(degrees)
     degrees * Math::PI / 180.0
   end
@@ -398,9 +398,10 @@ module PdfW
     end
 
     def rgb_from_color(color)
-      b = @line_color & 0xFF
-      g = (@line_color >> 8) & 0xFF
-      r = (@line_color >> 16) & 0xFF
+      color = PdfK::NAME_COLORS[color] if color.respond_to? :to_str
+      b = color & 0xFF
+      g = (color >> 8) & 0xFF
+      r = (color >> 16) & 0xFF
       [r, g, b]
     end
     
@@ -498,9 +499,31 @@ module PdfW
     end
 
     def check_set_fill_color
+      unless @fill_color == @last_fill_color
+        r, g, b = rgb_from_color(@fill_color)
+        if @in_path
+          gw.stroke
+          @in_path = false
+        end
+        if @in_misc
+          mw.set_rgb_color_fill(r / 255.0, g / 255.0, b / 255.0)
+          @last_fill_color = @fill_color
+        end
+      end
     end
 
     def check_set_font_color
+      unless @font_color == @last_fill_color
+        r, g, b = rgb_from_color(@font_color)
+        if @in_path
+          gw.stroke
+          @in_path = false
+        end
+        if @in_misc
+          mw.set_rgb_color_fill(r / 255.0, g / 255.0, b / 255.0)
+          @last_fill_color = @font_color
+        end
+      end
     end
 
     def check_set_line_dash_pattern
@@ -533,6 +556,7 @@ module PdfW
     attr_reader :doc, :units
     attr_reader :stream, :annotations
     attr_accessor :v_text_align
+    attr_accessor :line_height
 
     def initialize(doc, options)
       # doc: PdfDocumentWriter
@@ -552,6 +576,8 @@ module PdfW
       @stream = ''
       @annotations = []
       @char_spacing = @word_spacing = 0.0
+      @font_color = @fill_color = @line_color = 0
+      @line_height = 1.7
       start_misc
     end
 
@@ -784,6 +810,10 @@ module PdfW
     end
 
     # color methods
+    def line_color
+      @line_color
+    end
+
     def line_color=(color)
       if color.is_a?(Array)
         r, g, b = color
@@ -796,13 +826,30 @@ module PdfW
     def set_fill_color_rgb(red, green, blue)
     end
 
-    def set_fill_color(color)
+    def fill_color(color)
+      @fill_color
     end
 
-    def set_font_color_rgb(red, green, blue)
+    def fill_color=(color)
+      if color.is_a?(Array)
+        r, g, b = color
+        @fill_color = color_from_rgb(r, g, b)
+      else
+        @fill_color = color.to_i
+      end        
     end
 
-    def set_font_color(color)
+    def font_color
+      @font_color
+    end
+
+    def font_color=(color)
+      if color.is_a?(Array)
+        r, g, b = color
+        @font_color = color_from_rgb(r, g, b)
+      else
+        @font_color = color.to_i
+      end        
     end
 
     # text methods
@@ -838,9 +885,14 @@ module PdfW
     end
 
     def puts(text='')
-      save_loc = @loc.clone
-      print(text)
-      @loc = Location.new(save_loc.x, save_loc.y - height)
+      # if it's not a real string, assume it's an enumeration of strings
+      unless text.respond_to?(:to_str)
+        text.each { |t| puts(t) }
+      else
+        save_loc = @loc.clone
+        print(text)
+        @loc = Location.new(save_loc.x, save_loc.y - height * @line_height)
+      end
     end
 
     def puts_xy(x, y, text)
@@ -1017,6 +1069,14 @@ module PdfW
     def units=(units)
       cur_page.units=(units)
     end
+    
+    def line_height
+      cur_page.line_height
+    end
+
+    def line_height=(height)
+      cur_page.line_height = height
+    end
 
     def move_to(x, y)
       cur_page.move_to(x, y)
@@ -1104,8 +1164,12 @@ module PdfW
       cur_page.set_fill_color_rgb(red, green, blue)
     end
 
-    def set_fill_color(color)
-      cur_page.set_fill_color(color)
+    def fill_color
+      cur_page.fill_color
+    end
+
+    def fill_color=(color)
+      cur_page.fill_color = color
     end
 
     def set_font_color_rgb(red, green, blue)
