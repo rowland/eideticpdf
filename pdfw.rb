@@ -367,7 +367,7 @@ module PdfW
 
   class PdfPageWriter
   private
-    def arc_small(x, y, r, mid_theta, half_angle, ccwcw, move_to0)
+    def calc_arc_small(r, mid_theta, half_angle, ccwcw)
       half_theta = radians_from_degrees(half_angle.abs)
       v_cos = Math::cos(half_theta)
       v_sin = Math::sin(half_theta)
@@ -385,6 +385,12 @@ module PdfW
       x1, y1 = rotate_xy_coordinate(x1, y1, mid_theta)
       x2, y2 = rotate_xy_coordinate(x2, y2, mid_theta)
       x3, y3 = rotate_xy_coordinate(x3, y3, mid_theta)
+    
+      [x0, y0, x1, y1, x2, y2, x3, y3]
+    end
+
+    def arc_small(x, y, r, mid_theta, half_angle, ccwcw, move_to0)
+      x0, y0, x1, y1, x2, y2, x3, y3 = calc_arc_small(r, mid_theta, half_angle, ccwcw)
       line_to(x+x0, y-y0) unless move_to0
       curve(x+x0, y-y0, x+x1, y-y1, x+x2, y-y2, x+x3, y-y3)
     end
