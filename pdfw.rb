@@ -70,11 +70,6 @@ module PdfW
     degrees * Math::PI / 180.0
   end
 
-	def rotate_point(loc, rad)
-		x,y = rotate_xy_coordinate(loc.x, loc.y, angle)
-		Location.new(x, y)
-	end
-  
   def rotate_xy_coordinate(x, y, angle)
     theta = radians_from_degrees(angle)
     r_cos = Math::cos(theta)
@@ -82,7 +77,24 @@ module PdfW
     x_rot = (r_cos * x) - (r_sin * y)
     y_rot = (r_sin * x) + (r_cos * y)
     [x_rot, y_rot]
-  end  
+  end
+
+	def rotate_point(loc, angle)
+		x, y = rotate_xy_coordinate(loc.x, loc.y, angle)
+		Location.new(x, y)
+	end
+
+	def rotate_points(mid, points, angle)
+    theta = radians_from_degrees(angle)
+    r_cos = Math::cos(theta)
+    r_sin = Math::sin(theta)
+	  points.map do |p|
+	    x, y = p.x - mid.x, p.y - mid.y
+      x_rot = (r_cos * x) - (r_sin * y)
+      y_rot = (r_sin * x) + (r_cos * y)
+	    Location.new(x_rot + mid.x, y_rot + mid.y)
+    end
+  end
 
   Font = Struct.new(:name, :size, :style, :color, :encoding, :sub_type, :widths, :ascent, :descent, :height)
 
@@ -756,9 +768,10 @@ module PdfW
       @in_path = false
     end
 
-    def ellipse(x, y, rx, ry, border=true, fill=false)
+    def ellipse(x, y, rx, ry, rotation=0, border=true, fill=false)
       1.upto(4) do |q|
         bp = get_quadrant_bezier_points(q, x, y, rx, ry)
+        bp = rotate_points(Location.new(x, y), bp, -rotation) unless rotation.zero?
         curve_points(bp)
       end
       check_set_fill_color
@@ -1140,8 +1153,8 @@ module PdfW
       cur_page.circle(x, y, r, border, fill)
     end
 
-    def ellipse(x, y, rx, ry, border=true, fill=false)
-      cur_page.ellipse(x, y, rx, ry, border, fill)
+    def ellipse(x, y, rx, ry, rotation=0, border=true, fill=false)
+      cur_page.ellipse(x, y, rx, ry, rotation, border, fill)
     end
 
     def arc(x, y, r, start_angle, end_angle, move_to0=false)
