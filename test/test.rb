@@ -237,8 +237,20 @@ def filled_rectangles(w)
   end
 end
 
+def ellipse(w)
+  w.page(:units => :in, :orientation => :portrait) do |p|
+    p.set_font("Courier", 10)
+    p.print_xy(0.25, 0.25, "Ellipses Test page")
+    p.ellipse(4.24, 5.5, 4.25, 3.5)
+    p.ellipse(4.25, 5.5, 4.25, 5.5)
+  end
+end
+
+
 docw = PdfDocumentWriter.new
+
 docw.doc do |w|
+  ellipse(w)
   filled_rectangles(w)
   line_widths_and_patterns(w)
   print_text(w)
