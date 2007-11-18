@@ -63,9 +63,12 @@ end
 
 def circles_and_rectangles(w)
   w.start_page(:units => :in)
+  w.set_font("Courier", 10)
+  w.print_xy(0.5, 0.5, "Circles and Rectangles")
   w.rectangle(1, 1, 6.5, 9)
   w.rectangle(2, 2, 4.5, 7)
   w.circle(4.25, 5.5, 3.25)
+  w.circle(4.25, 5.5, 2.25)
   w.end_page
 end
 
@@ -237,12 +240,13 @@ def filled_rectangles(w)
   end
 end
 
-def ellipse(w)
+def ellipses(w)
   w.page(:units => :in, :orientation => :portrait) do |p|
     p.set_font("Courier", 10)
-    p.print_xy(0.25, 0.25, "Ellipses Test page")
-    p.ellipse(4.24, 5.5, 4.25, 3.5)
-    p.ellipse(4.25, 5.5, 4.25, 5.5)
+    p.print_xy(0.5, 0.5, "Ellipses Test page")
+    p.ellipse(4.25, 5.5, 3.75, 3.25)
+    p.ellipse(4.25, 5.5, 3.75, 4.5)
+    p.ellipse(4.25, 5.5, 3, 2, 45)
   end
 end
 
@@ -250,13 +254,13 @@ end
 docw = PdfDocumentWriter.new
 
 docw.doc do |w|
-  ellipse(w)
+  circles_and_rectangles(w)
+  ellipses(w)
   filled_rectangles(w)
   line_widths_and_patterns(w)
   print_text(w)
   landscape_orientation(w)
   print_angled_text(w)
-  circles_and_rectangles(w)
   arcs(w)
   pt_units(w)
   cm_grid(w)
