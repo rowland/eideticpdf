@@ -69,6 +69,11 @@ module PdfW
   def radians_from_degrees(degrees)
     degrees * Math::PI / 180.0
   end
+
+	def rotate_point(loc, rad)
+		x,y = rotate_xy_coordinate(loc.x, loc.y, angle)
+		Location.new(x, y)
+	end
   
   def rotate_xy_coordinate(x, y, angle)
     theta = radians_from_degrees(angle)
