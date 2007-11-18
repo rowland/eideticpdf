@@ -662,7 +662,9 @@ module PdfW
       @last_loc = @loc.clone
     end
 
-    def rectangle(x, y, width, height, border=true, fill=false)
+    def rectangle(x, y, width, height, options={})
+      border = options[:border].nil? ? true : options[:border]
+      fill = options[:fill].nil? ? false : options[:fill]
       start_graph unless @in_graph
       @gw.stroke if @in_path
 
@@ -1133,8 +1135,8 @@ module PdfW
       cur_page.line_to(x, y)
     end
 
-    def rectangle(x, y, width, height, border=true, fill=false)
-      cur_page.rectangle(x, y, width, height, border, fill)
+    def rectangle(x, y, width, height, options={})
+      cur_page.rectangle(x, y, width, height, options)
     end
 
     def curve(x0, y0, x1, y1, x2, y2, x3, y3)

@@ -233,7 +233,7 @@ def filled_rectangles(w)
         w.move_to(left + list_index * col_width, top + name_index * row_height)
         w.puts(name.scan(/[A-Z][a-z]*/))
         w.fill_color = PdfK::NAMED_COLORS[name]
-        w.rectangle(left + list_index * col_width + label_width, top + name_index * row_height, 0.5, 0.4, true, true)
+        w.rectangle(left + list_index * col_width + label_width, top + name_index * row_height, 0.5, 0.4, :border => true, :fill => true)
       end
     end
     w.end_page
