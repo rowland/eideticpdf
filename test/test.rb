@@ -232,8 +232,8 @@ def filled_rectangles(w)
       list.each_with_index do |name, name_index|
         w.move_to(left + list_index * col_width, top + name_index * row_height)
         w.puts(name.scan(/[A-Z][a-z]*/))
-        w.fill_color = PdfK::NAMED_COLORS[name]
-        w.rectangle(left + list_index * col_width + label_width, top + name_index * row_height, 0.5, 0.4, :border => true, :fill => true)
+        w.fill_color = name
+        w.rectangle(left + list_index * col_width + label_width, top + name_index * row_height, 0.5, 0.4, :fill => true)
       end
     end
     w.end_page
@@ -243,17 +243,62 @@ end
 def ellipses(w)
   w.page(:units => :in, :orientation => :portrait) do |p|
     p.set_font("Courier", 10)
-    p.print_xy(0.5, 0.5, "Ellipses Test page")
+    p.print_xy(0.5, 0.5, "Ellipses Test Page")
     p.ellipse(4.25, 5.5, 3.75, 3.25)
     p.ellipse(4.25, 5.5, 3.75, 4.5)
-    p.ellipse(4.25, 5.5, 3, 2, 45)
+    p.ellipse(4.25, 5.5, 3, 2, :rotation => 45)
   end
 end
 
+def filled_shapes(w)
+  x1, x2, x3 = 0.75, 3.25, 5.75
+  y1, y2, y3, y4 = 1.0, 3.5, 6.0, 8.5
+  w.page(:units => :in) do |p|
+    p.set_font("Courier", 10)
+    p.print_xy(0.5, 0.5, "Filled Shapes")
+    p.line_color = 'Black'
+    p.fill_color = 'LightSteelBlue'
+    # empty rectangle w/ border
+    p.rectangle(x1, y1, 2, 2)
+    # filled rectangle w/ border
+    p.rectangle(x2, y1, 2, 2, :fill => true)
+    # filled rectangle w/o border
+    p.rectangle(x3, y1, 2, 2, :fill => true, :border => false)
+    # empty circle w/ border
+    p.circle(x1 + 1, y2 + 1, 1)
+    # filled circle w/ border
+    p.circle(x2 + 1, y2 + 1, 1, :fill => true)
+    # filled circle w/o border
+    p.circle(x3 + 1, y2 + 1, 1, :fill => true, :border => false)
+    # empty ellipse w/ border
+    p.ellipse(x1 + 1, y3 + 1, 0.75, 1)
+    # filled ellipse w/ border
+    p.ellipse(x2 + 1, y3 + 1, 0.75, 1, :fill => true)
+    # filled ellipse w/o border
+    p.ellipse(x3 + 1, y3 + 1, 0.75, 1, :fill => true, :border => false)
+
+    # filled rectangle w/ border
+    p.fill_color = 'LightSteelBlue'
+    p.rectangle(x1, y4, 2, 2, :fill => true)
+    p.fill_color = 'White'
+    p.rectangle(x1 + 0.5, y4 + 0.5, 1, 1, :fill => true)
+    # filled circle w/ border
+    p.fill_color = 'LightSteelBlue'
+    p.circle(x2 + 1, y4 + 1, 1, :fill => true)
+    p.fill_color = 'White'
+    p.circle(x2 + 1, y4 + 1, 0.5, :fill => true)
+    # filled ellipse w/ border
+    p.fill_color = 'LightSteelBlue'
+    p.ellipse(x3 + 1, y4 + 1, 0.75, 1, :fill => true)
+    p.fill_color = 'White'
+    p.ellipse(x3 + 1, y4 + 1, 0.25, 0.5, :fill => true)
+  end
+end
 
 docw = PdfDocumentWriter.new
 
 docw.doc do |w|
+  filled_shapes(w)
   circles_and_rectangles(w)
   ellipses(w)
   filled_rectangles(w)

@@ -422,7 +422,7 @@ module PdfW
     end
 
     def rgb_from_color(color)
-      color = PdfK::NAME_COLORS[color] if color.respond_to? :to_str
+      color = PdfK::NAMED_COLORS[color] if color.respond_to? :to_str
       b = color & 0xFF
       g = (color >> 8) & 0xFF
       r = (color >> 16) & 0xFF
@@ -753,7 +753,9 @@ module PdfW
     def curve_to(points)
     end
 
-    def circle(x, y, r, border=true, fill=false)
+    def circle(x, y, r, options={})
+      border = options[:border].nil? ? true : options[:border]
+      fill = options[:fill].nil? ? false : options[:fill]
       1.upto(4) do |q|
         bp = get_quadrant_bezier_points(q,x,y,r)
         curve_points(bp)
@@ -770,7 +772,10 @@ module PdfW
       @in_path = false
     end
 
-    def ellipse(x, y, rx, ry, rotation=0, border=true, fill=false)
+    def ellipse(x, y, rx, ry, options={})
+      rotation = options[:rotation] || 0
+      border = options[:border].nil? ? true : options[:border]
+      fill = options[:fill].nil? ? false : options[:fill]
       1.upto(4) do |q|
         bp = get_quadrant_bezier_points(q, x, y, rx, ry)
         bp = rotate_points(Location.new(x, y), bp, -rotation) unless rotation.zero?
@@ -863,7 +868,7 @@ module PdfW
         r, g, b = color
         @line_color = color_from_rgb(r, g, b)
       else
-        @line_color = color.to_i
+        @line_color = color
       end        
     end
 
@@ -879,7 +884,7 @@ module PdfW
         r, g, b = color
         @fill_color = color_from_rgb(r, g, b)
       else
-        @fill_color = color.to_i
+        @fill_color = color
       end        
     end
 
@@ -892,7 +897,7 @@ module PdfW
         r, g, b = color
         @font_color = color_from_rgb(r, g, b)
       else
-        @font_color = color.to_i
+        @font_color = color
       end        
     end
 
@@ -1151,12 +1156,12 @@ module PdfW
       cur_page.curve_to(points)
     end
 
-    def circle(x, y, r, border=true, fill=false)
-      cur_page.circle(x, y, r, border, fill)
+    def circle(x, y, r, options={})
+      cur_page.circle(x, y, r, options)
     end
 
-    def ellipse(x, y, rx, ry, rotation=0, border=true, fill=false)
-      cur_page.ellipse(x, y, rx, ry, rotation, border, fill)
+    def ellipse(x, y, rx, ry, options={})
+      cur_page.ellipse(x, y, rx, ry, options)
     end
 
     def arc(x, y, r, start_angle, end_angle, move_to0=false)
