@@ -31,25 +31,26 @@ module PdfW
 
   SIGNS = [ Signs.new(1, -1), Signs.new(-1, -1), Signs.new(-1, 1), Signs.new(1, 1) ]
 
-  def get_quadrant_bezier_points(quadrant, x, y, r)
+  def get_quadrant_bezier_points(quadrant, x, y, rx, ry=nil)
+    ry = rx if ry.nil?
     a = 4.0 / 3.0 * (Math.sqrt(2) - 1.0)
     bp = []
     if (quadrant % 2 == 1) # quadrant is odd
       # (1,0)
-      bp << Location.new(x + (r * SIGNS[quadrant - 1].x), y)
+      bp << Location.new(x + (rx * SIGNS[quadrant - 1].x), y)
       # (1,a)
-      bp << Location.new(bp[0].x, y + (a * r * SIGNS[quadrant - 1].y))
+      bp << Location.new(bp[0].x, y + (a * ry * SIGNS[quadrant - 1].y))
       # (a,1)
-      bp << Location.new(x + (a * r * SIGNS[quadrant - 1].x), y + (r * SIGNS[quadrant - 1].y))
+      bp << Location.new(x + (a * rx * SIGNS[quadrant - 1].x), y + (ry * SIGNS[quadrant - 1].y))
       # (0,1)
       bp << Location.new(x, bp[2].y)
     else # quadrant is even
       # (0,1)
-      bp << Location.new(x, y + (r * SIGNS[quadrant - 1].y))
+      bp << Location.new(x, y + (ry * SIGNS[quadrant - 1].y))
       # (a,1)
-      bp << Location.new(x + (a * r * SIGNS[quadrant - 1].x), bp[0].y)
+      bp << Location.new(x + (a * rx * SIGNS[quadrant - 1].x), bp[0].y)
       # (1,a)
-      bp << Location.new(x + (r * SIGNS[quadrant - 1].x), y + (a * r * SIGNS[quadrant - 1].y))
+      bp << Location.new(x + (rx * SIGNS[quadrant - 1].x), y + (a * ry * SIGNS[quadrant - 1].y))
       # (1,0)
       bp << Location.new(bp[2].x, y)
     end
@@ -385,7 +386,7 @@ module PdfW
       x1, y1 = rotate_xy_coordinate(x1, y1, mid_theta)
       x2, y2 = rotate_xy_coordinate(x2, y2, mid_theta)
       x3, y3 = rotate_xy_coordinate(x3, y3, mid_theta)
-    
+
       [x0, y0, x1, y1, x2, y2, x3, y3]
     end
 
@@ -736,6 +737,23 @@ module PdfW
     def circle(x, y, r, border=true, fill=false)
       1.upto(4) do |q|
         bp = get_quadrant_bezier_points(q,x,y,r)
+        curve_points(bp)
+      end
+      check_set_fill_color
+      if (border and fill)
+        @gw.fill_and_stroke
+      elsif border
+        @gw.stroke
+      elsif fill
+        @gw.fill
+      end
+
+      @in_path = false
+    end
+
+    def ellipse(x, y, rx, ry, border=true, fill=false)
+      1.upto(4) do |q|
+        bp = get_quadrant_bezier_points(q, x, y, rx, ry)
         curve_points(bp)
       end
       check_set_fill_color
@@ -1115,6 +1133,10 @@ module PdfW
 
     def circle(x, y, r, border=true, fill=false)
       cur_page.circle(x, y, r, border, fill)
+    end
+
+    def ellipse(x, y, rx, ry, border=true, fill=false)
+      cur_page.ellipse(x, y, rx, ry, border, fill)
     end
 
     def arc(x, y, r, start_angle, end_angle, move_to0=false)
