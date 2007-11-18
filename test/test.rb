@@ -243,7 +243,7 @@ end
 def ellipses(w)
   w.page(:units => :in, :orientation => :portrait) do |p|
     p.set_font("Courier", 10)
-    p.print_xy(0.5, 0.5, "Ellipses Test Page")
+    p.print_xy(0.5, 0.5, "Ellipses")
     p.ellipse(4.25, 5.5, 3.75, 3.25)
     p.ellipse(4.25, 5.5, 3.75, 4.5)
     p.ellipse(4.25, 5.5, 3, 2, :rotation => 45)
@@ -258,36 +258,39 @@ def filled_shapes(w)
     p.print_xy(0.5, 0.5, "Filled Shapes")
     p.line_color = 'Black'
     p.fill_color = 'LightSteelBlue'
+
     # empty rectangle w/ border
     p.rectangle(x1, y1, 2, 2)
     # filled rectangle w/ border
-    p.rectangle(x2, y1, 2, 2, :fill => true)
+    p.rectangle(x1, y2, 2, 2, :fill => true)
     # filled rectangle w/o border
-    p.rectangle(x3, y1, 2, 2, :fill => true, :border => false)
+    p.rectangle(x1, y3, 2, 2, :fill => true, :border => false)
+
     # empty circle w/ border
-    p.circle(x1 + 1, y2 + 1, 1)
+    p.circle(x2 + 1, y1 + 1, 1)
     # filled circle w/ border
     p.circle(x2 + 1, y2 + 1, 1, :fill => true)
     # filled circle w/o border
-    p.circle(x3 + 1, y2 + 1, 1, :fill => true, :border => false)
+    p.circle(x2 + 1, y3 + 1, 1, :fill => true, :border => false)
+
     # empty ellipse w/ border
-    p.ellipse(x1 + 1, y3 + 1, 0.75, 1)
+    p.ellipse(x3 + 1, y1 + 1, 0.75, 1)
     # filled ellipse w/ border
-    p.ellipse(x2 + 1, y3 + 1, 0.75, 1, :fill => true)
+    p.ellipse(x3 + 1, y2 + 1, 0.75, 1, :fill => true)
     # filled ellipse w/o border
     p.ellipse(x3 + 1, y3 + 1, 0.75, 1, :fill => true, :border => false)
 
-    # filled rectangle w/ border
+    # filled rectangles w/ borders
     p.fill_color = 'LightSteelBlue'
     p.rectangle(x1, y4, 2, 2, :fill => true)
     p.fill_color = 'White'
     p.rectangle(x1 + 0.5, y4 + 0.5, 1, 1, :fill => true)
-    # filled circle w/ border
+    # filled circles w/ borders
     p.fill_color = 'LightSteelBlue'
     p.circle(x2 + 1, y4 + 1, 1, :fill => true)
     p.fill_color = 'White'
     p.circle(x2 + 1, y4 + 1, 0.5, :fill => true)
-    # filled ellipse w/ border
+    # filled ellipses w/ borders
     p.fill_color = 'LightSteelBlue'
     p.ellipse(x3 + 1, y4 + 1, 0.75, 1, :fill => true)
     p.fill_color = 'White'

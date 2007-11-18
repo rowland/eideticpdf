@@ -460,7 +460,7 @@ module PdfW
     def end_graph
       raise Exception.new("Not in graph") unless @in_graph
       if @in_path
-        @gw.stroke
+        gw.stroke if @auto_path
         @in_path = false
       end
       @gw = nil
@@ -485,7 +485,7 @@ module PdfW
     def check_set_line_color
       unless @line_color == @last_line_color
         r, g, b = rgb_from_color(@line_color)
-        if @in_path
+        if @in_path and @auto_path
           gw.stroke
           @in_path = false
         end
@@ -525,7 +525,7 @@ module PdfW
     def check_set_fill_color
       unless @fill_color == @last_fill_color
         r, g, b = rgb_from_color(@fill_color)
-        if @in_path
+        if @in_path and @auto_path
           gw.stroke
           @in_path = false
         end
@@ -539,7 +539,7 @@ module PdfW
     def check_set_font_color
       unless @font_color == @last_fill_color
         r, g, b = rgb_from_color(@font_color)
-        if @in_path
+        if @in_path and @auto_path
           gw.stroke
           @in_path = false
         end
@@ -553,7 +553,7 @@ module PdfW
     def check_set_line_dash_pattern
       unless @line_dash_pattern == @last_line_dash_pattern
         start_graph unless @in_graph
-        if @in_path
+        if @in_path and @auto_path
           gw.stroke
           @in_path = false
         end
@@ -566,7 +566,7 @@ module PdfW
     def check_set_line_width
       unless @line_width == @last_line_width
         start_graph unless @in_graph
-        if @in_path
+        if @in_path and @auto_path
           gw.stroke
           @in_path = false
         end
@@ -581,6 +581,7 @@ module PdfW
     attr_reader :stream, :annotations
     attr_accessor :v_text_align
     attr_accessor :line_height
+    attr_reader :auto_path
 
     def initialize(doc, options)
       # doc: PdfDocumentWriter
@@ -602,6 +603,7 @@ module PdfW
       @char_spacing = @word_spacing = 0.0
       @font_color = @fill_color = @line_color = 0
       @line_height = 1.7
+      @auto_path = true
       start_misc
     end
 
@@ -647,17 +649,17 @@ module PdfW
     def line_to(x, y)
       start_graph unless @in_graph
       unless @last_loc == @loc
-        @gw.stroke if @in_path
+        gw.stroke if @in_path and @auto_path
         @in_path = false
       end
 
       check_set_line_color
       check_set_line_width
       check_set_line_dash_pattern
-      
-      @gw.move_to(to_points(@units, @loc.x), to_points(@units, @loc.y)) unless @in_path
+
+      gw.move_to(to_points(@units, @loc.x), to_points(@units, @loc.y)) unless @in_path
       move_to(x, y)
-      @gw.line_to(to_points(@units, @loc.x), to_points(@units, @loc.y))
+      gw.line_to(to_points(@units, @loc.x), to_points(@units, @loc.y))
       @in_path = true
       @last_loc = @loc.clone
     end
@@ -666,25 +668,25 @@ module PdfW
       border = options[:border].nil? ? true : options[:border]
       fill = options[:fill].nil? ? false : options[:fill]
       start_graph unless @in_graph
-      @gw.stroke if @in_path
+      gw.stroke if @in_path and @auto_path
 
       check_set_line_color
       check_set_line_width
       check_set_line_dash_pattern
       check_set_fill_color
-      
-      @gw.rectangle(
+
+      gw.rectangle(
           to_points(@units, x),
           @page_height - to_points(@units, y + height),
           to_points(@units, width),
           to_points(@units, height))
 
       if (border and fill)
-        @gw.fill_and_stroke
+        gw.fill_and_stroke
       elsif border then
-        @gw.stroke
+        gw.stroke
       elsif fill then
-        @gw.fill
+        gw.fill
       end
 
       @in_path = false
@@ -696,7 +698,7 @@ module PdfW
 
       move_to(x0, y0)
       unless @last_loc == @loc
-        if @in_path
+        if @in_path and @auto_path
           gw.stroke
           @in_path = false
         end
@@ -722,20 +724,20 @@ module PdfW
       start_graph unless @in_graph
       move_to(points[0].x, points[0].y)
       unless @last_loc == @loc
-        if @in_path
-          @gw.stroke
+        if @in_path and @auto_path
+          gw.stroke
           @in_path = false
         end
       end
-      
+
       check_set_line_color
       check_set_line_width
       check_set_line_dash_pattern
-      
-      @gw.move_to(to_points(@units, @loc.x), to_points(@units, @loc.y)) unless @in_path
+
+      gw.move_to(to_points(@units, @loc.x), to_points(@units, @loc.y)) unless @in_path
       i = 1
       while i + 2 < points.size
-        @gw.curve_to(
+        gw.curve_to(
           to_points(@units, points[i].x),
           @page_height - to_points(@units, points[i].y),
           to_points(@units, points[i+1].x),
@@ -756,17 +758,23 @@ module PdfW
     def circle(x, y, r, options={})
       border = options[:border].nil? ? true : options[:border]
       fill = options[:fill].nil? ? false : options[:fill]
+
+      check_set_line_color
+      check_set_line_width
+      check_set_line_dash_pattern
+      check_set_fill_color
+
       1.upto(4) do |q|
         bp = get_quadrant_bezier_points(q,x,y,r)
         curve_points(bp)
       end
-      check_set_fill_color
+
       if (border and fill)
-        @gw.fill_and_stroke
+        gw.fill_and_stroke
       elsif border
-        @gw.stroke
+        gw.stroke
       elsif fill
-        @gw.fill
+        gw.fill
       end
 
       @in_path = false
@@ -776,18 +784,24 @@ module PdfW
       rotation = options[:rotation] || 0
       border = options[:border].nil? ? true : options[:border]
       fill = options[:fill].nil? ? false : options[:fill]
+
+      check_set_line_color
+      check_set_line_width
+      check_set_line_dash_pattern
+      check_set_fill_color
+
       1.upto(4) do |q|
         bp = get_quadrant_bezier_points(q, x, y, rx, ry)
         bp = rotate_points(Location.new(x, y), bp, -rotation) unless rotation.zero?
         curve_points(bp)
       end
-      check_set_fill_color
+
       if (border and fill)
-        @gw.fill_and_stroke
+        gw.fill_and_stroke
       elsif border
-        @gw.stroke
+        gw.stroke
       elsif fill
-        @gw.fill
+        gw.fill
       end
 
       @in_path = false
@@ -823,12 +837,31 @@ module PdfW
     end
 
     def fill
+      raise Exception.new("Not in graph") unless @in_graph
+      raise Exception.new("Not in path") unless @in_path
+
+      check_set_fill_color
+      gw.fill
+      @in_path = false
     end
 
     def stroke
+      raise Exception.new("Not in graph") unless @in_graph
+      raise Exception.new("Not in path") unless @in_path
+
+      check_set_line_color
+      gw.stroke
+      @in_path = false
     end
 
     def fill_and_stroke
+      raise Exception.new("Not in graph") unless @in_graph
+      raise Exception.new("Not in path") unless @in_path
+
+      check_set_fill_color
+      check_set_line_color
+      gw.fill_and_stroke
+      @in_path = false
     end
 
     def line_dash_pattern
