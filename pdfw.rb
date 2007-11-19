@@ -776,6 +776,12 @@ module PdfW
       points
     end
 
+    def points_for_ellipse(x, y, rx, ry)
+      points = (1..4).inject([]) { |points, q| points + get_quadrant_bezier_points(q, x, y, rx, ry) }
+      [12,8,4].each { |i| points.delete_at(i) }
+      points
+    end
+
     def circle(x, y, r, options={})
       border = options[:border].nil? ? true : options[:border]
       fill = options[:fill].nil? ? false : options[:fill]
@@ -811,11 +817,10 @@ module PdfW
       check_set_line_dash_pattern
       check_set_fill_color
 
-      1.upto(4) do |q|
-        bp = get_quadrant_bezier_points(q, x, y, rx, ry)
-        bp = rotate_points(Location.new(x, y), bp, -rotation) unless rotation.zero?
-        curve_points(bp)
-      end
+      points = points_for_ellipse(x, y, rx, ry)
+      points = rotate_points(Location.new(x, y), points, -rotation)
+      points.reverse! if options[:reverse]
+      curve_points(points)
 
       if @auto_path
         if (border and fill)

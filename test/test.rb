@@ -322,6 +322,11 @@ def compound_paths(w)
       p.circle(2.5, 8.5, 1.5)
       p.circle(2.5, 8.5, 0.5, :reverse => true)
     end
+    
+    p.path(:fill => true, :stroke => true) do
+      p.ellipse(6.5, 2.5, 1.5, 2)
+      p.ellipse(6.5, 2.5, 1, 1.5, :reverse => true)
+    end
   end
 end
 
