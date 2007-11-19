@@ -317,6 +317,11 @@ def compound_paths(w)
       p.rectangle_path(1.5, 3.5, 1, 1, :reverse => true)
       p.rectangle_path(2.75, 4.75, 1, 1, :reverse => true)
     end
+
+    p.path(:fill => true, :stroke => true) do
+      p.circle(2.5, 8.5, 1.5)
+      p.circle(2.5, 8.5, 0.5, :reverse => true)
+    end
   end
 end
 
