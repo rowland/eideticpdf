@@ -298,9 +298,32 @@ def filled_shapes(w)
   end
 end
 
+def compound_paths(w)
+  w.page(:units => :in) do |p|
+    p.set_font("Courier", 10)
+    p.print_xy(0.5, 0.5, "Compound Paths")
+    p.fill_color = 'LightSteelBlue'
+
+    # filled rectangle w/ only 3 borders
+    p.path
+    p.move_to(1, 1)
+    p.line_to(3, 1)
+    p.line_to(3, 2)
+    p.line_to(1, 2)
+    p.fill_and_stroke
+
+    p.path(:fill => true, :stroke => true) do
+      p.rectangle_path(1, 3, 3, 3)
+      p.rectangle_path(1.5, 3.5, 1, 1, :reverse => true)
+      p.rectangle_path(2.75, 4.75, 1, 1, :reverse => true)
+    end
+  end
+end
+
 docw = PdfDocumentWriter.new
 
 docw.doc do |w|
+  compound_paths(w)
   filled_shapes(w)
   circles_and_rectangles(w)
   ellipses(w)

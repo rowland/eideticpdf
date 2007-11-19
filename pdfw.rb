@@ -681,16 +681,31 @@ module PdfW
           to_points(@units, width),
           to_points(@units, height))
 
-      if (border and fill)
-        gw.fill_and_stroke
-      elsif border then
-        gw.stroke
-      elsif fill then
-        gw.fill
+      if @auto_path
+        if (border and fill)
+          gw.fill_and_stroke
+        elsif border then
+          gw.stroke
+        elsif fill then
+          gw.fill
+        end
+        @in_path = false
       end
-
-      @in_path = false
       move_to(x + width, y)
+    end
+
+    def rectangle_path(x, y, width, height, options={})
+      move_to(x, y)
+      if options[:reverse]
+        line_to(x, y + height)
+        line_to(x + width, y + height)
+        line_to(x + width, y)
+      else
+        line_to(x + width, y)
+        line_to(x + width, y + height)
+        line_to(x, y + height)
+      end
+      line_to(x, y)
     end
 
     def curve(x0, y0, x1, y1, x2, y2, x3, y3)
@@ -769,15 +784,16 @@ module PdfW
         curve_points(bp)
       end
 
-      if (border and fill)
-        gw.fill_and_stroke
-      elsif border
-        gw.stroke
-      elsif fill
-        gw.fill
+      if @auto_path
+        if (border and fill)
+          gw.fill_and_stroke
+        elsif border
+          gw.stroke
+        elsif fill
+          gw.fill
+        end
+        @in_path = false
       end
-
-      @in_path = false
     end
 
     def ellipse(x, y, rx, ry, options={})
@@ -796,15 +812,16 @@ module PdfW
         curve_points(bp)
       end
 
-      if (border and fill)
-        gw.fill_and_stroke
-      elsif border
-        gw.stroke
-      elsif fill
-        gw.fill
+      if @auto_path
+        if (border and fill)
+          gw.fill_and_stroke
+        elsif border
+          gw.stroke
+        elsif fill
+          gw.fill
+        end
+        @in_path = false
       end
-
-      @in_path = false
     end
 
     def arc(x, y, r, start_angle, end_angle, move_to0=false)
@@ -836,6 +853,21 @@ module PdfW
     def arch(x, y, r1, r2, start_angle, end_angle, border=true, fill=false)
     end
 
+    def path(options={})
+      @auto_path = false
+      if block_given?
+        yield
+        if options[:fill] and options[:stroke]
+          gw.fill_and_stroke
+        elsif options[:stroke]
+          gw.stroke
+        elsif options[:fill]
+          gw.fill
+        end
+        @auto_path = true
+      end
+    end
+
     def fill
       raise Exception.new("Not in graph") unless @in_graph
       raise Exception.new("Not in path") unless @in_path
@@ -843,6 +875,7 @@ module PdfW
       check_set_fill_color
       gw.fill
       @in_path = false
+      @auto_path = true
     end
 
     def stroke
@@ -852,6 +885,7 @@ module PdfW
       check_set_line_color
       gw.stroke
       @in_path = false
+      @auto_path = true
     end
 
     def fill_and_stroke
@@ -862,6 +896,7 @@ module PdfW
       check_set_line_color
       gw.fill_and_stroke
       @in_path = false
+      @auto_path = true
     end
 
     def line_dash_pattern
@@ -1175,6 +1210,10 @@ module PdfW
 
     def rectangle(x, y, width, height, options={})
       cur_page.rectangle(x, y, width, height, options)
+    end
+
+    def rectangle_path(x, y, width, height, options={})
+      cur_page.rectangle_path(x, y, width, height, options)
     end
 
     def curve(x0, y0, x1, y1, x2, y2, x3, y3)
