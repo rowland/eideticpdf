@@ -576,6 +576,26 @@ module PdfW
       end      
     end
 
+    def check_set(*options)
+      check_set_line_color if options.include?(:line_color)
+      check_set_line_width if options.include?(:line_width)
+      check_set_line_dash_pattern if options.include?(:line_dash_pattern)
+      check_set_fill_color if options.include?(:fill_color)
+    end
+
+    def auto_stroke_and_fill(options)
+      if @auto_path
+        if (options[:stroke] and options[:fill])
+          gw.fill_and_stroke
+        elsif options[:stroke] then
+          gw.stroke
+        elsif options[:fill] then
+          gw.fill
+        end
+        @in_path = false
+      end
+    end
+
   public
     attr_reader :doc, :units
     attr_reader :stream, :annotations
@@ -653,9 +673,7 @@ module PdfW
         @in_path = false
       end
 
-      check_set_line_color
-      check_set_line_width
-      check_set_line_dash_pattern
+      check_set(:line_color, :line_width, :line_dash_pattern)
 
       gw.move_to(to_points(@units, @loc.x), to_points(@units, @loc.y)) unless @in_path
       move_to(x, y)
@@ -670,10 +688,7 @@ module PdfW
       start_graph unless @in_graph
       gw.stroke if @in_path and @auto_path
 
-      check_set_line_color
-      check_set_line_width
-      check_set_line_dash_pattern
-      check_set_fill_color
+      check_set(:line_color, :line_width, :line_dash_pattern, :fill_color)
 
       gw.rectangle(
           to_points(@units, x),
@@ -681,16 +696,7 @@ module PdfW
           to_points(@units, width),
           to_points(@units, height))
 
-      if @auto_path
-        if (border and fill)
-          gw.fill_and_stroke
-        elsif border then
-          gw.stroke
-        elsif fill then
-          gw.fill
-        end
-        @in_path = false
-      end
+      auto_stroke_and_fill(:stroke => border, :fill => fill)
       move_to(x + width, y)
     end
 
@@ -718,9 +724,8 @@ module PdfW
           @in_path = false
         end
       end
-      check_set_line_color
-      check_set_line_width
-      check_set_line_dash_pattern
+      check_set(:line_color, :line_width, :line_dash_pattern)
+
       gw.move_to(to_points(@units, @loc.x), to_points(@units, @loc.y)) unless @in_path
       gw.curve_to(
           to_points(@units, x1),
@@ -745,9 +750,7 @@ module PdfW
         end
       end
 
-      check_set_line_color
-      check_set_line_width
-      check_set_line_dash_pattern
+      check_set(:line_color, :line_width, :line_dash_pattern)
 
       gw.move_to(to_points(@units, @loc.x), to_points(@units, @loc.y)) unless @loc == @last_loc # @in_path
       i = 1
@@ -776,35 +779,23 @@ module PdfW
       points
     end
 
-    def points_for_ellipse(x, y, rx, ry)
-      points = (1..4).inject([]) { |points, q| points + get_quadrant_bezier_points(q, x, y, rx, ry) }
-      [12,8,4].each { |i| points.delete_at(i) }
-      points
-    end
-
     def circle(x, y, r, options={})
       border = options[:border].nil? ? true : options[:border]
       fill = options[:fill].nil? ? false : options[:fill]
 
-      check_set_line_color
-      check_set_line_width
-      check_set_line_dash_pattern
-      check_set_fill_color
+      check_set(:line_color, :line_width, :line_dash_pattern, :fill_color)
 
       points = points_for_circle(x, y, r)
       points.reverse! if options[:reverse]
       curve_points(points)
 
-      if @auto_path
-        if (border and fill)
-          gw.fill_and_stroke
-        elsif border
-          gw.stroke
-        elsif fill
-          gw.fill
-        end
-        @in_path = false
-      end
+      auto_stroke_and_fill(:stroke => border, :fill => fill)
+    end
+
+    def points_for_ellipse(x, y, rx, ry)
+      points = (1..4).inject([]) { |points, q| points + get_quadrant_bezier_points(q, x, y, rx, ry) }
+      [12,8,4].each { |i| points.delete_at(i) }
+      points
     end
 
     def ellipse(x, y, rx, ry, options={})
@@ -812,26 +803,14 @@ module PdfW
       border = options[:border].nil? ? true : options[:border]
       fill = options[:fill].nil? ? false : options[:fill]
 
-      check_set_line_color
-      check_set_line_width
-      check_set_line_dash_pattern
-      check_set_fill_color
+      check_set(:line_color, :line_width, :line_dash_pattern, :fill_color)
 
       points = points_for_ellipse(x, y, rx, ry)
       points = rotate_points(Location.new(x, y), points, -rotation)
       points.reverse! if options[:reverse]
       curve_points(points)
 
-      if @auto_path
-        if (border and fill)
-          gw.fill_and_stroke
-        elsif border
-          gw.stroke
-        elsif fill
-          gw.fill
-        end
-        @in_path = false
-      end
+      auto_stroke_and_fill(:stroke => border, :fill => fill)
     end
 
     def arc(x, y, r, start_angle, end_angle, move_to0=false)
@@ -883,7 +862,7 @@ module PdfW
       raise Exception.new("Not in graph") unless @in_graph
       raise Exception.new("Not in path") unless @in_path
 
-      check_set_fill_color
+      check_set(:fill_color)
       gw.fill
       @in_path = false
       @auto_path = true
@@ -893,7 +872,7 @@ module PdfW
       raise Exception.new("Not in graph") unless @in_graph
       raise Exception.new("Not in path") unless @in_path
 
-      check_set_line_color
+      check_set(:line_color)
       gw.stroke
       @in_path = false
       @auto_path = true
@@ -903,8 +882,7 @@ module PdfW
       raise Exception.new("Not in graph") unless @in_graph
       raise Exception.new("Not in path") unless @in_path
 
-      check_set_fill_color
-      check_set_line_color
+      check_set(:fill_color,:line_color)
       gw.fill_and_stroke
       @in_path = false
       @auto_path = true
