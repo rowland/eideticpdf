@@ -595,6 +595,40 @@ module PdfW
       end
     end
 
+    def draw_rounded_rectangle(x, y, width, height, options={})
+      corners = options[:corners] || []
+      if corners.size == 1
+        xr1 = yr1 = xr2 = yr2 = xr3 = yr3 = xr4 = yr4 = corners[0]
+      elsif corners.size == 2
+        xr1 = yr1 = xr2 = yr2 = corners[0]
+        xr3 = yr3 = xr4 = yr4 = corners[1]
+      elsif corners.size == 4
+        xr1 = yr1 = corners[0]
+        xr2 = yr2 = corners[1]
+        xr3 = yr3 = corners[2]
+        xr4 = yr4 = corners[3]
+      elsif corners.size == 8
+        xr1, yr1, xr2, yr2, xr3, yr3, xr4, yr4 = corners
+      else
+        xr1 = yr1 = xr2 = yr2 = xr3 = yr3 = xr4 = yr4 = 0
+      end
+
+      q2p = get_quadrant_bezier_points(2, x         + xr1, y          + yr1, xr1, yr1)
+      q1p = get_quadrant_bezier_points(1, x + width - xr2, y          + yr2, xr2, yr2)
+      q4p = get_quadrant_bezier_points(4, x + width - xr3, y + height - yr3, xr3, yr3)
+      q3p = get_quadrant_bezier_points(3, x         + xr4, y + height - yr4, xr4, yr4)
+
+      qpa = [q1p, q2p, q3p, q4p]
+      if options[:reverse]
+        qpa.reverse!
+        qpa.each { |qp| qp.reverse! }
+      end
+
+      curve_points(qpa[0]); line_to(qpa[1][0].x, qpa[1][0].y)
+      curve_points(qpa[1]); line_to(qpa[2][0].x, qpa[2][0].y)
+      curve_points(qpa[2]); line_to(qpa[3][0].x, qpa[3][0].y)
+      curve_points(qpa[3]); line_to(qpa[0][0].x, qpa[0][0].y)
+    end
   public
     attr_reader :doc, :units
     attr_reader :stream, :annotations
@@ -689,7 +723,9 @@ module PdfW
 
       check_set(:line_color, :line_width, :line_dash_pattern, :fill_color)
 
-      if options[:path]
+      if options[:corners]
+        draw_rounded_rectangle(x, y, width, height, options)
+      elsif options[:path]
         move_to(x, y)
         if options[:reverse]
           line_to(x, y + height)
@@ -708,51 +744,6 @@ module PdfW
             to_points(@units, width),
             to_points(@units, height))
       end
-
-      auto_stroke_and_fill(:stroke => border, :fill => fill)
-      move_to(x + width, y)
-    end
-    
-    def rounded_rectangle(x, y, width, height, options={})
-      border = options[:border].nil? ? true : options[:border]
-      fill = options[:fill].nil? ? false : options[:fill]
-      start_graph unless @in_graph
-      gw.stroke if @in_path and @auto_path
-
-      check_set(:line_color, :line_width, :line_dash_pattern, :fill_color)
-      
-      corners = options[:corners] || []
-      if corners.size == 1
-        xr1 = yr1 = xr2 = yr2 = xr3 = yr3 = xr4 = yr4 = corners[0]
-      elsif corners.size == 2
-        xr1 = yr1 = xr2 = yr2 = corners[0]
-        xr3 = yr3 = xr4 = yr4 = corners[1]
-      elsif corners.size == 4
-        xr1 = yr1 = corners[0]
-        xr2 = yr2 = corners[1]
-        xr3 = yr3 = corners[2]
-        xr4 = yr4 = corners[3]
-      elsif corners.size == 8
-        xr1, yr1, xr2, yr2, xr3, yr3, xr4, yr4 = corners
-      else
-        xr1 = yr1 = xr2 = yr2 = xr3 = yr3 = xr4 = yr4 = 0
-      end
-
-      q2p = get_quadrant_bezier_points(2, x         + xr1, y          + yr1, xr1, yr1)
-      q1p = get_quadrant_bezier_points(1, x + width - xr2, y          + yr2, xr2, yr2)
-      q4p = get_quadrant_bezier_points(4, x + width - xr3, y + height - yr3, xr3, yr3)
-      q3p = get_quadrant_bezier_points(3, x         + xr4, y + height - yr4, xr4, yr4)
-
-      qpa = [q1p, q2p, q3p, q4p]
-      if options[:reverse]
-        qpa.reverse!
-        qpa.each { |qp| qp.reverse! }
-      end
-
-      curve_points(qpa[0]); line_to(qpa[1][0].x, qpa[1][0].y)
-      curve_points(qpa[1]); line_to(qpa[2][0].x, qpa[2][0].y)
-      curve_points(qpa[2]); line_to(qpa[3][0].x, qpa[3][0].y)
-      curve_points(qpa[3]); line_to(qpa[0][0].x, qpa[0][0].y)
 
       auto_stroke_and_fill(:stroke => border, :fill => fill)
       move_to(x + width, y)
@@ -1243,10 +1234,6 @@ module PdfW
 
     def rectangle(x, y, width, height, options={})
       cur_page.rectangle(x, y, width, height, options)
-    end
-
-    def rounded_rectangle(x, y, width, height, options={})
-      cur_page.rounded_rectangle(x, y, width, height, options)
     end
 
     def curve(x0, y0, x1, y1, x2, y2, x3, y3)

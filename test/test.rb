@@ -51,7 +51,7 @@ def pt_units(w)
     p.rectangle(1,1,p.page_width-3, p.page_height-2)
     p.set_font("Courier", 10)
     p.print_xy(5, 5, "Point Units")
-    
+
     y = 24; size = 12
     while y < 700
       p.set_font("Helvetica", size)
@@ -148,12 +148,12 @@ def line_widths_and_patterns(w)
       p.line_to(p.page_width - 5, 13 + i)
       p.print("  #{pattern}")
     end
-    
+
     p.line_width = "3pt"
     p.line_dash_pattern = :solid
     p.print_xy(1, 22, "Line Colors")
     y = 23.0
-    
+
     # blue
     p.line_color = 0x0000FF
     p.line_color = [0,0,255]
@@ -322,15 +322,15 @@ def compound_paths(w)
       p.circle(2.5, 8.5, 1.5)
       p.circle(2.5, 8.5, 0.5, :reverse => true)
     end
-    
+
     p.path(:fill => true, :stroke => true) do
       p.ellipse(6.5, 2.5, 1.5, 2)
       p.ellipse(6.5, 2.5, 1, 1.5, :reverse => true)
     end
-    
+
     p.path(:fill => true, :stroke => true) do
-      p.rounded_rectangle(5, 6, 3, 4, :corners => [0.5])
-      p.rounded_rectangle(5.5, 6.5, 2, 3, :corners => [1, 0.5, 1, 0.5, 0.5, 1, 0.5, 1], :reverse => true)
+      p.rectangle(5, 6, 3, 4, :corners => [0.5])
+      p.rectangle(5.5, 6.5, 2, 3, :corners => [1, 0.5, 1, 0.5, 0.5, 1, 0.5, 1], :reverse => true)
     end
   end
 end
