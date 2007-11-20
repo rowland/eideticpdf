@@ -733,20 +733,26 @@ module PdfW
         xr3 = yr3 = corners[2]
         xr4 = yr4 = corners[3]
       elsif corners.size == 8
-        xr1 = yr1 = xr2 = yr2 = xr3 = yr3 = xr4 = yr4 = corners
+        xr1, yr1, xr2, yr2, xr3, yr3, xr4, yr4 = corners
       else
         xr1 = yr1 = xr2 = yr2 = xr3 = yr3 = xr4 = yr4 = 0
       end
 
-      c1p = get_quadrant_bezier_points(2, x         + xr1, y          + yr1, xr1, yr1)
-      c2p = get_quadrant_bezier_points(1, x + width - xr2, y          + yr2, xr2, yr2)
-      c3p = get_quadrant_bezier_points(4, x + width - xr3, y + height - yr3, xr3, yr3)
-      c4p = get_quadrant_bezier_points(3, x         + xr4, y + height - yr4, xr4, yr4)
+      q2p = get_quadrant_bezier_points(2, x         + xr1, y          + yr1, xr1, yr1)
+      q1p = get_quadrant_bezier_points(1, x + width - xr2, y          + yr2, xr2, yr2)
+      q4p = get_quadrant_bezier_points(4, x + width - xr3, y + height - yr3, xr3, yr3)
+      q3p = get_quadrant_bezier_points(3, x         + xr4, y + height - yr4, xr4, yr4)
 
-      curve_points(c2p); line_to(c1p[0].x, c1p[0].y)
-      curve_points(c1p); line_to(c4p[0].x, c4p[0].y)
-      curve_points(c4p); line_to(c3p[0].x, c3p[0].y)
-      curve_points(c3p); line_to(c2p[0].x, c2p[0].y)
+      qpa = [q1p, q2p, q3p, q4p]
+      if options[:reverse]
+        qpa.reverse!
+        qpa.each { |qp| qp.reverse! }
+      end
+
+      curve_points(qpa[0]); line_to(qpa[1][0].x, qpa[1][0].y)
+      curve_points(qpa[1]); line_to(qpa[2][0].x, qpa[2][0].y)
+      curve_points(qpa[2]); line_to(qpa[3][0].x, qpa[3][0].y)
+      curve_points(qpa[3]); line_to(qpa[0][0].x, qpa[0][0].y)
 
       auto_stroke_and_fill(:stroke => border, :fill => fill)
       move_to(x + width, y)

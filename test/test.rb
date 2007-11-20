@@ -330,7 +330,7 @@ def compound_paths(w)
     
     p.path(:fill => true, :stroke => true) do
       p.rounded_rectangle(5, 6, 3, 4, :corners => [0.5])
-      p.rounded_rectangle(5.5, 6.5, 2, 3, :corners => [0.5])
+      p.rounded_rectangle(5.5, 6.5, 2, 3, :corners => [1, 0.5, 1, 0.5, 0.5, 1, 0.5, 1], :reverse => true)
     end
   end
 end
