@@ -9,94 +9,12 @@ require 'pdfk'
 module PdfW
   include PdfU
 
-  UNIT_CONVERSION = { :pt => 1, :in => 72, :cm => 28.35 }
-
+  Font = Struct.new(:name, :size, :style, :color, :encoding, :sub_type, :widths, :ascent, :descent, :height)
   Location = Struct.new(:x, :y)
-
-  def to_points(units, measurement)
-    UNIT_CONVERSION[units] * measurement
-  end
-  
-  def from_points(units, measurement)
-    measurement / UNIT_CONVERSION[units].to_f
-  end
-
-  def convert_units(loc, from_units, to_units)
-    Location.new(
-      loc.x * UNIT_CONVERSION[from_units] / UNIT_CONVERSION[to_units].to_f,
-      loc.y * UNIT_CONVERSION[from_units] / UNIT_CONVERSION[to_units].to_f)
-  end
-
   Signs = Struct.new(:x, :y)
 
   SIGNS = [ Signs.new(1, -1), Signs.new(-1, -1), Signs.new(-1, 1), Signs.new(1, 1) ]
-
-  def get_quadrant_bezier_points(quadrant, x, y, rx, ry=nil)
-    ry = rx if ry.nil?
-    a = 4.0 / 3.0 * (Math.sqrt(2) - 1.0)
-    bp = []
-    if (quadrant % 2 == 1) # quadrant is odd
-      # (1,0)
-      bp << Location.new(x + (rx * SIGNS[quadrant - 1].x), y)
-      # (1,a)
-      bp << Location.new(bp[0].x, y + (a * ry * SIGNS[quadrant - 1].y))
-      # (a,1)
-      bp << Location.new(x + (a * rx * SIGNS[quadrant - 1].x), y + (ry * SIGNS[quadrant - 1].y))
-      # (0,1)
-      bp << Location.new(x, bp[2].y)
-    else # quadrant is even
-      # (0,1)
-      bp << Location.new(x, y + (ry * SIGNS[quadrant - 1].y))
-      # (a,1)
-      bp << Location.new(x + (a * rx * SIGNS[quadrant - 1].x), bp[0].y)
-      # (1,a)
-      bp << Location.new(x + (rx * SIGNS[quadrant - 1].x), y + (a * ry * SIGNS[quadrant - 1].y))
-      # (1,0)
-      bp << Location.new(bp[2].x, y)
-    end
-    bp
-  end
-
-  def f(value, prec=2)
-    sprintf("%.*f", prec, value).sub(',','.')
-  end
-
-  def g(value, prec=4)
-    # prec must be >= 1 or gsub will strip significant trailing 0's.
-    sprintf("%.*f", prec, value).sub(',','.').gsub(/\.?0*$/,'')
-  end
-
-  def radians_from_degrees(degrees)
-    degrees * Math::PI / 180.0
-  end
-
-  def rotate_xy_coordinate(x, y, angle)
-    theta = radians_from_degrees(angle)
-    r_cos = Math::cos(theta)
-    r_sin = Math::sin(theta)
-    x_rot = (r_cos * x) - (r_sin * y)
-    y_rot = (r_sin * x) + (r_cos * y)
-    [x_rot, y_rot]
-  end
-
-	def rotate_point(loc, angle)
-		x, y = rotate_xy_coordinate(loc.x, loc.y, angle)
-		Location.new(x, y)
-	end
-
-	def rotate_points(mid, points, angle)
-    theta = radians_from_degrees(angle)
-    r_cos = Math::cos(theta)
-    r_sin = Math::sin(theta)
-	  points.map do |p|
-	    x, y = p.x - mid.x, p.y - mid.y
-      x_rot = (r_cos * x) - (r_sin * y)
-      y_rot = (r_sin * x) + (r_cos * y)
-	    Location.new(x_rot + mid.x, y_rot + mid.y)
-    end
-  end
-
-  Font = Struct.new(:name, :size, :style, :color, :encoding, :sub_type, :widths, :ascent, :descent, :height)
+  UNIT_CONVERSION = { :pt => 1, :in => 72, :cm => 28.35 }
 
   class PageStyle
     attr_reader :page_size, :crop_size, :orientation, :landscape, :rotate
@@ -144,7 +62,18 @@ module PdfW
     end
   end
 
-  class MiscWriter
+  class BaseWriter
+    def f(value, prec=2)
+      sprintf("%.*f", prec, value).sub(',','.')
+    end
+
+    def g(value, prec=4)
+      # prec must be >= 1 or gsub will strip significant trailing 0's.
+      sprintf("%.*f", prec, value).sub(',','.').gsub(/\.?0*$/,'')
+    end
+  end
+
+  class MiscWriter < BaseWriter
     def initialize(stream)
       @stream = stream
     end
@@ -199,7 +128,7 @@ module PdfW
     end
   end
 
-  class GraphWriter
+  class GraphWriter < BaseWriter
     def initialize(stream)
       @stream = stream
     end
@@ -309,7 +238,7 @@ module PdfW
     end
   end  
 
-  class TextWriter
+  class TextWriter < BaseWriter
     def initialize(stream)
       @stream = stream
     end
@@ -385,6 +314,76 @@ module PdfW
 
   class PdfPageWriter
   private
+    def radians_from_degrees(degrees)
+      degrees * Math::PI / 180.0
+    end
+
+    def to_points(units, measurement)
+      UNIT_CONVERSION[units] * measurement
+    end
+
+    def from_points(units, measurement)
+      measurement / UNIT_CONVERSION[units].to_f
+    end
+
+    def convert_units(loc, from_units, to_units)
+      Location.new(
+        loc.x * UNIT_CONVERSION[from_units] / UNIT_CONVERSION[to_units].to_f,
+        loc.y * UNIT_CONVERSION[from_units] / UNIT_CONVERSION[to_units].to_f)
+    end
+
+    def get_quadrant_bezier_points(quadrant, x, y, rx, ry=nil)
+      ry = rx if ry.nil?
+      a = 4.0 / 3.0 * (Math.sqrt(2) - 1.0)
+      bp = []
+      if (quadrant % 2 == 1) # quadrant is odd
+        # (1,0)
+        bp << Location.new(x + (rx * SIGNS[quadrant - 1].x), y)
+        # (1,a)
+        bp << Location.new(bp[0].x, y + (a * ry * SIGNS[quadrant - 1].y))
+        # (a,1)
+        bp << Location.new(x + (a * rx * SIGNS[quadrant - 1].x), y + (ry * SIGNS[quadrant - 1].y))
+        # (0,1)
+        bp << Location.new(x, bp[2].y)
+      else # quadrant is even
+        # (0,1)
+        bp << Location.new(x, y + (ry * SIGNS[quadrant - 1].y))
+        # (a,1)
+        bp << Location.new(x + (a * rx * SIGNS[quadrant - 1].x), bp[0].y)
+        # (1,a)
+        bp << Location.new(x + (rx * SIGNS[quadrant - 1].x), y + (a * ry * SIGNS[quadrant - 1].y))
+        # (1,0)
+        bp << Location.new(bp[2].x, y)
+      end
+      bp
+    end
+
+    def rotate_xy_coordinate(x, y, angle)
+      theta = radians_from_degrees(angle)
+      r_cos = Math::cos(theta)
+      r_sin = Math::sin(theta)
+      x_rot = (r_cos * x) - (r_sin * y)
+      y_rot = (r_sin * x) + (r_cos * y)
+      [x_rot, y_rot]
+    end
+
+  	def rotate_point(loc, angle)
+  		x, y = rotate_xy_coordinate(loc.x, loc.y, angle)
+  		Location.new(x, y)
+  	end
+
+  	def rotate_points(mid, points, angle)
+      theta = radians_from_degrees(angle)
+      r_cos = Math::cos(theta)
+      r_sin = Math::sin(theta)
+  	  points.map do |p|
+  	    x, y = p.x - mid.x, p.y - mid.y
+        x_rot = (r_cos * x) - (r_sin * y)
+        y_rot = (r_sin * x) + (r_cos * y)
+  	    Location.new(x_rot + mid.x, y_rot + mid.y)
+      end
+    end
+
     def calc_arc_small(r, mid_theta, half_angle, ccwcw)
       half_theta = radians_from_degrees(half_angle.abs)
       v_cos = Math::cos(half_theta)
