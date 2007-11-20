@@ -327,6 +327,11 @@ def compound_paths(w)
       p.ellipse(6.5, 2.5, 1.5, 2)
       p.ellipse(6.5, 2.5, 1, 1.5, :reverse => true)
     end
+    
+    p.path(:fill => true, :stroke => true) do
+      p.rounded_rectangle(5, 6, 3, 4, :corners => [0.5])
+      p.rounded_rectangle(5.5, 6.5, 2, 3, :corners => [0.5])
+    end
   end
 end
 
