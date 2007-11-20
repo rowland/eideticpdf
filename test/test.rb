@@ -313,9 +313,9 @@ def compound_paths(w)
     p.fill_and_stroke
 
     p.path(:fill => true, :stroke => true) do
-      p.rectangle_path(1, 3, 3, 3)
-      p.rectangle_path(1.5, 3.5, 1, 1, :reverse => true)
-      p.rectangle_path(2.75, 4.75, 1, 1, :reverse => true)
+      p.rectangle(1, 3, 3, 3, :path => true)
+      p.rectangle(1.5, 3.5, 1, 1, :path => true, :reverse => true)
+      p.rectangle(2.75, 4.75, 1, 1, :path => true, :reverse => true)
     end
 
     p.path(:fill => true, :stroke => true) do

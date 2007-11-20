@@ -689,28 +689,28 @@ module PdfW
 
       check_set(:line_color, :line_width, :line_dash_pattern, :fill_color)
 
-      gw.rectangle(
-          to_points(@units, x),
-          @page_height - to_points(@units, y + height),
-          to_points(@units, width),
-          to_points(@units, height))
+      if options[:path]
+        move_to(x, y)
+        if options[:reverse]
+          line_to(x, y + height)
+          line_to(x + width, y + height)
+          line_to(x + width, y)
+        else
+          line_to(x + width, y)
+          line_to(x + width, y + height)
+          line_to(x, y + height)
+        end
+        line_to(x, y)
+      else
+        gw.rectangle(
+            to_points(@units, x),
+            @page_height - to_points(@units, y + height),
+            to_points(@units, width),
+            to_points(@units, height))
+      end
 
       auto_stroke_and_fill(:stroke => border, :fill => fill)
       move_to(x + width, y)
-    end
-
-    def rectangle_path(x, y, width, height, options={})
-      move_to(x, y)
-      if options[:reverse]
-        line_to(x, y + height)
-        line_to(x + width, y + height)
-        line_to(x + width, y)
-      else
-        line_to(x + width, y)
-        line_to(x + width, y + height)
-        line_to(x, y + height)
-      end
-      line_to(x, y)
     end
 
     def curve(x0, y0, x1, y1, x2, y2, x3, y3)
