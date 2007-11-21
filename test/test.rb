@@ -355,6 +355,15 @@ def pies(w)
     
     p.fill_color = 'MediumSeaGreen'
     p.pie(4.25, 3.25, 2, 270, 360, :fill => true)
+
+    p.print_xy(0.5, 6, "Arches")
+    p.arch(4, 8, 1.5, 2, 0, 90, :fill => true)
+    p.fill_color = 'Crimson'
+    p.arch(4, 8, 1, 1.5, 90, 180, :fill => true)
+    p.fill_color = 'DarkOrange'
+    p.arch(4, 8, 0.5, 1, 0, 90, :fill => true)
+    p.fill_color = 'Gold'
+    p.arch(4, 8, 0, 0.5, 90, 180, :fill => true)
   end
 end
 

@@ -406,6 +406,11 @@ module PdfW
       [x0, y0, x1, y1, x2, y2, x3, y3]
     end
 
+    def points_for_arc_small(x, y, r, mid_theta, half_angle, ccwcw)
+      x0, y0, x1, y1, x2, y2, x3, y3 = calc_arc_small(r, mid_theta, half_angle, ccwcw)
+      [Location.new(x+x0, y-y0), Location.new(x+x1, y-y1), Location.new(x+x2, y-y2), Location.new(x+x3, y-y3)]
+    end
+
     def arc_small(x, y, r, mid_theta, half_angle, ccwcw, move_to0)
       x0, y0, x1, y1, x2, y2, x3, y3 = calc_arc_small(r, mid_theta, half_angle, ccwcw)
       line_to(x+x0, y-y0) unless move_to0
@@ -848,6 +853,30 @@ module PdfW
       auto_stroke_and_fill(:stroke => border, :fill => fill)
     end
 
+    def points_for_arc(x, y, r, start_angle, end_angle)
+      return nil if start_angle == end_angle
+
+      num_arcs = 1
+      ccwcw = 1.0
+      arc_span = end_angle - start_angle
+      if end_angle < start_angle
+        ccwcw = -1.0
+      end
+      while arc_span.abs / num_arcs.to_f > 90.0
+        num_arcs += 1
+      end
+      angle_bump = arc_span / num_arcs.to_f
+      half_bump = 0.5 * angle_bump
+      cur_angle = start_angle + half_bump
+      points = []
+      num_arcs.times do |i|
+        points << points_for_arc_small(x, y, r, cur_angle, half_bump, ccwcw)
+        points.last.shift if i > 0
+        cur_angle = cur_angle + angle_bump
+      end
+      points.flatten
+    end
+
     def arc(x, y, r, start_angle, end_angle, move_to0=false)
       return if start_angle == end_angle
 
@@ -893,7 +922,28 @@ module PdfW
       auto_stroke_and_fill(:stroke => border, :fill => fill)
     end
 
-    def arch(x, y, r1, r2, start_angle, end_angle, border=true, fill=false)
+    def arch(x, y, r1, r2, start_angle, end_angle, options={})
+      return if start_angle == end_angle
+      start_angle, end_angle = end_angle, start_angle if options[:reverse]
+      border = options[:border].nil? ? true : options[:border]
+      fill = options[:fill].nil? ? false : options[:fill]
+      start_graph unless @in_graph
+      unless @last_loc == @loc
+        gw.stroke if @in_path and @auto_path
+        @in_path = false
+      end
+
+      check_set(:fill_color)
+      arc1 = points_for_arc(x, y, r1, start_angle, end_angle)
+      arc2 = points_for_arc(x, y, r2, end_angle, start_angle)
+      move_to(arc1.first.x, arc1.first.y)
+      gw.move_to(to_points(@units, @loc.x), to_points(@units, @loc.y))
+      curve_points(arc1)
+      line_to(arc2.first.x, arc2.first.y)
+      curve_points(arc2)
+      line_to(arc1.first.x, arc1.first.y)
+      
+      auto_stroke_and_fill(:stroke => border, :fill => fill)
     end
 
     def path(options={})
@@ -1283,8 +1333,8 @@ module PdfW
       cur_page.pie(x, y, r, start_angle, end_angle, options)
     end
 
-    def arch(x, y, r1, r2, start_angle, end_angle, border=true, fill=false)
-      cur_page.arch(x, y, r1, r2, start_angle, end_angle, border, fill)
+    def arch(x, y, r1, r2, start_angle, end_angle, options={})
+      cur_page.arch(x, y, r1, r2, start_angle, end_angle, options)
     end
 
     def fill
