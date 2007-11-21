@@ -770,7 +770,7 @@ module PdfW
           to_points(@units, x3),
           @page_height - to_points(@units, y3))
       move_to(x3, y3)
-      @last_loc = @loc
+      @last_loc = @loc.clone
       @in_path = true
     end
 
@@ -884,9 +884,10 @@ module PdfW
 
       move_to(x, y)
       gw.move_to(to_points(@units, @loc.x), to_points(@units, @loc.y))
-      @last_loc = @loc
+      @last_loc = @loc.clone
       @in_path = true
-      arc(x, y, r,start_angle, end_angle)
+      start_angle, end_angle = end_angle, start_angle if options[:reverse]
+      arc(x, y, r, start_angle, end_angle)
       line_to(x, y)
 
       auto_stroke_and_fill(:stroke => border, :fill => fill)

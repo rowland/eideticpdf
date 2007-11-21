@@ -341,14 +341,18 @@ def pies(w)
     p.print_xy(0.5, 0.5, "Pies")
     p.line_color = 0
 
-    p.fill_color = 'Crimson'
-    p.pie(4, 3, 2, 0, 90, :fill => true)
+    p.path(:fill => true, :stroke => true) do
+      p.fill_color = 'Crimson'
+      p.pie(4, 3, 2, 0, 90)
+      p.circle(4.75, 2.25, 0.5, :reverse => true)
+    end
     p.fill_color = 'DarkOrange'
     p.pie(4, 3, 2, 90, 135, :fill => true)
     p.fill_color = 'Orchid'
     p.pie(4, 3, 2, 135, 225, :fill => true)
     p.fill_color = 'Gold'
     p.pie(4, 3, 2, 225, 270, :fill => true)
+    
     p.fill_color = 'MediumSeaGreen'
     p.pie(4.25, 3.25, 2, 270, 360, :fill => true)
   end
