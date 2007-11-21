@@ -8,15 +8,17 @@ require 'pdfw'
 include PdfW
 
 def grid(w, width, height, xoff, yoff, step=1)
-  # vertical lines
-  0.step(width, step) do |x|
-    w.move_to(x + xoff, yoff)
-    w.line_to(x + xoff, height + yoff)
-  end
-  # horizontal lines
-  0.step(height, step) do |y|
-    w.move_to(xoff, y + yoff)
-    w.line_to(width + xoff, y + yoff)
+  w.path(:stroke => true) do
+    # vertical lines
+    0.step(width, step) do |x|
+      w.move_to(x + xoff, yoff)
+      w.line_to(x + xoff, height + yoff)
+    end
+    # horizontal lines
+    0.step(height, step) do |y|
+      w.move_to(xoff, y + yoff)
+      w.line_to(width + xoff, y + yoff)
+    end
   end
 end
 
@@ -367,6 +369,7 @@ def pies(w)
   end
 end
 
+start = Time.now
 docw = PdfDocumentWriter.new
 
 docw.doc do |w|
@@ -389,5 +392,7 @@ docw.doc do |w|
 end
 
 File.open("test.pdf","w") { |f| f.write(docw) }
+
+puts ((Time.now - start) * 1000).round
 `open test.pdf`
 #print docw

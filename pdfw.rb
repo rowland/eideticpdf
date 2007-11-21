@@ -1337,6 +1337,10 @@ module PdfW
       cur_page.arch(x, y, r1, r2, start_angle, end_angle, options)
     end
 
+    def path(options={}, &block)
+      cur_page.path(options, &block)
+    end
+
     def fill
       cur_page.fill
     end
