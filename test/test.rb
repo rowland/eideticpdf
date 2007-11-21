@@ -335,9 +335,29 @@ def compound_paths(w)
   end
 end
 
+def pies(w)
+  w.page(:units => :in) do |p|
+    p.set_font("Courier", 10)
+    p.print_xy(0.5, 0.5, "Pies")
+    p.line_color = 0
+
+    p.fill_color = 'Crimson'
+    p.pie(4, 3, 2, 0, 90, :fill => true)
+    p.fill_color = 'DarkOrange'
+    p.pie(4, 3, 2, 90, 135, :fill => true)
+    p.fill_color = 'Orchid'
+    p.pie(4, 3, 2, 135, 225, :fill => true)
+    p.fill_color = 'Gold'
+    p.pie(4, 3, 2, 225, 270, :fill => true)
+    p.fill_color = 'MediumSeaGreen'
+    p.pie(4.25, 3.25, 2, 270, 360, :fill => true)
+  end
+end
+
 docw = PdfDocumentWriter.new
 
 docw.doc do |w|
+  pies(w)
   compound_paths(w)
   filled_shapes(w)
   circles_and_rectangles(w)

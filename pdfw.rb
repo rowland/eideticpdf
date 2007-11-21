@@ -871,7 +871,25 @@ module PdfW
       end
     end
 
-    def pie(x, y, r, start_angle, end_angle, border=true, fill=false)
+    def pie(x, y, r, start_angle, end_angle, options={})
+      border = options[:border].nil? ? true : options[:border]
+      fill = options[:fill].nil? ? false : options[:fill]
+      start_graph unless @in_graph
+      unless @last_loc == @loc
+        gw.stroke if @in_path and @auto_path
+        @in_path = false
+      end
+
+      check_set(:line_color, :line_width, :line_dash_pattern, :fill_color)
+
+      move_to(x, y)
+      gw.move_to(to_points(@units, @loc.x), to_points(@units, @loc.y))
+      @last_loc = @loc
+      @in_path = true
+      arc(x, y, r,start_angle, end_angle)
+      line_to(x, y)
+
+      auto_stroke_and_fill(:stroke => border, :fill => fill)
     end
 
     def arch(x, y, r1, r2, start_angle, end_angle, border=true, fill=false)
@@ -1260,8 +1278,8 @@ module PdfW
       cur_page.arc(x, y, r, start_angle, end_angle, move_to0)
     end
 
-    def pie(x, y, r, start_angle, end_angle, border=true, fill=false)
-      cur_page.pie(x, y, r, start_angle, end_angle, border, fill)
+    def pie(x, y, r, start_angle, end_angle, options={})
+      cur_page.pie(x, y, r, start_angle, end_angle, options)
     end
 
     def arch(x, y, r1, r2, start_angle, end_angle, border=true, fill=false)
