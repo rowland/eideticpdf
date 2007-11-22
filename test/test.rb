@@ -392,12 +392,12 @@ def polygons(w)
     p.polygon(x2, y2, r, 7, :fill => true)
     p.polygon(x3, y2, r, 8, :fill => true)
 
-    p.polygon(x1, y3, r, 3, :fill => true, :rotation => 360.0 / 6)
-    p.polygon(x2, y3, r, 4, :fill => true, :rotation => 360.0 / 8)
-    p.polygon(x3, y3, r, 5, :fill => true, :rotation => 360.0 / 10)
-    p.polygon(x1, y4, r, 6, :fill => true, :rotation => 360.0 / 12)
-    p.polygon(x2, y4, r, 7, :fill => true, :rotation => 360.0 / 14)
-    p.polygon(x3, y4, r, 8, :fill => true, :rotation => 360.0 / 16)
+    w.polygon(x1, y3, r, 3, :fill => true, :rotation => 360.0 / 6)
+    w.polygon(x2, y3, r, 4, :fill => true, :rotation => 360.0 / 8)
+    w.polygon(x3, y3, r, 5, :fill => true, :rotation => 360.0 / 10)
+    w.polygon(x1, y4, r, 6, :fill => true, :rotation => 360.0 / 12)
+    w.polygon(x2, y4, r, 7, :fill => true, :rotation => 360.0 / 14)
+    w.polygon(x3, y4, r, 8, :fill => true, :rotation => 360.0 / 16)
   end
 end
 

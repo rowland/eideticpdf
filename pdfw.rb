@@ -1373,6 +1373,14 @@ module PdfW
       cur_page.arch(x, y, r1, r2, start_angle, end_angle, options)
     end
 
+    def points_for_polygon(x, y, r, sides, options={})
+      cur_page.points_for_polygon(x, y, r, sides, options)
+    end
+
+    def polygon(x, y, r, sides, options={})
+      cur_page.polygon(x, y, r, sides, options)
+    end
+
     def path(options={}, &block)
       cur_page.path(options, &block)
     end
