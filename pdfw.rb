@@ -587,6 +587,34 @@ module PdfW
       check_set_fill_color if options.include?(:fill_color)
     end
 
+    def line_color_stack
+      @line_color_stack ||= []
+    end
+
+    def push_line_color(color)
+      line_color_stack.push(@line_color)
+      self.line_color = color if color.respond_to?(:to_int) or color.respond_to?(:to_str)
+    end
+
+    def pop_line_color
+      color = line_color_stack.pop
+      self.line_color = color if color.respond_to?(:to_int) or color.respond_to?(:to_str)
+    end
+
+    def fill_color_stack
+      @fill_color_stack ||= []
+    end
+
+    def push_fill_color(color)
+      fill_color_stack.push(@fill_color)
+      self.fill_color = color if color.respond_to?(:to_int) or color.respond_to?(:to_str)
+    end
+
+    def pop_fill_color
+      color = fill_color_stack.pop
+      self.fill_color = color if color.respond_to?(:to_int) or color.respond_to?(:to_str)
+    end
+
     def auto_stroke_and_fill(options)
       if @auto_path
         if (options[:stroke] and options[:fill])
@@ -600,6 +628,7 @@ module PdfW
       end
     end
 
+    # protected drawing methods
     def draw_rounded_rectangle(x, y, width, height, options={})
       corners = options[:corners] || []
       if corners.size == 1
@@ -726,6 +755,8 @@ module PdfW
       start_graph unless @in_graph
       gw.stroke if @in_path and @auto_path
 
+      push_line_color(border)
+      push_fill_color(fill)
       check_set(:line_color, :line_width, :line_dash_pattern, :fill_color)
 
       if options[:corners]
@@ -751,6 +782,8 @@ module PdfW
       end
 
       auto_stroke_and_fill(:stroke => border, :fill => fill)
+      pop_line_color
+      pop_fill_color
       move_to(x + width, y)
     end
 
@@ -823,6 +856,8 @@ module PdfW
       border = options[:border].nil? ? true : options[:border]
       fill = options[:fill].nil? ? false : options[:fill]
 
+      push_line_color(border)
+      push_fill_color(fill)
       check_set(:line_color, :line_width, :line_dash_pattern, :fill_color)
 
       points = points_for_circle(x, y, r)
@@ -830,6 +865,8 @@ module PdfW
       curve_points(points)
 
       auto_stroke_and_fill(:stroke => border, :fill => fill)
+      pop_line_color
+      pop_fill_color
     end
 
     def points_for_ellipse(x, y, rx, ry)
@@ -843,6 +880,8 @@ module PdfW
       border = options[:border].nil? ? true : options[:border]
       fill = options[:fill].nil? ? false : options[:fill]
 
+      push_line_color(border)
+      push_fill_color(fill)
       check_set(:line_color, :line_width, :line_dash_pattern, :fill_color)
 
       points = points_for_ellipse(x, y, rx, ry)
@@ -851,6 +890,8 @@ module PdfW
       curve_points(points)
 
       auto_stroke_and_fill(:stroke => border, :fill => fill)
+      pop_line_color
+      pop_fill_color
     end
 
     def points_for_arc(x, y, r, start_angle, end_angle)
@@ -909,6 +950,8 @@ module PdfW
         @in_path = false
       end
 
+      push_line_color(border)
+      push_fill_color(fill)
       check_set(:line_color, :line_width, :line_dash_pattern, :fill_color)
 
       move_to(x, y)
@@ -920,6 +963,8 @@ module PdfW
       line_to(x, y)
 
       auto_stroke_and_fill(:stroke => border, :fill => fill)
+      pop_line_color
+      pop_fill_color
     end
 
     def arch(x, y, r1, r2, start_angle, end_angle, options={})
@@ -933,6 +978,8 @@ module PdfW
         @in_path = false
       end
 
+      push_line_color(border)
+      push_fill_color(fill)
       check_set(:fill_color)
       arc1 = points_for_arc(x, y, r1, start_angle, end_angle)
       arc2 = points_for_arc(x, y, r2, end_angle, start_angle)
@@ -944,6 +991,8 @@ module PdfW
       line_to(arc1.first.x, arc1.first.y)
       
       auto_stroke_and_fill(:stroke => border, :fill => fill)
+      pop_line_color
+      pop_fill_color
     end
 
     def points_for_polygon(x, y, r, sides, options={})
@@ -970,6 +1019,8 @@ module PdfW
       end
 
       points = points_for_polygon(x, y, r, sides, options)
+      push_line_color(border)
+      push_fill_color(fill)
       check_set(:line_color, :line_width, :line_dash_pattern, :fill_color)
 
       points.each_with_index do |point, i|
@@ -980,6 +1031,8 @@ module PdfW
         end
       end
       auto_stroke_and_fill(:stroke => border, :fill => fill)
+      pop_line_color
+      pop_fill_color
     end
 
     def path(options={})

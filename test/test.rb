@@ -354,24 +354,17 @@ def pies(w)
       p.pie(4, 3, 2, 0, 90)
       p.circle(4.75, 2.25, 0.5, :reverse => true)
     end
-    p.fill_color = 'DarkOrange'
-    p.pie(4, 3, 2, 90, 135, :fill => true)
-    p.fill_color = 'Orchid'
-    p.pie(4, 3, 2, 135, 225, :fill => true)
-    p.fill_color = 'Gold'
-    p.pie(4, 3, 2, 225, 270, :fill => true)
+    p.pie(4, 3, 2, 90, 135, :fill => 'DarkOrange')
+    p.pie(4, 3, 2, 135, 225, :fill => 'Orchid')
+    p.pie(4, 3, 2, 225, 270, :fill => 'Gold')
     
-    p.fill_color = 'MediumSeaGreen'
-    p.pie(4.25, 3.25, 2, 270, 360, :fill => true)
+    p.pie(4.25, 3.25, 2, 270, 360, :fill => 'MediumSeaGreen')
 
     p.print_xy(0.5, 6, "Arches")
-    p.arch(4, 8, 1.5, 2, 0, 90, :fill => true)
-    p.fill_color = 'Crimson'
-    p.arch(4, 8, 1, 1.5, 90, 180, :fill => true)
-    p.fill_color = 'DarkOrange'
-    p.arch(4, 8, 0.5, 1, 0, 90, :fill => true)
-    p.fill_color = 'Gold'
-    p.arch(4, 8, 0, 0.5, 90, 180, :fill => true)
+    p.arch(4, 8, 1.5, 2, 0, 90, :fill => 'MediumSeaGreen')
+    p.arch(4, 8, 1, 1.5, 90, 180, :fill => 'Crimson')
+    p.arch(4, 8, 0.5, 1, 0, 90, :fill => 'DarkOrange')
+    p.arch(4, 8, 0, 0.5, 90, 180, :fill => 'Gold')
   end
 end
 
@@ -386,17 +379,17 @@ def polygons(w)
     r = 1
 
     p.polygon(x1, y1, r, 3, :fill => true)
-    p.polygon(x2, y1, r, 4, :fill => true)
-    p.polygon(x3, y1, r, 5, :fill => true)
-    p.polygon(x1, y2, r, 6, :fill => true)
-    p.polygon(x2, y2, r, 7, :fill => true)
+    p.polygon(x2, y1, r, 4, :fill => true, :border => 'Blue')
+    p.polygon(x3, y1, r, 5, :fill => true, :border => 'ForestGreen')
+    p.polygon(x1, y2, r, 6, :fill => true, :border => 'Crimson')
+    p.polygon(x2, y2, r, 7, :fill => true, :border => 'Gray')
     p.polygon(x3, y2, r, 8, :fill => true)
 
-    w.polygon(x1, y3, r, 3, :fill => true, :rotation => 360.0 / 6)
-    w.polygon(x2, y3, r, 4, :fill => true, :rotation => 360.0 / 8)
-    w.polygon(x3, y3, r, 5, :fill => true, :rotation => 360.0 / 10)
-    w.polygon(x1, y4, r, 6, :fill => true, :rotation => 360.0 / 12)
-    w.polygon(x2, y4, r, 7, :fill => true, :rotation => 360.0 / 14)
+    w.polygon(x1, y3, r, 3, :fill => 'DarkSlateGray', :rotation => 360.0 / 6)
+    w.polygon(x2, y3, r, 4, :fill => 'DarkTurquoise', :rotation => 360.0 / 8)
+    w.polygon(x3, y3, r, 5, :fill => 'DeepSkyBlue', :rotation => 360.0 / 10)
+    w.polygon(x1, y4, r, 6, :fill => 'ForestGreen', :rotation => 360.0 / 12)
+    w.polygon(x2, y4, r, 7, :fill => 'DarkSlateBlue', :rotation => 360.0 / 14)
     w.polygon(x3, y4, r, 8, :fill => true, :rotation => 360.0 / 16)
   end
 end
