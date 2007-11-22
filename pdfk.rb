@@ -6,7 +6,7 @@
 module PdfK
   FontMetrics = Struct.new(:needs_descriptor, :widths, :ascent, :descent, :flags, :b_box, :missing_width, :stem_v, :stem_h, :italic_angle,
     :cap_height, :x_height, :ascent, :descent, :leading, :max_width, :avg_width)
-  NUM_BASE_FONTS = 41
+  NUM_BASE_FONTS = 39
   NUM_ASIAN_FONTS = 7
   NUM_FONTS = NUM_BASE_FONTS + NUM_ASIAN_FONTS
   NUM_CHARS = 256
@@ -1064,70 +1064,14 @@ module PdfK
       611,  556,  556,  500,  500,  500,  500,  500,  500,  500, # 220 
       722,  444,  500,  500,  500,  500,  278,  278,  278,  278, # 230 
       500,  500,  500,  500,  500,  500,  500,  500,  500,  500, # 240 
-      500,  500,  500,  444,  500,  444],                        # 250 
-    [ # 39 CPDF-Monospace  -- Helvetica-like fixed-pitch (monospace) font.
-       # A fake font just for fun.                                      
-      400,    0,    0,    0,    0,    0,    0,    0,    0,    0, #   0 
-        0,    0,    0,    0,    0,    0,    0,    0,    0,    0, #  10 
-        0,    0,    0,    0,    0,    0,    0,    0,    0,    0, #  20 
-        0,    0,  400,  400,  400,  400,  400,  400,  400,  400, #  30 
-      400,  400,  400,  400,  400,  400,  400,  400,  400,  400, #  40 
-      400,  400,  400,  400,  400,  400,  400,  400,  400,  400, #  50 
-      400,  400,  400,  400,  400,  400,  400,  400,  400,  400, #  60 
-      400,  400,  400,  400,  400,  400,  400,  400,  400,  400, #  70 
-      400,  400,  400,  400,  400,  400,  400,  400,  400,  400, #  80 
-      400,  400,  400,  400,  400,  400,  400,  400,  400,  400, #  90 
-      400,  400,  400,  400,  400,  400,  400,  400,  400,  400, # 100 
-      400,  400,  400,  400,  400,  400,  400,  400,  400,  400, # 110 
-      400,  400,  400,  400,  400,  400,  400,  400,  400,  400, # 120 
-      400,  400,  400,  400,  400,  400,  400,  400,  400,  400, # 130 
-      400,  400,  400,  400,  400,  400,  400,  400,  400,  400, # 140 
-      400,  400,  400,  400,  400,  400,  400,  400,  400,  400, # 150 
-      400,  400,  400,  400,  400,  400,  400,  400,  400,  400, # 160 
-      400,  400,  400,  400,  400,  400,  400,  400,  400,  400, # 170 
-      400,  400,  400,  400,  400,  400,  400,  400,  400,  400, # 180 
-      400,  400,  400,  400,  400,  400,  400,  400,  400,  400, # 190 
-      400,  400,  400,  400,  400,  400,  400,  400,  400,  400, # 200 
-      400,  400,  400,  400,  400,  400,  400,  400,  400,  400, # 210 
-      400,  400,  400,  400,  400,  400,  400,  400,  400,  400, # 220 
-      400,  400,  400,  400,  400,  400,  400,  400,  400,  400, # 230 
-      400,  400,  400,  400,  400,  400,  400,  400,  400,  400, # 240 
-      400,  400,  400,  400,  400,  400],                        # 250 
-    [ # 40  CPDF-SmallCap  -- Small Cap font derived from Times-Roman metrics (0.7254)
-      250,    0,    0,    0,    0,    0,    0,    0,    0,    0, #   0 
-        0,    0,    0,    0,    0,    0,    0,    0,    0,    0, #  10 
-        0,    0,    0,    0,    0,    0,    0,    0,    0,    0, #  20 
-        0,    0,  250,  333,  408,  500,  500,  833,  778,  333, #  30
-      333,  333,  500,  564,  250,  333,  250,  278,  500,  500, #  40
-      500,  500,  500,  500,  500,  500,  500,  500,  278,  278, #  50
-      564,  564,  564,  444,  921,  722,  667,  667,  722,  611, #  60
-      556,  722,  722,  333,  389,  722,  611,  889,  722,  722, #  70
-      556,  722,  667,  556,  611,  722,  722,  944,  722,  722, #  80
-      611,  333,  278,  333,  469,  500,  333,  524,  484,  484, #  90
-      524,  443,  403,  524,  524,  241,  282,  524,  443,  645, # 100
-      524,  524,  403,  524,  484,  403,  443,  524,  524,  684, # 110
-      524,  524,  443,  480,  200,  480,  541,  350,  500,  350, # 120
-      333,  500,  444, 1000,  500,  500,  333, 1000,  556,  333, # 130 
-      889,  350,  611,  350,  350,  333,  333,  444,  444,  350, # 140 
-      500, 1000,  333,  980,  389,  333,  722,  350,  444,  722, # 150 
-      250,  333,  500,  500,  500,  500,  200,  500,  333,  760, # 160 
-      276,  500,  564,  333,  760,  333,  333,  564,  300,  300, # 170 
-      333,  500,  453,  250,  333,  300,  310,  500,  750,  750, # 180 
-      750,  444,  722,  722,  722,  722,  722,  722,  889,  667, # 190 
-      611,  611,  611,  611,  333,  333,  333,  333,  722,  722, # 200 
-      722,  722,  722,  722,  722,  564,  722,  722,  722,  722, # 210 
-      722,  722,  556,  500,  523,  523,  523,  523,  523,  523, # 220 
-      644,  523,  523,  523,  523,  523,  241,  241,  241,  241, # 230 
-      523,  523,  523,  523,  523,  523,  523,  564,  523,  523, # 240 
-      523,  523,  523,  523,  523,  523]                         # 250 
+      500,  500,  500,  444,  500,  444]                         # 250 
   ]
 
   FONT_ASCENDERS = [
     718, 718, 718, 718, 683, 676, 683, 699, 629, 626,
     629, 626, 718, 718, 740, 740, 740, 740, 725, 732,
     717, 717, 718, 718, 718, 718, 737, 737, 737, 737,
-    726, 733, 720, 726, 714, 750, 750, 750, 750, 718,
-    683,
+    726, 733, 720, 726, 714, 750, 750, 750, 750,
     # Japanese
     875, # 41 HeiseiKakuGo-W5
     857, # 42 HeiseiMin-W3
@@ -1146,8 +1090,7 @@ module PdfK
     562, 562, 562, 562, 718, 718, 740, 740,
     740, 740, 681, 681, 681, 681, 718, 718,
     718, 718, 722, 722, 722, 722, 692, 692,
-    681, 681, 708, 750, 750, 750, 750, 718,
-    662,
+    681, 681, 708, 750, 750, 750, 750,
     # Japanese 
     718, # 41 HeiseiKakuGo-W5
     718, # 42 HeiseiMin-W3
@@ -1166,8 +1109,7 @@ module PdfK
     -157, -142, -157, -142, -207, -207, -192, -192,
     -185, -185, -212, -213, -228, -212, -207, -207,
     -207, -207, -205, -205, -205, -205, -281, -276,
-    -258, -271, -314, -188, -189, -188, -189, -207,
-    -217,
+    -258, -271, -314, -188, -189, -188, -189,
     # Japanese 
     -125, # 41 HeiseiKakuGo-W5
     -143, # 42 HeiseiMin-W3
@@ -1222,8 +1164,6 @@ module PdfK
     262176,	# Helvetica-Condensed-Bold
     96,		# Helvetica-Condensed-Oblique
     262240,	# Helvetica-Condensed-BoldObl
-    33,		# CPDF-Monospace
-    131106,	# CPDF-SmallCap
     # Japanese
     4,	# 41 HeiseiKakuGo-W5 (4) 
     6,	# 42 HeiseiMin-W3 (6) 
@@ -1277,8 +1217,6 @@ module PdfK
     [ -169, -228, 1091, 971 ],
     [ -174, -224, 1118, 990 ],
     [ -169, -228, 1141, 971 ],
-    [ -166, -225, 1000, 931 ],
-    [ -168, -218, 1000, 898 ],
     # Japanese
     [ -92, -250, 1010, 922 ],	  # 41 HeiseiKakuGo-W5 [-250, -125, 1000, 875] 
     [ -123, -257, 1001, 910 ],	# 42 HeiseiMin-W3 [-250, -143, 1000, 857 ] 
@@ -1336,8 +1274,6 @@ module PdfK
       0,
     -12,
     -12,
-      0,
-      0,
     # Japanese
       0,	# 41 HeiseiKakuGo-W5
       0,	# 42 HeiseiMin-W3
@@ -1393,8 +1329,6 @@ module PdfK
     130,	# Helvetica-Condensed-Bold
     79,		# Helvetica-Condensed-Oblique
     130,	# Helvetica-Condensed-BoldObl
-    84,		# CPDF-Monospace 
-    84,		# CPDF-SmallCap 
     # Japanese 
     93,	  # 41 HeiseiKakuGo-W5 
     93,	  # 42 HeiseiMin-W3 
@@ -1448,8 +1382,6 @@ module PdfK
     564,
     556,
     564,
-    523,
-    480,
     # Japanese 
     500,	# 41 HeiseiKakuGo-W5 
     500,	# 42 HeiseiMin-W3 
@@ -1507,8 +1439,6 @@ module PdfK
     0,	# 36 Helvetica-Condensed-Bold 
     0,	# 37 Helvetica-Condensed-Oblique 
     0,	# 38 Helvetica-Condensed-BoldObl 
-    0,	# 39 CPDF-Monospace 
-    0,	# 40 CPDF-SmallCap 
 
     # Japanese
     500,	# 41 HeiseiKakuGo-W5 
@@ -1565,8 +1495,6 @@ module PdfK
     0,	# 36 Helvetica-Condensed-Bold 
     0,	# 37 Helvetica-Condensed-Oblique 
     0,	# 38 Helvetica-Condensed-BoldObl
-    0,	# 39 CPDF-Monospace 
-    0,	# 40 CPDF-SmallCap 
 
     # Japanese 
     93,	# 41 HeiseiKakuGo-W5 
@@ -1623,8 +1551,6 @@ module PdfK
     0,	# 36 Helvetica-Condensed-Bold 
     0,	# 37 Helvetica-Condensed-Oblique 
     0,	# 38 Helvetica-Condensed-BoldObl 
-    0,	# 39 CPDF-Monospace 
-    0,	# 40 CPDF-SmallCap 
 
     # Japanese 
     250,	# 41 HeiseiKakuGo-W5 
@@ -1681,8 +1607,6 @@ module PdfK
     0,	# 36 Helvetica-Condensed-Bold 
     0,	# 37 Helvetica-Condensed-Oblique 
     0,	# 38 Helvetica-Condensed-BoldObl 
-    0,	# 39 CPDF-Monospace 
-    0,	# 40 CPDF-SmallCap 
 
     # Japanese
     1000,	# 41 HeiseiKakuGo-W5 
@@ -1739,8 +1663,6 @@ module PdfK
     0,	# 36 Helvetica-Condensed-Bold 
     0,	# 37 Helvetica-Condensed-Oblique
     0,	# 38 Helvetica-Condensed-BoldObl 
-    0,	# 39 CPDF-Monospace
-    0,	# 40 CPDF-SmallCap 
 
     # Japanese 
     689,	# 41 HeiseiKakuGo-W5 
@@ -1798,8 +1720,6 @@ module PdfK
     '',	# 36 Helvetica-Condensed-Bold 
     '',	# 37 Helvetica-Condensed-Oblique 
     '',	# 38 Helvetica-Condensed-BoldObl 
-    '',	# 39 CPDF-Monospace
-    '',	# 40 CPDF-SmallCap
     # Japanese 
     '[ 1 95 500 231 632 500 ]',	# 41 HeiseiKakuGo-W5 - OK
     '[ 1 95 500 231 632 500 ]',	# 42 HeiseiMin-W3 - OK
@@ -1856,8 +1776,6 @@ module PdfK
     '',	# 36 Helvetica-Condensed-Bold 
     '',	# 37 Helvetica-Condensed-Oblique 
     '',	# 38 Helvetica-Condensed-BoldObl 
-    '',	# 39 CPDF-Monospace 
-    '',	# 40 CPDF-SmallCap
     # Japanese 
     '/Registry (Adobe) /Ordering (Japan1) /Supplement 2',	# 41 HeiseiKakuGo-W5
     '/Registry (Adobe) /Ordering (Japan1) /Supplement 2',	# 42 HeiseiMin-W3 
@@ -1914,8 +1832,6 @@ module PdfK
     '',	# 36 Helvetica-Condensed-Bold 
     '',	# 37 Helvetica-Condensed-Oblique 
     '',	# 38 Helvetica-Condensed-BoldObl 
-    '',	# 39 CPDF-Monospace 
-    '',	# 40 CPDF-SmallCap
     # Panose will affect font substitution on platforms with native OS fonts,
     # and seems to override font names specifying the Acrobat Resource's CID fonts.
     # For example, on Windows 95-J, MSGothic and MSMincho will substitutes the fonts,
@@ -3034,9 +2950,7 @@ module PdfK
     'Helvetica-Condensed',
     'Helvetica-Condensed-Bold',
     'Helvetica-Condensed-Oblique',
-    'Helvetica-Condensed-BoldObl',
-    'CPDF-Monospace',
-    'CPDF-SmallCap'
+    'Helvetica-Condensed-BoldObl'
   ]
 
   NAMED_COLORS = {
