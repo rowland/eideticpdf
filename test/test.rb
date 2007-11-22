@@ -107,6 +107,12 @@ def print_text(w)
   w.v_text_align = :above
   w.print(":above ")
 
+  w.move_to(1, 5)
+  ['Black', 'Blue', 'Brown', 'Crimson', 'Gold', 'Green', 'Gray', 'Indigo'].each do |color|
+    w.font_color = color
+    w.print "#{color}     "
+  end
+
   w.end_page
 end
 

@@ -1394,8 +1394,12 @@ module PdfW
       cur_page.set_font_color_rgb(red, green, blue)
     end
 
-    def set_font_color(color)
-      cur_page.set_font_color(color)
+    def font_color
+      cur_page.font_color
+    end
+
+    def font_color=(color)
+      cur_page.font_color = color
     end
 
     # text methods
