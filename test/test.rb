@@ -375,10 +375,37 @@ def pies(w)
   end
 end
 
+def polygons(w)
+  w.page(:units => :in) do |p|
+    p.set_font("Courier", 10)
+    p.print_xy(0.5, 0.5, "Polygons")
+    p.fill_color = 'LightSteelBlue'
+
+    x1, x2, x3 = 1.75, 4.25, 6.75
+    y1, y2, y3, y4 = 2, 4.5, 7, 9.5
+    r = 1
+
+    p.polygon(x1, y1, r, 3, :fill => true)
+    p.polygon(x2, y1, r, 4, :fill => true)
+    p.polygon(x3, y1, r, 5, :fill => true)
+    p.polygon(x1, y2, r, 6, :fill => true)
+    p.polygon(x2, y2, r, 7, :fill => true)
+    p.polygon(x3, y2, r, 8, :fill => true)
+
+    p.polygon(x1, y3, r, 3, :fill => true, :rotation => 360.0 / 6)
+    p.polygon(x2, y3, r, 4, :fill => true, :rotation => 360.0 / 8)
+    p.polygon(x3, y3, r, 5, :fill => true, :rotation => 360.0 / 10)
+    p.polygon(x1, y4, r, 6, :fill => true, :rotation => 360.0 / 12)
+    p.polygon(x2, y4, r, 7, :fill => true, :rotation => 360.0 / 14)
+    p.polygon(x3, y4, r, 8, :fill => true, :rotation => 360.0 / 16)
+  end
+end
+
 start = Time.now
 docw = PdfDocumentWriter.new
 
 docw.doc do |w|
+  polygons(w)
   pies(w)
   compound_paths(w)
   filled_shapes(w)

@@ -426,7 +426,7 @@ module PdfW
     end
 
     def rgb_from_color(color)
-      color = PdfK::NAMED_COLORS[color] if color.respond_to? :to_str
+      color = PdfK::NAMED_COLORS[color] || 0 if color.respond_to? :to_str
       b = color & 0xFF
       g = (color >> 8) & 0xFF
       r = (color >> 16) & 0xFF
@@ -943,6 +943,42 @@ module PdfW
       curve_points(arc2)
       line_to(arc1.first.x, arc1.first.y)
       
+      auto_stroke_and_fill(:stroke => border, :fill => fill)
+    end
+
+    def points_for_polygon(x, y, r, sides, options={})
+      step = 360.0 / sides
+      angle = step / 2 + 90
+      points = (0..sides).collect do
+        px, py = rotate_xy_coordinate(r, 0, angle)
+        angle += step
+        Location.new(x + px * r, y + py * r)
+      end
+      rotation = options[:rotation] || 0
+      points = rotate_points(Location.new(x, y), points, -rotation) unless rotation.zero?
+      points.reverse! if options[:reverse]
+      points
+    end
+
+    def polygon(x, y, r, sides, options={})
+      border = options[:border].nil? ? true : options[:border]
+      fill = options[:fill].nil? ? false : options[:fill]
+      start_graph unless @in_graph
+      unless @last_loc == @loc
+        gw.stroke if @in_path and @auto_path
+        @in_path = false
+      end
+
+      points = points_for_polygon(x, y, r, sides, options)
+      check_set(:line_color, :line_width, :line_dash_pattern, :fill_color)
+
+      points.each_with_index do |point, i|
+        if i == 0
+          move_to(point.x, point.y)
+        else
+          line_to(point.x, point.y)
+        end
+      end
       auto_stroke_and_fill(:stroke => border, :fill => fill)
     end
 
