@@ -314,6 +314,14 @@ module PdfW
 
   class PdfPageWriter
   private
+    def even?(n)
+      n % 2 == 0
+    end
+
+    def odd?(n)
+      n % 2 != 0
+    end
+
     def radians_from_degrees(degrees)
       degrees * Math::PI / 180.0
     end
@@ -336,7 +344,7 @@ module PdfW
       ry = rx if ry.nil?
       a = 4.0 / 3.0 * (Math.sqrt(2) - 1.0)
       bp = []
-      if (quadrant % 2 == 1) # quadrant is odd
+      if odd?(quadrant) # quadrant is odd
         # (1,0)
         bp << Location.new(x + (rx * SIGNS[quadrant - 1].x), y)
         # (1,a)
@@ -1035,6 +1043,34 @@ module PdfW
       pop_fill_color
     end
 
+    def star(x, y, r, points, options={})
+      return if points < 5
+      border = options[:border].nil? ? true : options[:border]
+      fill = options[:fill].nil? ? false : options[:fill]
+      start_graph unless @in_graph
+      unless @last_loc == @loc
+        gw.stroke if @in_path and @auto_path
+        @in_path = false
+      end
+
+      rotation = options[:rotation] || 0
+      r2 = (points - 2).to_f / points.to_f
+      vertices1 = points_for_polygon(x, y, r, points, options)
+      vertices2 = points_for_polygon(x, y, r2, points, options.merge(:rotation => rotation + (360.0 / points / 2)))
+      push_line_color(border)
+      push_fill_color(fill)
+      check_set(:line_color, :line_width, :line_dash_pattern, :fill_color)
+
+      move_to(vertices2[0].x, vertices2[0].y)
+      points.times do |i|
+        line_to(vertices1[i].x, vertices1[i].y)
+        line_to(vertices2[i+1].x, vertices2[i+1].y)
+      end
+      auto_stroke_and_fill(:stroke => border, :fill => fill)
+      pop_line_color
+      pop_fill_color
+    end
+
     def path(options={})
       @auto_path = false
       if block_given?
@@ -1432,6 +1468,10 @@ module PdfW
 
     def polygon(x, y, r, sides, options={})
       cur_page.polygon(x, y, r, sides, options)
+    end
+
+    def star(x, y, r, points, options={})
+      cur_page.star(x, y, r, points, options)
     end
 
     def path(options={}, &block)
