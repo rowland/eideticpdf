@@ -140,6 +140,7 @@ def line_widths_and_patterns(w)
   w.page(:units => :cm) do |p|
     p.set_font("Courier", 10)
     p.print_xy(1, 1, "Line Widths and Patterns")
+    p.v_text_align = :base
 
     0.upto(10) do |i|
       p.line_width = "#{i}pt"
@@ -167,28 +168,41 @@ def line_widths_and_patterns(w)
     p.line_color = [0,0,255]
     p.move_to(1, 23)
     p.line_to(p.page_width - 5, 23)
+    p.print("  #{p.line_color}")
 
     # green
     p.line_color = 0x00FF00
     p.line_color = [0,255,0]
     p.move_to(1, 23.5)
     p.line_to(p.page_width - 5, 23.5)
+    p.print("  #{p.line_color}")
 
     # red
     p.line_color = 0xFF0000
     #p.line_color = [255,0,0]
     p.move_to(1, 24)
     p.line_to(p.page_width - 5, 24)
+    p.print("  #{p.line_color}")
 
     # fuchsia
     p.line_color = [0xFF, 0, 0xFF]
     p.move_to(1, 24.5)
     p.line_to(p.page_width - 5, 24.5)
+    p.print("  #{p.line_color}")
 
     # yellow
     p.line_color = [0xFF, 0xFF, 0]
     p.move_to(1, 25)
     p.line_to(p.page_width - 5, 25)
+    p.print("  #{p.line_color}")
+
+    # black custom pattern
+    LINE_PATTERNS[:dotted2] = [1, 10]
+    p.line_color = 0
+    p.line_dash_pattern = :dotted2
+    p.move_to(1, 26)
+    p.line_to(p.page_width - 5, 26)
+    p.print("  (custom pattern)")
   end
 end
 

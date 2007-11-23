@@ -15,6 +15,7 @@ module PdfW
 
   SIGNS = [ Signs.new(1, -1), Signs.new(-1, -1), Signs.new(-1, 1), Signs.new(1, 1) ]
   UNIT_CONVERSION = { :pt => 1, :in => 72, :cm => 28.35 }
+  LINE_PATTERNS = { :solid => [], :dotted => [1, 2], :dashed => [4, 2] }
 
   class PageStyle
     attr_reader :page_size, :crop_size, :orientation, :landscape, :rotate
@@ -570,9 +571,16 @@ module PdfW
           @in_path = false
         end
 
-        gw.set_line_dash_pattern(@line_dash_pattern)
+        if @line_dash_pattern.is_a?(Symbol)
+          dashes = (LINE_PATTERNS[@line_dash_pattern] || []).map { |p| p * @line_width.round }
+          pattern = gw.make_line_dash_pattern(dashes, 0)
+        else
+          @line_dash_pattern.to_s
+        end
+
+        gw.set_line_dash_pattern(pattern)
         @last_line_dash_pattern = @line_dash_pattern
-      end      
+      end
     end
 
     def check_set_line_width
@@ -585,6 +593,7 @@ module PdfW
 
         gw.set_line_width(@line_width)
         @last_line_width = @line_width
+        @last_line_dash_pattern = nil if @last_line_dash_pattern.is_a?(Symbol)
       end      
     end
 
@@ -1122,13 +1131,7 @@ module PdfW
     end
 
     def line_dash_pattern=(pattern)
-      @line_dash_pattern = case pattern
-        when :solid  then '[] 0'
-        when :dotted then '[1 2] 0'
-        when :dashed then '[4 2] 0'
-      else
-        pattern.to_s
-      end
+      @line_dash_pattern = pattern
     end
 
     def line_width
