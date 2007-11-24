@@ -394,3 +394,32 @@ class MiscWriterTestCases < Test::Unit::TestCase
     end
   end
 end
+
+class PdfDocumentWriterTestCases < Test::Unit::TestCase
+  SAYING = "This is the first day of the *rest* of your life--or so it has been said (by a forgotten pundit)."
+  SAYING_WRAPPED = ["This is the first day ", "of the *rest* of your ", "life--or so it has been", "said (by a forgotten ", "pundit)."]
+
+  def setup
+    @doc = PdfDocumentWriter.new
+    @doc.begin_doc
+    @doc.start_page(:units => :cm)
+    @doc.set_font("Courier", 10)
+  end
+
+  def teardown
+    @doc.end_page
+    @doc.end_doc
+  end
+
+  def test_height
+    h1 = @doc.height("Hello", :pt)
+    assert_in_delta(7.86, h1, 0.001)
+    h2 = @doc.height(SAYING_WRAPPED, :pt)
+    assert_in_delta(39.3, h2, 0.01)
+  end
+
+  def test_wrap
+    lines = @doc.wrap(SAYING, 5)
+    assert_equal(SAYING_WRAPPED, lines)
+  end
+end

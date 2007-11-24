@@ -1237,18 +1237,50 @@ module PdfW
     end
 
     def width(text)
+      raise Exception.new("No font selected.") if @font.nil?
       result = 0.0
       fsize = @font.size * 0.001
       text.each_byte { |b| result += fsize * @font.widths[b] + @char_spacing; result += @word_spacing if b == 32 }
       from_points(@units, result - @char_spacing)
     end
 
-    def height # may not include external leading?
-      0.001 * @font.height * @font.size / UNIT_CONVERSION[@units].to_f
+    def wrap(text, length)
+      re = /\s+|[\S]+-+|[\S]+/
+      words = text.scan(re)
+      word_tuples = words.map { |word| [width(word), word] }
+      line_length = 0
+      lines = word_tuples.inject(['']) do |lines, tuple|
+        if tuple[1] == "\n"
+          lines << ''
+          line_length = 0
+        elsif line_length == 0
+          unless tuple[1] =~ /\s+/
+            lines.last << tuple[1]
+            line_length += tuple[0]
+          end
+        elsif line_length + tuple[0] > length
+          lines << ''
+          line_length = 0
+          redo
+        else          
+          lines.last << tuple[1]
+          line_length += tuple[0]
+        end
+        lines
+      end
+    end
+
+    def height(text='', units=nil) # may not include external leading?
+      units ||= @units
+      if text.is_a?(Array)
+        text.inject(0) { |total, line| total + height(line, units) }
+      else
+        0.001 * @font.height * @font.size / UNIT_CONVERSION[units].to_f
+      end
     end
 
     # font methods
-    def set_font(name, size, options = {})
+    def set_font(name, size, options={})
       @font = Font.new
       @font.name = name
       @font.size = size
@@ -1563,8 +1595,12 @@ module PdfW
       cur_page.width(text)
     end
 
-    def height # may not include external leading?
-      cur_page.height
+    def wrap(text, length)
+      cur_page.wrap(text, length)
+    end
+
+    def height(text='', units=nil) # may not include external leading?
+      cur_page.height(text, units)
     end
 
     def v_text_align
