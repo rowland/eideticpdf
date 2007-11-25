@@ -1195,7 +1195,6 @@ module PdfW
     def print(text, options={})
       return if text.empty?
       angle = options[:angle] || 0.0
-#      raise Exception.new("No font set.") unless @font
       start_text unless @in_text
       if (@text_angle != angle) or (angle != 0.0)
         set_text_angle(angle, @loc.x, @loc.y)
@@ -1281,29 +1280,29 @@ module PdfW
     end
 
     # font methods
-    def set_font(name, size, options={})
-      @font = Font.new
-      @font.name = name
-      @font.size = size
-      @font.style = options[:style] || ''
-      @font.color = options[:color]
-      @font.encoding = options[:encoding] || 'WinAnsiEncoding'
-      @font.sub_type = options[:sub_type] || 'Type1'
-      punc = (@font.sub_type == 'TrueType') ? ',' : '-'
+    def select_font(name, size, options={})
+      font = Font.new
+      font.name = name
+      font.size = size
+      font.style = options[:style] || ''
+      font.color = options[:color]
+      font.encoding = options[:encoding] || 'WinAnsiEncoding'
+      font.sub_type = options[:sub_type] || 'Type1'
+      punc = (font.sub_type == 'TrueType') ? ',' : '-'
       full_name = name.gsub(' ','')
-      full_name << punc << @font.style unless @font.style.empty?
-      font_key = "#{full_name}/#{@font.encoding}-#{@font.sub_type}"
-      @page_font = @doc.fonts[font_key]
-      if @font.sub_type == 'Type1'
+      full_name << punc << font.style unless font.style.empty?
+      font_key = "#{full_name}/#{font.encoding}-#{font.sub_type}"
+      if font.sub_type == 'Type1'
         metrics = PdfK::font_metrics(full_name)
-        @font.widths = metrics.widths
-        @font.ascent = metrics.ascent
-        @font.descent = metrics.descent
-        @font.height = @font.ascent + @font.descent.abs
+        font.widths = metrics.widths
+        font.ascent = metrics.ascent
+        font.descent = metrics.descent
+        font.height = font.ascent + font.descent.abs
       else
-        raise Exception.new("Unsupported subtype #{@font.sub_type}.")
+        raise Exception.new("Unsupported subtype #{font.sub_type}.")
       end
-      unless @page_font
+      page_font = @doc.fonts[font_key]
+      unless page_font
         widths = nil
         if metrics.needs_descriptor
           descriptor = PdfFontDescriptor.new(@doc.next_seq, 0, full_name, metrics.flags, metrics.b_box, 
@@ -1317,17 +1316,23 @@ module PdfW
           descriptor = nil
           widths = nil
         end
-        @page_font = "F#{@doc.fonts.size}"
-        f = PdfFont.new(@doc.next_seq, 0, @font.sub_type, full_name, 0, 255, widths, descriptor)
+        page_font = "F#{@doc.fonts.size}"
+        f = PdfFont.new(@doc.next_seq, 0, font.sub_type, full_name, 0, 255, widths, descriptor)
         @doc.file.body << f
-        if PdfFont.standard_encoding?(@font.encoding)
-          f.encoding = @font.encoding
+        if PdfFont.standard_encoding?(font.encoding)
+          f.encoding = font.encoding
         else
-          raise Exception.new("Unsupported encoding #{@font.encoding}")
+          raise Exception.new("Unsupported encoding #{font.encoding}")
         end
-        @doc.resources.fonts[@page_font] = f.reference_object
-        @doc.fonts[font_key] = @page_font
+        @doc.resources.fonts[page_font] = f.reference_object
+        @doc.fonts[font_key] = page_font
       end
+      [font, page_font]
+    end
+
+    def set_font(name, size, options={})
+      @font, @page_font = select_font(name, size, options)
+      @font
     end
 
     def set_font_style(style)
