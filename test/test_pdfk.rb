@@ -7,7 +7,7 @@ $: << File.dirname(__FILE__) + '/../'
 require 'test/unit'
 require 'pdfk'
 
-include PdfK
+include EideticPDF::PdfK
 
 class PdfKTestCases < Test::Unit::TestCase
   def test_font_index

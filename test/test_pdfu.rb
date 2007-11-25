@@ -7,7 +7,7 @@ $: << File.dirname(__FILE__) + '/../'
 require 'test/unit'
 require 'pdfu'
 
-include PdfU
+include EideticPDF::PdfObjects
 
 class HeaderTestCases < Test::Unit::TestCase
   def setup

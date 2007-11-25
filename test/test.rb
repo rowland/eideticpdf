@@ -5,7 +5,6 @@
 
 $: << File.dirname(__FILE__) + '/../'
 require 'pdfw'
-include PdfW
 
 def grid(w, width, height, xoff, yoff, step=1)
   w.path(:stroke => true) do
@@ -40,7 +39,7 @@ end
 
 def dp_grid(w, width=8000, height=10000, xoff=250, yoff=500)
   # set custom point scale
-  PdfW::UNIT_CONVERSION[:dp] = 0.072
+  EideticPDF::UNIT_CONVERSION[:dp] = 0.072
   w.start_page(:units => :dp)
   w.set_font("Helvetica", 10)
   w.print_xy(250, 250, "Dave Points Squares")
@@ -194,7 +193,7 @@ def line_widths_and_patterns(w)
     p.print("  #{p.line_color}")
 
     # black custom pattern
-    LINE_PATTERNS[:dotted2] = [1, 10]
+    EideticPDF::LINE_PATTERNS[:dotted2] = [1, 10]
     p.line_color = 0
     p.line_dash_pattern = :dotted2
     p.move_to(1, 26)
@@ -425,7 +424,7 @@ def stars(w)
 end
 
 start = Time.now
-docw = PdfDocumentWriter.new
+docw = EideticPDF::DocumentWriter.new
 
 docw.doc(:font => { :name => 'Courier', :size => 10 }) do |w|
   stars(w)
@@ -450,6 +449,7 @@ end
 
 File.open("test.pdf","w") { |f| f.write(docw) }
 
-puts ((Time.now - start) * 1000).round
+elapsed = Time.now - start
+puts "Elapsed: #{(elapsed * 1000).round} ms"
 `open test.pdf`
 #print docw

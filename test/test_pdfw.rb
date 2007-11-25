@@ -7,7 +7,7 @@ $: << File.dirname(__FILE__) + '/../'
 require 'test/unit'
 require 'pdfw'
 
-include PdfW
+include EideticPDF
 
 class PageStyleTestCases < Test::Unit::TestCase
   def setup
@@ -383,26 +383,26 @@ class MiscWriterTestCases < Test::Unit::TestCase
     end
 
     def test_show_with_dispacements
-      a = PdfU::PdfArray.new([
-        PdfU::PdfString.new('H'), 
-        PdfU::PdfInteger.new(120), 
-        PdfU::PdfString.new('e'), 
-        PdfU::PdfInteger.new(80), 
-        PdfU::PdfString.new('y')])
+      a = PdfObjects::PdfArray.new([
+        PdfObjects::PdfString.new('H'), 
+        PdfObjects::PdfInteger.new(120), 
+        PdfObjects::PdfString.new('e'), 
+        PdfObjects::PdfInteger.new(80), 
+        PdfObjects::PdfString.new('y')])
       @writer.show_with_dispacements(a)
       assert_equal("[(H) 120 (e) 80 (y) ] TJ\n", @stream)
     end
   end
 end
 
-class PdfDocumentWriterTestCases < Test::Unit::TestCase
+class DocumentWriterTestCases < Test::Unit::TestCase
   SAYING = "This is the first day of the *rest* of your life--or so it has been said (by a forgotten pundit)."
   SAYING_WRAPPED = ["This is the first day ", "of the *rest* of your ", "life--or so it has been", "said (by a forgotten ", "pundit)."]
   S2 = "\tThis paragraph starts with a tab\n\nand has two embedded newlines."
   S2_WRAPPED = ["\tThis paragraph starts with a tab", '', "and has two embedded newlines."]
 
   def setup
-    @doc = PdfDocumentWriter.new
+    @doc = DocumentWriter.new
     @doc.begin_doc
     @doc.start_page(:units => :cm)
     @doc.set_font("Courier", 10)
