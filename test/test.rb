@@ -51,7 +51,7 @@ end
 def pt_units(w)
   w.page(:units => :pt, :orientation => :portrait) do |p|
     p.rectangle(1,1,p.page_width-3, p.page_height-2)
-    p.set_font("Courier", 10)
+#    p.set_font("Courier", 10)
     p.print_xy(5, 5, "Point Units")
 
     y = 24; size = 12
@@ -65,7 +65,7 @@ end
 
 def circles_and_rectangles(w)
   w.start_page(:units => :in)
-  w.set_font("Courier", 10)
+#  w.set_font("Courier", 10)
   w.print_xy(0.5, 0.5, "Circles and Rectangles")
   w.rectangle(1, 1, 6.5, 9)
   w.rectangle(2, 2, 4.5, 7)
@@ -138,7 +138,7 @@ end
 
 def line_widths_and_patterns(w)
   w.page(:units => :cm) do |p|
-    p.set_font("Courier", 10)
+#    p.set_font("Courier", 10)
     p.print_xy(1, 1, "Line Widths and Patterns")
     p.v_text_align = :base
 
@@ -208,7 +208,7 @@ end
 
 def arcs(w)
   w.page(:units => :in) do |p|
-    p.set_font("Courier", 10)
+#    p.set_font("Courier", 10)
     p.print_xy(0.5, 0.5, "Arcs")
 
     x1, x2, y1, y2 = 4.0, 4.5, 2.25, 2.75
@@ -264,7 +264,7 @@ end
 
 def ellipses(w)
   w.page(:units => :in, :orientation => :portrait) do |p|
-    p.set_font("Courier", 10)
+#    p.set_font("Courier", 10)
     p.print_xy(0.5, 0.5, "Ellipses")
     p.ellipse(4.25, 5.5, 3.75, 3.25)
     p.ellipse(4.25, 5.5, 3.75, 4.5)
@@ -276,7 +276,7 @@ def filled_shapes(w)
   x1, x2, x3 = 0.75, 3.25, 5.75
   y1, y2, y3, y4 = 1.0, 3.5, 6.0, 8.5
   w.page(:units => :in) do |p|
-    p.set_font("Courier", 10)
+#    p.set_font("Courier", 10)
     p.print_xy(0.5, 0.5, "Filled Shapes")
     p.line_color = 'Black'
     p.fill_color = 'LightSteelBlue'
@@ -322,7 +322,7 @@ end
 
 def compound_paths(w)
   w.page(:units => :in) do |p|
-    p.set_font("Courier", 10)
+#    p.set_font("Courier", 10)
     p.print_xy(0.5, 0.5, "Compound Paths")
     p.fill_color = 'LightSteelBlue'
 
@@ -359,7 +359,7 @@ end
 
 def pies(w)
   w.page(:units => :in) do |p|
-    p.set_font("Courier", 10)
+#    p.set_font("Courier", 10)
     p.print_xy(0.5, 0.5, "Pies")
     p.line_color = 0
 
@@ -384,7 +384,7 @@ end
 
 def polygons(w)
   w.page(:units => :in) do |p|
-    p.set_font("Courier", 10)
+#    p.set_font("Courier", 10)
     p.print_xy(0.5, 0.5, "Polygons")
     p.fill_color = 'LightSteelBlue'
 
@@ -410,7 +410,7 @@ end
 
 def stars(w)
   w.page(:units => :in) do |p|
-    p.set_font("Courier", 10)
+#    p.set_font("Courier", 10)
     p.print_xy(0.5, 0.5, "Stars")
     p.fill_color = 'LightSteelBlue'
 
@@ -437,7 +437,7 @@ end
 start = Time.now
 docw = PdfDocumentWriter.new
 
-docw.doc do |w|
+docw.doc(:font => { :name => 'Courier', :size => 10 }) do |w|
   stars(w)
   polygons(w)
   pies(w)

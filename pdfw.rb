@@ -315,6 +315,8 @@ module PdfW
 
   class PdfPageWriter
   private
+    DEFAULT_FONT = { :name => 'Helvetica', :size => 12 }
+
     def even?(n)
       n % 2 == 0
     end
@@ -527,6 +529,7 @@ module PdfW
     end
 
     def check_set_font
+      set_font(@default_font[:name], @default_font[:size], @default_font) if @font.nil?
       if (@last_page_font != @page_font) or (@last_font != @font)
         @tw.set_font_and_size(@page_font, @font.size)
         check_set_v_text_align(true)
@@ -680,6 +683,7 @@ module PdfW
       curve_points(qpa[2]); line_to(qpa[3][0].x, qpa[3][0].y)
       curve_points(qpa[3]); line_to(qpa[0][0].x, qpa[0][0].y)
     end
+
   public
     attr_reader :doc, :units
     attr_reader :stream, :annotations
@@ -705,8 +709,11 @@ module PdfW
       @stream = ''
       @annotations = []
       @char_spacing = @word_spacing = 0.0
-      @font_color = @fill_color = @line_color = 0
-      @line_height = 1.7
+      @default_font = options[:font] || DEFAULT_FONT
+      @font_color = @default_font[:color] || 0
+      @fill_color = options[:fill_color] || 0
+      @line_color = options[:line_color] || 0
+      @line_height = options[:line_height] || 1.7
       @auto_path = true
       start_misc
     end
@@ -1126,13 +1133,7 @@ module PdfW
       @auto_path = true
     end
 
-    def line_dash_pattern
-      @line_dash_pattern
-    end
-
-    def line_dash_pattern=(pattern)
-      @line_dash_pattern = pattern
-    end
+    attr_accessor :line_dash_pattern
 
     def line_width
       from_points(@units, @line_width)
@@ -1194,7 +1195,7 @@ module PdfW
     def print(text, options={})
       return if text.empty?
       angle = options[:angle] || 0.0
-      raise Exception.new("No font set.") unless @font
+#      raise Exception.new("No font set.") unless @font
       start_text unless @in_text
       if (@text_angle != angle) or (angle != 0.0)
         set_text_angle(angle, @loc.x, @loc.y)
@@ -1272,10 +1273,10 @@ module PdfW
 
     def height(text='', units=nil) # may not include external leading?
       units ||= @units
-      if text.is_a?(Array)
-        text.inject(0) { |total, line| total + height(line, units) }
-      else
+      if text.respond_to?(:to_str)
         0.001 * @font.height * @font.size / UNIT_CONVERSION[units].to_f
+      else
+        text.inject(0) { |total, line| total + height(line, units) }
       end
     end
 
