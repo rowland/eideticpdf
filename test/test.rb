@@ -4,7 +4,7 @@
 #  Copyright (c) 2007, Eidetic Software. All rights reserved.
 
 $: << File.dirname(__FILE__) + '/../'
-require 'pdfw'
+require 'epdfw'
 
 def grid(w, width, height, xoff, yoff, step=1)
   w.path(:stroke => true) do
@@ -74,7 +74,7 @@ end
 def font_names(w)
   w.page(:units => :cm) do |p|
     p.move_to(1, 1)
-    PdfK::FONT_NAMES.each do |font_name|
+    p.type1_font_names.each do |font_name|
       p.set_font(font_name, 12)
       p.puts(font_name)
     end
@@ -231,7 +231,7 @@ def filled_rectangles(w)
   rows, cols = 18, 3
   left, top = 0.75, 1.0
   col_width, row_height, label_width = 2.0, 0.5, 1.25
-  names = PdfK::NAMED_COLORS.keys.sort
+  names = w.named_colors.keys.sort
   lists = []
   while names.size > 0
     lists << names.slice!(0, rows)

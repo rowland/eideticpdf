@@ -5,7 +5,7 @@
 
 $: << File.dirname(__FILE__) + '/../'
 require 'test/unit'
-require 'pdfu'
+require 'epdfo'
 
 include EideticPDF::PdfObjects
 

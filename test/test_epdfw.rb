@@ -5,7 +5,7 @@
 
 $: << File.dirname(__FILE__) + '/../'
 require 'test/unit'
-require 'pdfw'
+require 'epdfw'
 
 include EideticPDF
 

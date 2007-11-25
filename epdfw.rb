@@ -3,8 +3,8 @@
 #  Created by Brent Rowland on 2007-07-13.
 #  Copyright (c) 2007, Eidetic Software. All rights reserved.
 
-require 'pdfu'
-require 'pdfk'
+require 'epdfo'
+require 'epdfk'
 
 module EideticPDF
   Font = Struct.new(:name, :size, :style, :color, :encoding, :sub_type, :widths, :ascent, :descent, :height)
@@ -1152,6 +1152,10 @@ module EideticPDF
     end
 
     # color methods
+    def named_colors
+      @doc.named_colors
+    end
+
     def line_color
       @line_color
     end
@@ -1286,6 +1290,10 @@ module EideticPDF
     end
 
     # font methods
+    def type1_font_names
+      @doc.type1_font_names
+    end
+
     def select_font(name, size, options={})
       font = Font.new
       font.name = name
@@ -1554,6 +1562,10 @@ module EideticPDF
     end
 
     # color methods
+    def named_colors
+      @named_colors ||= PdfK::NAMED_COLORS
+    end
+
     def line_color
       cur_page.line_color
     end
@@ -1624,6 +1636,10 @@ module EideticPDF
     end
 
     # font methods
+    def type1_font_names
+      PdfK::FONT_NAMES
+    end
+
     def set_font(name, size, options = {})
       cur_page.set_font(name, size, options)
     end
