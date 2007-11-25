@@ -398,6 +398,8 @@ end
 class PdfDocumentWriterTestCases < Test::Unit::TestCase
   SAYING = "This is the first day of the *rest* of your life--or so it has been said (by a forgotten pundit)."
   SAYING_WRAPPED = ["This is the first day ", "of the *rest* of your ", "life--or so it has been", "said (by a forgotten ", "pundit)."]
+  S2 = "\tThis paragraph starts with a tab\n\nand has two embedded newlines."
+  S2_WRAPPED = ["\tThis paragraph starts with a tab", '', "and has two embedded newlines."]
 
   def setup
     @doc = PdfDocumentWriter.new
@@ -421,5 +423,10 @@ class PdfDocumentWriterTestCases < Test::Unit::TestCase
   def test_wrap
     lines = @doc.wrap(SAYING, 5)
     assert_equal(SAYING_WRAPPED, lines)
+  end
+  
+  def test_wrap2
+    lines = @doc.wrap(S2, 10)
+    assert_equal(S2_WRAPPED, lines)
   end
 end

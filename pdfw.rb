@@ -496,6 +496,21 @@ module PdfW
 
     attr_reader :tw, :gw, :mw
 
+    # font methods
+    def set_default_font
+      set_font(@default_font[:name], @default_font[:size], @default_font)
+    end
+
+    def check_set_font
+      set_default_font if @font.nil?
+      if (@last_page_font != @page_font) or (@last_font != @font)
+        @tw.set_font_and_size(@page_font, @font.size)
+        check_set_v_text_align(true)
+        @last_page_font = @page_font
+        @last_font = @font
+      end
+    end
+
     # color methods
     def check_set_line_color
       unless @line_color == @last_line_color
@@ -525,16 +540,6 @@ module PdfW
           @tw.set_rise(0.0)
         end
         @last_v_text_align = @v_text_align
-      end
-    end
-
-    def check_set_font
-      set_font(@default_font[:name], @default_font[:size], @default_font) if @font.nil?
-      if (@last_page_font != @page_font) or (@last_font != @font)
-        @tw.set_font_and_size(@page_font, @font.size)
-        check_set_v_text_align(true)
-        @last_page_font = @page_font
-        @last_font = @font
       end
     end
 
@@ -1237,15 +1242,18 @@ module PdfW
     end
 
     def width(text)
-      raise Exception.new("No font selected.") if @font.nil?
+      set_default_font if @font.nil?
       result = 0.0
       fsize = @font.size * 0.001
-      text.each_byte { |b| result += fsize * @font.widths[b] + @char_spacing; result += @word_spacing if b == 32 }
+      text.each_byte do |b|
+        result += fsize * @font.widths[b] + @char_spacing
+        result += @word_spacing if b == 32 # space
+      end
       from_points(@units, result - @char_spacing)
     end
 
     def wrap(text, length)
-      re = /\s+|[\S]+-+|[\S]+/
+      re = /\n|\t|[ ]|[\S]+-+|[\S]+/
       words = text.scan(re)
       word_tuples = words.map { |word| [width(word), word] }
       line_length = 0
@@ -1254,7 +1262,7 @@ module PdfW
           lines << ''
           line_length = 0
         elsif line_length == 0
-          unless tuple[1] =~ /\s+/
+          unless tuple[1] == ' '
             lines.last << tuple[1]
             line_length += tuple[0]
           end
