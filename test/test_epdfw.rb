@@ -415,9 +415,9 @@ class DocumentWriterTestCases < Test::Unit::TestCase
 
   def test_height
     h1 = @doc.height("Hello", :pt)
-    assert_in_delta(7.86, h1, 0.001)
+    assert_in_delta(13.3, h1, 0.1)
     h2 = @doc.height(SAYING_WRAPPED, :pt)
-    assert_in_delta(39.3, h2, 0.01)
+    assert_in_delta(66.8, h2, 0.1)
   end
 
   def test_wrap
