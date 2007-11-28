@@ -7,3 +7,4 @@ $: << File.dirname(__FILE__)
 require 'test_epdfo'
 require 'test_epdfw'
 require 'test_epdfk'
+require 'test_epdft'
