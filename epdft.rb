@@ -18,10 +18,8 @@ module EideticPDF
 
       def add(text, font, options={})
         fsize = font.size * 0.001
-        char_spacing = options[:char_spacing] || 0
-        word_spacing = options[:word_spacing] || 0
-        color = options[:color] || 0
-        underlined = options[:underline]
+        char_spacing, word_spacing = options[:char_spacing] || 0, options[:word_spacing] || 0
+        color, underlined = options[:color] || 0, options[:underline]
         words = text.scan(TOKEN_RE).map do |token|
           width = 0.0
           token.each_byte do |b|
@@ -64,12 +62,9 @@ module EideticPDF
       end
 
       def height
-        if @words.empty?
-          return 0
-        else
-          f = @words.first.font
-          0.001 * f.height * f.size
-        end
+        return 0 if @words.empty?
+        f = @words.first.font
+        0.001 * f.height * f.size
       end
     end
   end
