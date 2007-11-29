@@ -5,8 +5,12 @@
 
 module EideticPDF
   module TextLine
-    def max_height
+    def height
       map { |p| 0.001 * p.font.height * p.font.size }.max
+    end
+
+    def width
+      inject(0) { |total, p| total + p.width }
     end
   end
 
@@ -44,6 +48,7 @@ module EideticPDF
             pieces << piece
           else
             pieces.last.text << piece.text
+            pieces.last.width += piece.width
           end
           pieces
         end

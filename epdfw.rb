@@ -1294,16 +1294,21 @@ module EideticPDF
       end
     end
 
-    def paragraph(text, width, height=nil, options={})
+    def paragraph(text, options={})
+      width = options[:width] || page_width - pen_pos.x
+      height = options[:height] || page_height - pen_pos.y
       unless text.is_a?(PdfText::RichText)
         text = PdfText::RichText.new(text, @font,
           :color => @font_color, :char_spacing => @char_spacing, :word_spacing => @word_spacing, :underline => @underline)
       end
-      height = page_height - pen_pos.y if height.nil?
       dy = 0
       while dy + from_points(@units, text.height) < height and line = text.next(to_points(@units, width))
         save_loc = pen_pos
-        line_dy = line.max_height / UNIT_CONVERSION[units].to_f * @line_height
+        line_dy = line.height / UNIT_CONVERSION[units].to_f * @line_height
+        case options[:align]
+        when :center then move_to(save_loc.x + (width - from_points(@units, line.width)) / 2.0, save_loc.y)
+        when :right then move_to(save_loc.x + width - from_points(@units, line.width), save_loc.y)
+        end
         while piece = line.shift
           @font = piece.font
           self.font_color = piece.color
@@ -1316,9 +1321,9 @@ module EideticPDF
       return text.empty? ? nil : text
     end
 
-    def paragraph_xy(x, y, text, width, height=nil, options={})
+    def paragraph_xy(x, y, text, options={})
       move_to(x, y)
-      paragraph(text, width, height, options)
+      paragraph(text, options)
     end
 
     # font methods
@@ -1491,7 +1496,15 @@ module EideticPDF
     def units=(units)
       cur_page.units=(units)
     end
-    
+
+    def page_width
+      cur_page.page_width
+    end
+
+    def page_height
+      cur_page.page_height
+    end
+
     def line_height
       cur_page.line_height
     end
@@ -1659,12 +1672,12 @@ module EideticPDF
       cur_page.height(text, units)
     end
 
-    def paragraph(text, width, height=nil, options={})
-      cur_page.paragraph(text, width, height, options)
+    def paragraph(text, options={})
+      cur_page.paragraph(text, options)
     end
 
-    def paragraph_xy(x, y, text, width, height=nil, options={})
-      cur_page.paragraph_xy(x, y, text, width, height, options)
+    def paragraph_xy(x, y, text, options={})
+      cur_page.paragraph_xy(x, y, text, options)
     end
 
     def v_text_align

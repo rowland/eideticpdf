@@ -114,10 +114,16 @@ def print_text(w)
   w.font_color = 'Black'
   lorem = "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
   w.move_to(1, 7); w.line_to(1, 9); w.move_to(20, 7); w.line_to(20, 9) 
-  lorem2 = w.paragraph_xy(1.5, 7, lorem, 18, 2)
+  lorem2 = w.paragraph_xy(1.5, 7, lorem, :width => 18, :height => 2)
   w.puts
-  w.paragraph(lorem2, 18) unless lorem2.nil?
-
+  w.paragraph(lorem2, :width => 18) unless lorem2.nil?
+  w.puts
+  w.paragraph(lorem, :width => 18)
+  w.puts
+  w.paragraph(lorem, :width => 18, :align => :right)
+  w.puts
+  w.move_to((w.page_width - 10) / 2.0, w.pen_pos.y)
+  w.paragraph(lorem, :width => 10, :align => :center)
   w.end_page
 end
 
