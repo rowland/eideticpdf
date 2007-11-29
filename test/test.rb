@@ -104,11 +104,19 @@ def print_text(w)
   w.v_text_align = :above
   w.print(":above ")
 
+  w.v_text_align = :top
   w.move_to(1, 5)
   ['Black', 'Blue', 'Brown', 'Crimson', 'Gold', 'Green', 'Gray', 'Indigo'].each do |color|
     w.font_color = color
     w.print "#{color}     "
   end
+
+  w.font_color = 'Black'
+  lorem = "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+  w.move_to(1, 7); w.line_to(1, 9); w.move_to(20, 7); w.line_to(20, 9) 
+  lorem2 = w.paragraph_xy(1.5, 7, lorem, 18, 2)
+  w.puts
+  w.paragraph(lorem2, 18) unless lorem2.nil?
 
   w.end_page
 end

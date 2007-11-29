@@ -5,6 +5,7 @@
 
 require 'epdfo'
 require 'epdfk'
+require 'epdft'
 
 module EideticPDF
   Font = Struct.new(:name, :size, :style, :color, :encoding, :sub_type, :widths, :ascent, :descent, :height)
@@ -757,6 +758,7 @@ module EideticPDF
     end
 
     def pen_pos
+      Location.new(@loc.x, page_height - @loc.y)
     end
 
     # graphics methods
@@ -1236,11 +1238,13 @@ module EideticPDF
       else
         save_loc = @loc.clone
         print(text)
-        @loc = Location.new(save_loc.x, save_loc.y - height * @line_height)
+        @loc = Location.new(save_loc.x, save_loc.y - height)
       end
     end
 
     def puts_xy(x, y, text)
+      move_to(x, y)
+      puts(text)
     end
 
     def width(text)
@@ -1254,7 +1258,7 @@ module EideticPDF
       from_points(@units, result - @char_spacing)
     end
 
-    def wrap(text, length)
+    def wrap(text, width)
       re = /\n|\t|[ ]|[\S]+-+|[\S]+/
       words = text.scan(re)
       word_tuples = words.map { |word| [width(word), word] }
@@ -1268,7 +1272,7 @@ module EideticPDF
             lines.last << tuple[1]
             line_length += tuple[0]
           end
-        elsif line_length + tuple[0] > length
+        elsif line_length + tuple[0] > width
           lines << ''
           line_length = 0
           redo
@@ -1283,10 +1287,37 @@ module EideticPDF
     def height(text='', units=nil) # may not include external leading?
       units ||= @units
       if text.respond_to?(:to_str)
-        0.001 * @font.height * @font.size / UNIT_CONVERSION[units].to_f
+        0.001 * @font.height * @font.size / UNIT_CONVERSION[units].to_f * @line_height
       else
         text.inject(0) { |total, line| total + height(line, units) }
       end
+    end
+
+    def paragraph(text, width, height=nil)
+      unless text.is_a?(PdfText::RichText)
+        text = PdfText::RichText.new(text, @font,
+          :color => @font_color, :char_spacing => @char_spacing, :word_spacing => @word_spacing, :underline => @underline)
+      end
+      height = page_height - pen_pos.y if height.nil?
+      dy = 0
+      while dy + from_points(@units, text.height) < height and line = text.next(to_points(@units, width))
+        save_loc = pen_pos
+        line_dy = line.map { |p| 0.001 * p.font.height * p.font.size }.max / UNIT_CONVERSION[units].to_f * @line_height
+        while piece = line.shift
+          @font = piece.font
+          self.font_color = piece.color
+          # self.underline = piece.underline
+          print(piece.text)
+        end
+        dy += line_dy
+        move_to(save_loc.x, save_loc.y + line_dy)
+      end
+      return text.empty? ? nil : text
+    end
+
+    def paragraph_xy(x, y, text, width, height=nil)
+      move_to(x, y)
+      paragraph(text, width, height)
     end
 
     # font methods
@@ -1625,6 +1656,14 @@ module EideticPDF
 
     def height(text='', units=nil) # may not include external leading?
       cur_page.height(text, units)
+    end
+
+    def paragraph(text, width, height=nil)
+      cur_page.paragraph(text, width, height)
+    end
+
+    def paragraph_xy(x, y, text, width, height=nil)
+      cur_page.paragraph_xy(x, y, text, width, height)
     end
 
     def v_text_align

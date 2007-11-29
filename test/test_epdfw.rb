@@ -429,4 +429,14 @@ class DocumentWriterTestCases < Test::Unit::TestCase
     lines = @doc.wrap(S2, 10)
     assert_equal(S2_WRAPPED, lines)
   end
+  
+  def test_pen_pos
+    @doc.move_to(5, 6)
+    assert_equal(5, @doc.pen_pos.x)
+    assert_equal(6, @doc.pen_pos.y)
+    
+    @doc.move_to(10.5, 11.6)
+    assert_in_delta(10.5, @doc.pen_pos.x, 0.1)
+    assert_in_delta(11.6, @doc.pen_pos.y, 0.1)
+  end
 end
