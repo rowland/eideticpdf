@@ -33,32 +33,30 @@ module EideticPDF
         @words.concat(words)
       end
 
+      # merge pieces with identical characteristics
+      def merge(text_pieces)
+        text_pieces.inject([]) do |pieces, piece|
+          if pieces.empty? or [pieces.last.font, pieces.last.color, pieces.last.underline] != [piece.font, piece.color, piece.underline]
+            pieces << piece
+          else
+            pieces.last.text << piece.text
+          end
+          pieces
+        end
+      end
+
       def next(width)
         # remove leading spaces
-        while !@words.empty? and @words.first.text == ' '
-          @words.shift
-        end
+        @words.shift while !@words.empty? and @words.first.text == ' '
         return nil if @words.empty?
         # measure how many words will fit
-        i, phrase_width = 0, 0
+        i, phrase_width = 0, 0.0
         while i < @words.size and phrase_width + @words[i].width < width
           phrase_width += @words[i].width
           i += 1
           break if @words[i-1].text == "\n"
         end
-        i = 1 if i == 0 # fetch minimum of 1 word. todo: break words?
-        result = @words.slice!(0, i)
-        # merge words with identical characteristics
-        i = 1
-        while i < result.size
-          if [result[i-1].font, result[i-1].color, result[i-1].underline] != [result[i].font, result[i].color, result[i].underline]
-            i += 1
-          else
-            result[i-1].text << result[i].text
-            result.delete_at(i)
-          end
-        end
-        result
+        merge(@words.slice!(0, [i,1].max))
       end
 
       def empty?
