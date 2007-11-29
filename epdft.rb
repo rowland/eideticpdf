@@ -4,6 +4,12 @@
 #  Copyright (c) 2007, Eidetic Software. All rights reserved.
 
 module EideticPDF
+  module TextLine
+    def max_height
+      map { |p| 0.001 * p.font.height * p.font.size }.max
+    end
+  end
+
   module PdfText
     TextPiece = Struct.new(:text, :width, :font, :color, :underline)
 
@@ -54,7 +60,7 @@ module EideticPDF
           i += 1
           break if @words[i-1].text == "\n"
         end
-        merge(@words.slice!(0, [i,1].max))
+        merge(@words.slice!(0, [i,1].max)).extend(TextLine)
       end
 
       def empty?

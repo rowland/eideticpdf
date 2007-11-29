@@ -437,6 +437,7 @@ module EideticPDF
 
     def rgb_from_color(color)
       color = PdfK::NAMED_COLORS[color] || 0 if color.respond_to? :to_str
+      color ||= 0
       b = color & 0xFF
       g = (color >> 8) & 0xFF
       r = (color >> 16) & 0xFF
@@ -1293,7 +1294,7 @@ module EideticPDF
       end
     end
 
-    def paragraph(text, width, height=nil)
+    def paragraph(text, width, height=nil, options={})
       unless text.is_a?(PdfText::RichText)
         text = PdfText::RichText.new(text, @font,
           :color => @font_color, :char_spacing => @char_spacing, :word_spacing => @word_spacing, :underline => @underline)
@@ -1302,7 +1303,7 @@ module EideticPDF
       dy = 0
       while dy + from_points(@units, text.height) < height and line = text.next(to_points(@units, width))
         save_loc = pen_pos
-        line_dy = line.map { |p| 0.001 * p.font.height * p.font.size }.max / UNIT_CONVERSION[units].to_f * @line_height
+        line_dy = line.max_height / UNIT_CONVERSION[units].to_f * @line_height
         while piece = line.shift
           @font = piece.font
           self.font_color = piece.color
@@ -1315,9 +1316,9 @@ module EideticPDF
       return text.empty? ? nil : text
     end
 
-    def paragraph_xy(x, y, text, width, height=nil)
+    def paragraph_xy(x, y, text, width, height=nil, options={})
       move_to(x, y)
-      paragraph(text, width, height)
+      paragraph(text, width, height, options)
     end
 
     # font methods
@@ -1658,12 +1659,12 @@ module EideticPDF
       cur_page.height(text, units)
     end
 
-    def paragraph(text, width, height=nil)
-      cur_page.paragraph(text, width, height)
+    def paragraph(text, width, height=nil, options={})
+      cur_page.paragraph(text, width, height, options)
     end
 
-    def paragraph_xy(x, y, text, width, height=nil)
-      cur_page.paragraph_xy(x, y, text, width, height)
+    def paragraph_xy(x, y, text, width, height=nil, options={})
+      cur_page.paragraph_xy(x, y, text, width, height, options)
     end
 
     def v_text_align
