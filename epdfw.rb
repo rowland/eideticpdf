@@ -336,6 +336,14 @@ module EideticPDF
       measurement / UNIT_CONVERSION[units].to_f
     end
 
+    def make_loc(x, y)
+      Location.new(x, y)
+    end
+
+    def translate(x, y)
+      Location.new(x, page_height - y)
+    end
+
     def convert_units(loc, from_units, to_units)
       Location.new(
         loc.x * UNIT_CONVERSION[from_units] / UNIT_CONVERSION[to_units].to_f,
@@ -348,22 +356,22 @@ module EideticPDF
       bp = []
       if odd?(quadrant) # quadrant is odd
         # (1,0)
-        bp << Location.new(x + (rx * SIGNS[quadrant - 1].x), y)
+        bp << make_loc(x + (rx * SIGNS[quadrant - 1].x), y)
         # (1,a)
-        bp << Location.new(bp[0].x, y + (a * ry * SIGNS[quadrant - 1].y))
+        bp << make_loc(bp[0].x, y + (a * ry * SIGNS[quadrant - 1].y))
         # (a,1)
-        bp << Location.new(x + (a * rx * SIGNS[quadrant - 1].x), y + (ry * SIGNS[quadrant - 1].y))
+        bp << make_loc(x + (a * rx * SIGNS[quadrant - 1].x), y + (ry * SIGNS[quadrant - 1].y))
         # (0,1)
-        bp << Location.new(x, bp[2].y)
+        bp << make_loc(x, bp[2].y)
       else # quadrant is even
         # (0,1)
-        bp << Location.new(x, y + (ry * SIGNS[quadrant - 1].y))
+        bp << make_loc(x, y + (ry * SIGNS[quadrant - 1].y))
         # (a,1)
-        bp << Location.new(x + (a * rx * SIGNS[quadrant - 1].x), bp[0].y)
+        bp << make_loc(x + (a * rx * SIGNS[quadrant - 1].x), bp[0].y)
         # (1,a)
-        bp << Location.new(x + (rx * SIGNS[quadrant - 1].x), y + (a * ry * SIGNS[quadrant - 1].y))
+        bp << make_loc(x + (rx * SIGNS[quadrant - 1].x), y + (a * ry * SIGNS[quadrant - 1].y))
         # (1,0)
-        bp << Location.new(bp[2].x, y)
+        bp << make_loc(bp[2].x, y)
       end
       bp
     end
@@ -379,7 +387,7 @@ module EideticPDF
 
   	def rotate_point(loc, angle)
   		x, y = rotate_xy_coordinate(loc.x, loc.y, angle)
-  		Location.new(x, y)
+  		make_loc(x, y)
   	end
 
   	def rotate_points(mid, points, angle)
@@ -390,7 +398,7 @@ module EideticPDF
   	    x, y = p.x - mid.x, p.y - mid.y
         x_rot = (r_cos * x) - (r_sin * y)
         y_rot = (r_sin * x) + (r_cos * y)
-  	    Location.new(x_rot + mid.x, y_rot + mid.y)
+  	    make_loc(x_rot + mid.x, y_rot + mid.y)
       end
     end
 
@@ -418,7 +426,7 @@ module EideticPDF
 
     def points_for_arc_small(x, y, r, mid_theta, half_angle, ccwcw)
       x0, y0, x1, y1, x2, y2, x3, y3 = calc_arc_small(r, mid_theta, half_angle, ccwcw)
-      [Location.new(x+x0, y-y0), Location.new(x+x1, y-y1), Location.new(x+x2, y-y2), Location.new(x+x3, y-y3)]
+      [make_loc(x+x0, y-y0), make_loc(x+x1, y-y1), make_loc(x+x2, y-y2), make_loc(x+x3, y-y3)]
     end
 
     def arc_small(x, y, r, mid_theta, half_angle, ccwcw, move_to0)
@@ -695,16 +703,18 @@ module EideticPDF
     attr_accessor :v_text_align
     attr_accessor :line_height
     attr_reader :auto_path
+    attr_accessor :margin_top, :margin_right, :margin_bottom, :margin_left
 
     def initialize(doc, options)
       # doc: PdfDocumentWriter
       @doc = doc
       @page_style = PageStyle.new(options)
-      @loc = Location.new(0, @page_style.page_size.y2)
+      margins(options[:margins] || 0)
       @units = options[:units] || :pt
       @v_text_align = options[:v_text_align] || :top
       @page_width = @page_style.page_size.x2
       @page_height = @page_style.page_size.y2
+      @loc = translate(0, 0)
       @page = PdfObjects::PdfPage.new(@doc.next_seq, 0, @doc.catalog.pages)
       @page.media_box = @page_style.page_size.clone
       @page.crop_box = @page_style.crop_size.clone
@@ -746,6 +756,19 @@ module EideticPDF
       @units = units
     end
 
+    def margins(*margins)
+      if margins.empty?
+        @margin_top = @margin_right = @margin_bottom = @margin_left = 0
+      elsif margins.size == 1
+        @margin_top = @margin_right = @margin_bottom = @margin_left = margins[0]
+      elsif margins.size == 2
+        @margin_top = @margin_bottom = margins[0]
+        @margin_right = @margin_left = margins[1]
+      elsif margins.size == 4
+        @margin_top, @margin_right, @margin_bottom, @margin_left = margins
+      end
+    end
+
     def page_width
       from_points(@units, @page_width)
     end
@@ -755,11 +778,11 @@ module EideticPDF
     end
 
     def move_to(x, y)
-      @loc = Location.new(x, page_height - y)
+      @loc = translate(x, y)
     end
 
     def pen_pos
-      Location.new(@loc.x, page_height - @loc.y)
+      translate(@loc.x, @loc.y)
     end
 
     # graphics methods
@@ -915,7 +938,7 @@ module EideticPDF
       check_set(:line_color, :line_width, :line_dash_pattern, :fill_color)
 
       points = points_for_ellipse(x, y, rx, ry)
-      points = rotate_points(Location.new(x, y), points, -rotation)
+      points = rotate_points(make_loc(x, y), points, -rotation)
       points.reverse! if options[:reverse]
       curve_points(points)
 
@@ -1031,10 +1054,10 @@ module EideticPDF
       points = (0..sides).collect do
         px, py = rotate_xy_coordinate(r, 0, angle)
         angle += step
-        Location.new(x + px * r, y + py * r)
+        make_loc(x + px * r, y + py * r)
       end
       rotation = options[:rotation] || 0
-      points = rotate_points(Location.new(x, y), points, -rotation) unless rotation.zero?
+      points = rotate_points(make_loc(x, y), points, -rotation) unless rotation.zero?
       points.reverse! if options[:reverse]
       points
     end
@@ -1495,6 +1518,10 @@ module EideticPDF
 
     def units=(units)
       cur_page.units=(units)
+    end
+
+    def margins(*margins)
+      cur_page.margins(*margins)
     end
 
     def page_width
