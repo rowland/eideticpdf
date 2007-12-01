@@ -73,7 +73,8 @@ end
 
 def font_names(w)
   w.page(:units => :cm) do |p|
-    p.move_to(1, 1)
+    p.margins(1, 2)
+    # p.move_to(1, 1)
     p.type1_font_names.each do |font_name|
       p.set_font(font_name, 12)
       p.puts(font_name)

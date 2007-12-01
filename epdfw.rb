@@ -15,6 +15,7 @@ module EideticPDF
   SIGNS = [ Signs.new(1, -1), Signs.new(-1, -1), Signs.new(-1, 1), Signs.new(1, 1) ]
   UNIT_CONVERSION = { :pt => 1, :in => 72, :cm => 28.35 }
   LINE_PATTERNS = { :solid => [], :dotted => [1, 2], :dashed => [4, 2] }
+  IDENTITY_MATRIX = [1, 0, 0, 1, 0, 0].freeze
 
   class PageStyle
     attr_reader :page_size, :crop_size, :orientation, :landscape, :rotate
@@ -461,9 +462,10 @@ module EideticPDF
       raise Exception.new("Not in page.") unless @doc.in_page
       end_graph if @in_graph
       @last_loc = Location.new(0, 0)
+      @in_text = true
       @tw = TextWriter.new(@stream)
       @tw.open
-      @in_text = true
+      @tw
     end
 
     def end_text
@@ -476,8 +478,8 @@ module EideticPDF
       raise Exception.new("Already in graph") if @in_graph
       end_text if @in_text
       @last_loc = Location.new(0, 0)
-      @gw = GraphWriter.new(@stream)
       @in_graph = true
+      @gw = GraphWriter.new(@stream)
     end
 
     def end_graph
@@ -492,8 +494,8 @@ module EideticPDF
 
     def start_misc
       raise Exception.new("Already in misc") if @in_misc
-      @mw = MiscWriter.new(@stream)
       @in_misc = true
+      @mw = MiscWriter.new(@stream)
     end
 
     def end_misc
@@ -502,7 +504,17 @@ module EideticPDF
       @in_misc = false
     end
 
-    attr_reader :tw, :gw, :mw
+    def tw
+      @tw ||= start_text
+    end
+
+    def gw
+      @gw ||= start_graph
+    end
+
+    def mw
+      @mw ||= start_misc
+    end
 
     # font methods
     def set_default_font
@@ -662,7 +674,7 @@ module EideticPDF
     end
 
     # protected drawing methods
-    def draw_rounded_rectangle(x, y, width, height, options={})
+    def draw_rounded_rectangle(x, y, width, height, options)
       corners = options[:corners] || []
       if corners.size == 1
         xr1 = yr1 = xr2 = yr2 = xr3 = yr3 = xr4 = yr4 = corners[0]
@@ -695,6 +707,20 @@ module EideticPDF
       curve_points(qpa[1]); line_to(qpa[2][0].x, qpa[2][0].y)
       curve_points(qpa[2]); line_to(qpa[3][0].x, qpa[3][0].y)
       curve_points(qpa[3]); line_to(qpa[0][0].x, qpa[0][0].y)
+    end
+    
+    def draw_rectangle_path(x, y, width, height, options)
+      move_to(x, y)
+      if options[:reverse]
+        line_to(x, y + height)
+        line_to(x + width, y + height)
+        line_to(x + width, y)
+      else
+        line_to(x + width, y)
+        line_to(x + width, y + height)
+        line_to(x, y + height)
+      end
+      line_to(x, y)
     end
 
   public
@@ -734,6 +760,7 @@ module EideticPDF
     end
 
     def close
+      gw.restore_graphics_state unless @matrix.nil?
       end_text if @in_text
       end_graph if @in_graph
       end_misc if @in_misc
@@ -757,16 +784,31 @@ module EideticPDF
     end
 
     def margins(*margins)
-      if margins.empty?
-        @margin_top = @margin_right = @margin_bottom = @margin_left = 0
-      elsif margins.size == 1
-        @margin_top = @margin_right = @margin_bottom = @margin_left = margins[0]
-      elsif margins.size == 2
-        @margin_top = @margin_bottom = margins[0]
-        @margin_right = @margin_left = margins[1]
-      elsif margins.size == 4
-        @margin_top, @margin_right, @margin_bottom, @margin_left = margins
+      @margins ||= [0] * 4
+      return @margins if margins.empty?
+      margins = margins.first if margins.first.is_a?(Array)
+      @margins = case margins.size
+      when 4: margins
+      when 2: margins * 2
+      when 1: margins * 4
+      else @margins
       end
+      @margin_top, @margin_right, @margin_bottom, @margin_left = @margins
+      if (@matrix || IDENTITY_MATRIX)[4..5] != [@margin_left, @margin_top]
+        start_graph unless @in_graph
+        if @matrix.nil?
+          @matrix = IDENTITY_MATRIX.dup
+        else
+          gw.restore_graphics_state
+        end
+        @matrix[4..5] = [@margin_left, @margin_top]
+        gw.save_graphics_state
+        gw.concat_matrix(
+          @matrix[0], @matrix[1], @matrix[2], @matrix[3], 
+          to_points(@units, @matrix[4]),
+          -to_points(@units, @matrix[5]))
+      end
+      @margins
     end
 
     def page_width
@@ -815,23 +857,13 @@ module EideticPDF
       if options[:corners]
         draw_rounded_rectangle(x, y, width, height, options)
       elsif options[:path]
-        move_to(x, y)
-        if options[:reverse]
-          line_to(x, y + height)
-          line_to(x + width, y + height)
-          line_to(x + width, y)
-        else
-          line_to(x + width, y)
-          line_to(x + width, y + height)
-          line_to(x, y + height)
-        end
-        line_to(x, y)
+        draw_rectangle_path(x, y, width, height, options)
       else
         gw.rectangle(
-            to_points(@units, x),
-            @page_height - to_points(@units, y + height),
-            to_points(@units, width),
-            to_points(@units, height))
+          to_points(@units, x),
+          @page_height - to_points(@units, y + height),
+          to_points(@units, width),
+          to_points(@units, height))
       end
 
       auto_stroke_and_fill(:stroke => border, :fill => fill)
@@ -896,8 +928,8 @@ module EideticPDF
       @in_path = true
     end
 
-    def curve_to(points)
-    end
+    # def curve_to(points)
+    # end
 
     def points_for_circle(x, y, r)
       points = (1..4).inject([]) { |points, q| points + get_quadrant_bezier_points(q, x, y, r) }
@@ -1182,9 +1214,7 @@ module EideticPDF
       @doc.named_colors
     end
 
-    def line_color
-      @line_color
-    end
+    attr_reader :line_color
 
     def line_color=(color)
       if color.is_a?(Array)
@@ -1195,8 +1225,8 @@ module EideticPDF
       end        
     end
 
-    def set_fill_color_rgb(red, green, blue)
-    end
+    # def set_fill_color_rgb(red, green, blue)
+    # end
 
     def fill_color(color)
       @fill_color
@@ -1232,13 +1262,13 @@ module EideticPDF
       if (@text_angle != angle) or (angle != 0.0)
         set_text_angle(angle, @loc.x, @loc.y)
       elsif @loc != @last_loc
-        @tw.move_by(to_points(@units, @loc.x - @last_loc.x), to_points(@units, @loc.y - @last_loc.y))
+        tw.move_by(to_points(@units, @loc.x - @last_loc.x), to_points(@units, @loc.y - @last_loc.y))
       end
       check_set_font
       check_set_font_color
       check_set_v_text_align
 
-      @tw.show(text)
+      tw.show(text)
       @last_loc = @loc.clone
       if angle == 0.0
         @loc.x += width(text)
@@ -1447,9 +1477,11 @@ module EideticPDF
     end
 
     def open(options={})
+      begin_doc(options)
     end
 
     def close
+      end_doc
     end
 
     def to_s

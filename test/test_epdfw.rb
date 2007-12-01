@@ -439,4 +439,19 @@ class DocumentWriterTestCases < Test::Unit::TestCase
     assert_in_delta(10.5, @doc.pen_pos.x, 0.1)
     assert_in_delta(11.6, @doc.pen_pos.y, 0.1)
   end
+  
+  def test_margins
+    assert_equal([0, 0, 0, 0], @doc.margins)
+    @doc.margins(1)
+    assert_equal([1, 1, 1, 1], @doc.margins)
+    @doc.margins(1, 2)
+    assert_equal([1, 2, 1, 2], @doc.margins)
+    @doc.margins(1, 2, 3, 4)
+    assert_equal([1, 2, 3, 4], @doc.margins)
+    @doc.margins(5, 6, 7)
+    assert_equal([1, 2, 3, 4], @doc.margins) # unchanged
+    @doc.margins(5, 6, 7, 8, 9)
+    assert_equal([1, 2, 3, 4], @doc.margins) # still unchanged
+    assert_equal("q\n1 0 0 1 1 1 cm\nQ\nq\n1 0 0 1 2 1 cm\nQ\nq\n1 0 0 1 4 1 cm\n", @doc.pages.first.stream)
+  end
 end
