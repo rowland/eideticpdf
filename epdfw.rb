@@ -452,7 +452,7 @@ module EideticPDF
       r = (color >> 16) & 0xFF
       [r, g, b]
     end
-    
+
     def color_from_rgb(r, g, b)
       (r << 16) | (g << 8) | b
     end
@@ -593,7 +593,6 @@ module EideticPDF
 
     def check_set_line_dash_pattern
       unless @line_dash_pattern == @last_line_dash_pattern
-        start_graph unless @in_graph
         if @in_path and @auto_path
           gw.stroke
           @in_path = false
@@ -613,7 +612,6 @@ module EideticPDF
 
     def check_set_line_width
       unless @line_width == @last_line_width
-        start_graph unless @in_graph
         if @in_path and @auto_path
           gw.stroke
           @in_path = false
@@ -787,14 +785,13 @@ module EideticPDF
       return @margins.map { |m| from_points(@units, m) } unless [4,2,1].include?(margins.size)
       margins = margins.first if margins.first.is_a?(Array)
       @margins = case margins.size
-      when 4: margins
-      when 2: margins * 2
-      when 1: margins * 4
-      else @margins
-      end.map { |m| to_points(@units, m) }
+        when 4: margins
+        when 2: margins * 2
+        when 1: margins * 4
+        else @margins
+        end.map { |m| to_points(@units, m) }
       @margin_top, @margin_right, @margin_bottom, @margin_left = @margins
       if (@matrix || IDENTITY_MATRIX)[4..5] != [@margin_left, -@margin_top]
-        start_graph unless @in_graph
         if @matrix.nil?
           @matrix = IDENTITY_MATRIX.dup
         else
@@ -851,7 +848,6 @@ module EideticPDF
 
     # graphics methods
     def line_to(x, y)
-      start_graph unless @in_graph
       unless @last_loc == @loc
         gw.stroke if @in_path and @auto_path
         @in_path = false
@@ -869,7 +865,6 @@ module EideticPDF
     def rectangle(x, y, width, height, options={})
       border = options[:border].nil? ? true : options[:border]
       fill = options[:fill].nil? ? false : options[:fill]
-      start_graph unless @in_graph
       gw.stroke if @in_path and @auto_path
 
       push_line_color(border)
@@ -895,7 +890,6 @@ module EideticPDF
     end
 
     def curve(x0, y0, x1, y1, x2, y2, x3, y3)
-      start_graph unless @in_graph
 
       move_to(x0, y0)
       unless @last_loc == @loc
@@ -921,7 +915,6 @@ module EideticPDF
 
     def curve_points(points)
       raise Exception.new("Need at least 4 points for curve") if points.size < 4
-      start_graph unless @in_graph
       move_to(points[0].x, points[0].y)
       unless @last_loc == @loc
         if @in_path and @auto_path
@@ -1051,7 +1044,6 @@ module EideticPDF
     def pie(x, y, r, start_angle, end_angle, options={})
       border = options[:border].nil? ? true : options[:border]
       fill = options[:fill].nil? ? false : options[:fill]
-      start_graph unless @in_graph
       unless @last_loc == @loc
         gw.stroke if @in_path and @auto_path
         @in_path = false
@@ -1079,7 +1071,6 @@ module EideticPDF
       start_angle, end_angle = end_angle, start_angle if options[:reverse]
       border = options[:border].nil? ? true : options[:border]
       fill = options[:fill].nil? ? false : options[:fill]
-      start_graph unless @in_graph
       unless @last_loc == @loc
         gw.stroke if @in_path and @auto_path
         @in_path = false
@@ -1119,7 +1110,6 @@ module EideticPDF
     def polygon(x, y, r, sides, options={})
       border = options[:border].nil? ? true : options[:border]
       fill = options[:fill].nil? ? false : options[:fill]
-      start_graph unless @in_graph
       unless @last_loc == @loc
         gw.stroke if @in_path and @auto_path
         @in_path = false
@@ -1146,7 +1136,6 @@ module EideticPDF
       return if points < 5
       border = options[:border].nil? ? true : options[:border]
       fill = options[:fill].nil? ? false : options[:fill]
-      start_graph unless @in_graph
       unless @last_loc == @loc
         gw.stroke if @in_path and @auto_path
         @in_path = false
