@@ -630,32 +630,29 @@ module EideticPDF
       check_set_fill_color if options.include?(:fill_color)
     end
 
-    def line_color_stack
-      @line_color_stack ||= []
+    class ColorStack
+      def initialize(obj, prop)
+        @obj, @prop = obj, prop
+        @stack = []
+      end
+      
+      def push(color)
+        @stack.push(color)
+        @obj.send("#{@prop}=", color) if color.respond_to?(:to_int) or color.respond_to?(:to_str)
+      end
+      
+      def pop
+        color = @stack.pop
+        @obj.send("#{@prop}=", color) if color.respond_to?(:to_int) or color.respond_to?(:to_str)
+      end
     end
 
-    def push_line_color(color)
-      line_color_stack.push(@line_color)
-      self.line_color = color if color.respond_to?(:to_int) or color.respond_to?(:to_str)
+    def line_colors
+      @line_colors ||= ColorStack.new(self, :line_color)
     end
 
-    def pop_line_color
-      color = line_color_stack.pop
-      self.line_color = color if color.respond_to?(:to_int) or color.respond_to?(:to_str)
-    end
-
-    def fill_color_stack
-      @fill_color_stack ||= []
-    end
-
-    def push_fill_color(color)
-      fill_color_stack.push(@fill_color)
-      self.fill_color = color if color.respond_to?(:to_int) or color.respond_to?(:to_str)
-    end
-
-    def pop_fill_color
-      color = fill_color_stack.pop
-      self.fill_color = color if color.respond_to?(:to_int) or color.respond_to?(:to_str)
+    def fill_colors
+      @fill_colors ||= ColorStack.new(self, :fill_color)
     end
 
     def auto_stroke_and_fill(options)
@@ -867,8 +864,8 @@ module EideticPDF
       fill = options[:fill].nil? ? false : options[:fill]
       gw.stroke if @in_path and @auto_path
 
-      push_line_color(border)
-      push_fill_color(fill)
+      line_colors.push(border)
+      fill_colors.push(fill)
       check_set(:line_color, :line_width, :line_dash_pattern, :fill_color)
 
       if options[:corners]
@@ -884,8 +881,8 @@ module EideticPDF
       end
 
       auto_stroke_and_fill(:stroke => border, :fill => fill)
-      pop_line_color
-      pop_fill_color
+      line_colors.pop
+      fill_colors.pop
       move_to(x + width, y)
     end
 
@@ -956,8 +953,8 @@ module EideticPDF
       border = options[:border].nil? ? true : options[:border]
       fill = options[:fill].nil? ? false : options[:fill]
 
-      push_line_color(border)
-      push_fill_color(fill)
+      line_colors.push(border)
+      fill_colors.push(fill)
       check_set(:line_color, :line_width, :line_dash_pattern, :fill_color)
 
       points = points_for_circle(x, y, r)
@@ -965,8 +962,8 @@ module EideticPDF
       curve_points(points)
 
       auto_stroke_and_fill(:stroke => border, :fill => fill)
-      pop_line_color
-      pop_fill_color
+      line_colors.pop
+      fill_colors.pop
     end
 
     def points_for_ellipse(x, y, rx, ry)
@@ -980,8 +977,8 @@ module EideticPDF
       border = options[:border].nil? ? true : options[:border]
       fill = options[:fill].nil? ? false : options[:fill]
 
-      push_line_color(border)
-      push_fill_color(fill)
+      line_colors.push(border)
+      fill_colors.push(fill)
       check_set(:line_color, :line_width, :line_dash_pattern, :fill_color)
 
       points = points_for_ellipse(x, y, rx, ry)
@@ -990,8 +987,8 @@ module EideticPDF
       curve_points(points)
 
       auto_stroke_and_fill(:stroke => border, :fill => fill)
-      pop_line_color
-      pop_fill_color
+      line_colors.pop
+      fill_colors.pop
     end
 
     def points_for_arc(x, y, r, start_angle, end_angle)
@@ -1049,8 +1046,8 @@ module EideticPDF
         @in_path = false
       end
 
-      push_line_color(border)
-      push_fill_color(fill)
+      line_colors.push(border)
+      fill_colors.push(fill)
       check_set(:line_color, :line_width, :line_dash_pattern, :fill_color)
 
       move_to(x, y)
@@ -1062,8 +1059,8 @@ module EideticPDF
       line_to(x, y)
 
       auto_stroke_and_fill(:stroke => border, :fill => fill)
-      pop_line_color
-      pop_fill_color
+      line_colors.pop
+      fill_colors.pop
     end
 
     def arch(x, y, r1, r2, start_angle, end_angle, options={})
@@ -1076,8 +1073,8 @@ module EideticPDF
         @in_path = false
       end
 
-      push_line_color(border)
-      push_fill_color(fill)
+      line_colors.push(border)
+      fill_colors.push(fill)
       check_set(:fill_color)
       arc1 = points_for_arc(x, y, r1, start_angle, end_angle)
       arc2 = points_for_arc(x, y, r2, end_angle, start_angle)
@@ -1089,8 +1086,8 @@ module EideticPDF
       line_to(arc1.first.x, arc1.first.y)
       
       auto_stroke_and_fill(:stroke => border, :fill => fill)
-      pop_line_color
-      pop_fill_color
+      line_colors.pop
+      fill_colors.pop
     end
 
     def points_for_polygon(x, y, r, sides, options={})
@@ -1116,8 +1113,8 @@ module EideticPDF
       end
 
       points = points_for_polygon(x, y, r, sides, options)
-      push_line_color(border)
-      push_fill_color(fill)
+      line_colors.push(border)
+      fill_colors.push(fill)
       check_set(:line_color, :line_width, :line_dash_pattern, :fill_color)
 
       points.each_with_index do |point, i|
@@ -1128,8 +1125,8 @@ module EideticPDF
         end
       end
       auto_stroke_and_fill(:stroke => border, :fill => fill)
-      pop_line_color
-      pop_fill_color
+      line_colors.pop
+      fill_colors.pop
     end
 
     def star(x, y, r, points, options={})
@@ -1145,8 +1142,8 @@ module EideticPDF
       r2 = (points - 2).to_f / points.to_f
       vertices1 = points_for_polygon(x, y, r, points, options)
       vertices2 = points_for_polygon(x, y, r2, points, options.merge(:rotation => rotation + (360.0 / points / 2)))
-      push_line_color(border)
-      push_fill_color(fill)
+      line_colors.push(border)
+      fill_colors.push(fill)
       check_set(:line_color, :line_width, :line_dash_pattern, :fill_color)
 
       move_to(vertices2[0].x, vertices2[0].y)
@@ -1155,8 +1152,8 @@ module EideticPDF
         line_to(vertices2[i+1].x, vertices2[i+1].y)
       end
       auto_stroke_and_fill(:stroke => border, :fill => fill)
-      pop_line_color
-      pop_fill_color
+      line_colors.pop
+      fill_colors.pop
     end
 
     def path(options={})
