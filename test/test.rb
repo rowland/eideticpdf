@@ -72,9 +72,7 @@ def circles_and_rectangles(w)
 end
 
 def font_names(w)
-  w.page(:units => :cm) do |p|
-    p.margins(1, 2)
-    # p.move_to(1, 1)
+  w.page(:units => :cm, :margins => [1,2]) do |p|
     p.type1_font_names.each do |font_name|
       p.set_font(font_name, 12)
       p.puts(font_name)
@@ -83,14 +81,13 @@ def font_names(w)
 end
 
 def print_text(w)
-  w.start_page(:units => :cm)
-  w.move_to(1, 1)
+  w.start_page(:units => :cm, :margins => 1)
   w.set_font("Helvetica", 12)
   w.print("Print Text")
 
   # test vertical text alignment
-  w.move_to(1, 3); w.line_to(20,3)
-  w.move_to(1, 3)
+  w.move_to(0, 3); w.line_to(20,3)
+  w.move_to(0, 3)
 
   w.v_text_align = :base
   w.print("v_text_align = ")
@@ -106,7 +103,7 @@ def print_text(w)
   w.print(":above ")
 
   w.v_text_align = :top
-  w.move_to(1, 5)
+  w.move_to(0, 5)
   ['Black', 'Blue', 'Brown', 'Crimson', 'Gold', 'Green', 'Gray', 'Indigo'].each do |color|
     w.font_color = color
     w.print "#{color}     "
@@ -114,8 +111,8 @@ def print_text(w)
 
   w.font_color = 'Black'
   lorem = "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
-  w.move_to(1, 7); w.line_to(1, 9); w.move_to(20, 7); w.line_to(20, 9) 
-  lorem2 = w.paragraph_xy(1.5, 7, lorem, :width => 18, :height => 2)
+  w.move_to(0, 7); w.line_to(0, 9); w.move_to(w.canvas_width, 7); w.line_to(canvas.width, 9) 
+  lorem2 = w.paragraph_xy(0.5, 7, lorem, :width => 18, :height => 2)
   w.puts
   w.paragraph(lorem2, :width => 18) unless lorem2.nil?
   w.puts
@@ -123,7 +120,7 @@ def print_text(w)
   w.puts
   w.paragraph(lorem, :width => 18, :align => :right)
   w.puts
-  w.move_to((w.page_width - 10) / 2.0, w.pen_pos.y)
+  w.move_to((w.canvas_width - 10) / 2.0, w.pen_pos.y)
   w.paragraph(lorem, :width => 10, :align => :center)
   w.end_page
 end

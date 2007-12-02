@@ -442,16 +442,28 @@ class DocumentWriterTestCases < Test::Unit::TestCase
   
   def test_margins
     assert_equal([0, 0, 0, 0], @doc.margins)
+    assert_equal(0, @doc.margin_top)
+    assert_equal(0, @doc.margin_right)
+    assert_equal(0, @doc.margin_bottom)
+    assert_equal(0, @doc.margin_left)
     @doc.margins(1)
     assert_equal([1, 1, 1, 1], @doc.margins)
     @doc.margins(1, 2)
     assert_equal([1, 2, 1, 2], @doc.margins)
     @doc.margins(1, 2, 3, 4)
-    assert_equal([1, 2, 3, 4], @doc.margins)
+    assert_array_in_delta([1, 2, 3, 4], @doc.margins, 2 ** -20)
+    assert_in_delta(1.0, @doc.margin_top, 0.01)
+    assert_in_delta(2.0, @doc.margin_right, 0.01)
+    assert_in_delta(3.0, @doc.margin_bottom, 0.01)
+    assert_in_delta(4.0, @doc.margin_left, 0.01)
     @doc.margins(5, 6, 7)
-    assert_equal([1, 2, 3, 4], @doc.margins) # unchanged
+    assert_array_in_delta([1, 2, 3, 4], @doc.margins, 2 ** -20) # unchanged
     @doc.margins(5, 6, 7, 8, 9)
-    assert_equal([1, 2, 3, 4], @doc.margins) # still unchanged
-    assert_equal("q\n1 0 0 1 1 1 cm\nQ\nq\n1 0 0 1 2 1 cm\nQ\nq\n1 0 0 1 4 1 cm\n", @doc.pages.first.stream)
+    assert_array_in_delta([1, 2, 3, 4], @doc.margins, 2 ** -20) # still unchanged
+    assert_equal("q\n1 0 0 1 28.35 -28.35 cm\nQ\nq\n1 0 0 1 56.7 -28.35 cm\nQ\nq\n1 0 0 1 113.4 -28.35 cm\n", @doc.pages.first.stream)
   end
+end
+
+def assert_array_in_delta(expected_floats, actual_floats, delta)
+  expected_floats.each_with_index { |e, i| assert_in_delta(e, actual_floats[i], delta) }
 end

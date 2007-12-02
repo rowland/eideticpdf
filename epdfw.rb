@@ -729,13 +729,11 @@ module EideticPDF
     attr_accessor :v_text_align
     attr_accessor :line_height
     attr_reader :auto_path
-    attr_accessor :margin_top, :margin_right, :margin_bottom, :margin_left
 
     def initialize(doc, options)
       # doc: PdfDocumentWriter
       @doc = doc
       @page_style = PageStyle.new(options)
-      margins(options[:margins] || 0)
       @units = options[:units] || :pt
       @v_text_align = options[:v_text_align] || :top
       @page_width = @page_style.page_size.x2
@@ -757,6 +755,7 @@ module EideticPDF
       @line_height = options[:line_height] || 1.7
       @auto_path = true
       start_misc
+      margins(options[:margins] || 0)
     end
 
     def close
@@ -785,29 +784,28 @@ module EideticPDF
 
     def margins(*margins)
       @margins ||= [0] * 4
-      return @margins if margins.empty?
+      return @margins.map { |m| from_points(@units, m) } unless [4,2,1].include?(margins.size)
       margins = margins.first if margins.first.is_a?(Array)
       @margins = case margins.size
       when 4: margins
       when 2: margins * 2
       when 1: margins * 4
       else @margins
-      end
+      end.map { |m| to_points(@units, m) }
       @margin_top, @margin_right, @margin_bottom, @margin_left = @margins
-      if (@matrix || IDENTITY_MATRIX)[4..5] != [@margin_left, @margin_top]
+      if (@matrix || IDENTITY_MATRIX)[4..5] != [@margin_left, -@margin_top]
         start_graph unless @in_graph
         if @matrix.nil?
           @matrix = IDENTITY_MATRIX.dup
         else
           gw.restore_graphics_state
         end
-        @matrix[4..5] = [@margin_left, @margin_top]
+        @matrix[4..5] = [@margin_left, -@margin_top]
         gw.save_graphics_state
-        gw.concat_matrix(
-          @matrix[0], @matrix[1], @matrix[2], @matrix[3], 
-          to_points(@units, @matrix[4]),
-          -to_points(@units, @matrix[5]))
+        gw.concat_matrix(*@matrix)
       end
+      @canvas_width = @page_width - @margin_left - @margin_right
+      @canvas_height = @page_height - @margin_top - @margin_bottom
       @margins
     end
 
@@ -817,6 +815,30 @@ module EideticPDF
 
     def page_height
       from_points(@units, @page_height)
+    end
+
+    def margin_top
+      from_points(@units, @margin_top)
+    end
+
+    def margin_right
+      from_points(@units, @margin_right)
+    end
+
+    def margin_bottom
+      from_points(@units, @margin_bottom)
+    end
+
+    def margin_left
+      from_points(@units, @margin_left)
+    end
+
+    def canvas_width
+      from_points(@units, @canvas_width)
+    end
+
+    def canvas_height
+      from_points(@units, @canvas_height)
     end
 
     def move_to(x, y)
@@ -1554,6 +1576,30 @@ module EideticPDF
 
     def margins(*margins)
       cur_page.margins(*margins)
+    end
+
+    def margin_top
+      cur_page.margin_top
+    end
+
+    def margin_right
+      cur_page.margin_right
+    end
+
+    def margin_bottom
+      cur_page.margin_bottom
+    end
+
+    def margin_left
+      cur_page.margin_left
+    end
+
+    def canvas_width
+      cur_page.canvas_width
+    end
+
+    def canvas_height
+      cur_page.canvas_height
     end
 
     def page_width
