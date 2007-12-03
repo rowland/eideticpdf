@@ -40,11 +40,11 @@ end
 def dp_grid(w, width=8000, height=10000, xoff=250, yoff=500)
   # set custom point scale
   EideticPDF::UNIT_CONVERSION[:dp] = 0.072
-  w.start_page(:units => :dp)
+  w.open_page(:units => :dp)
   w.set_font("Helvetica", 10)
   w.print_xy(250, 250, "Dave Points Squares")
   grid(w, width, height, xoff, yoff, 1000)
-  w.end_page
+  w.close_page
 end
 
 def pt_units(w)
@@ -62,13 +62,13 @@ def pt_units(w)
 end
 
 def circles_and_rectangles(w)
-  w.start_page(:units => :in)
+  w.open_page(:units => :in)
   w.print_xy(0.5, 0.5, "Circles and Rectangles")
   w.rectangle(1, 1, 6.5, 9)
   w.rectangle(2, 2, 4.5, 7)
   w.circle(4.25, 5.5, 3.25)
   w.circle(4.25, 5.5, 2.25)
-  w.end_page
+  w.close_page
 end
 
 def font_names(w)
@@ -81,7 +81,7 @@ def font_names(w)
 end
 
 def print_text(w)
-  w.start_page(:units => :cm, :margins => 1)
+  w.open_page(:units => :cm, :margins => 1)
   w.set_font("Helvetica", 12)
   w.print("Print Text")
 
@@ -111,7 +111,7 @@ def print_text(w)
 
   w.font_color = 'Black'
   lorem = "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
-  w.move_to(0, 7); w.line_to(0, 9); w.move_to(w.canvas_width, 7); w.line_to(canvas.width, 9) 
+  w.move_to(0, 7); w.line_to(0, 9); w.move_to(w.canvas_width, 7); w.line_to(w.canvas_width, 9) 
   lorem2 = w.paragraph_xy(0.5, 7, lorem, :width => 18, :height => 2)
   w.puts
   w.paragraph(lorem2, :width => 18) unless lorem2.nil?
@@ -122,7 +122,7 @@ def print_text(w)
   w.puts
   w.move_to((w.canvas_width - 10) / 2.0, w.pen_pos.y)
   w.paragraph(lorem, :width => 10, :align => :center)
-  w.end_page
+  w.close_page
 end
 
 def print_angled_text(w)
@@ -253,7 +253,7 @@ def filled_rectangles(w)
     pages << lists.slice!(0, cols)
   end
   pages.each_with_index do |page, page_index|
-    w.start_page(:units => :in)
+    w.open_page(:units => :in)
     w.set_font("Helvetica", 10)
     w.print_xy(0.5, 0.5, "Filled Rectangles with Named Colors - #{page_index + 1}")
     w.line_height = 1.3
@@ -265,7 +265,7 @@ def filled_rectangles(w)
         w.rectangle(left + list_index * col_width + label_width, top + name_index * row_height, 0.5, 0.4, :fill => true)
       end
     end
-    w.end_page
+    w.close_page
   end
 end
 

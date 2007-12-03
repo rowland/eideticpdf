@@ -445,7 +445,7 @@ module EideticPDF
     end
 
     def rgb_from_color(color)
-      color = PdfK::NAMED_COLORS[color] || 0 if color.respond_to? :to_str
+      color = named_colors[color] || 0 if color.respond_to? :to_str
       color ||= 0
       b = color & 0xFF
       g = (color >> 8) & 0xFF
@@ -1484,20 +1484,12 @@ module EideticPDF
       @encodings = {}
     end
 
-    def open(options={})
-      begin_doc(options)
-    end
-
-    def close
-      end_doc
-    end
-
     def to_s
       @file.to_s
     end
 
     # document methods
-    def begin_doc(options={})
+    def open(options={})
       raise Exception.new("Already in document") if @in_doc
       @in_doc = true
       @options = options
@@ -1512,45 +1504,44 @@ module EideticPDF
       define_resources
     end
 
-    def end_doc
-      end_page if @in_page
+    def close
+      close_page if @in_page
       @pages.each { |page| page.close unless page.closed? }
     end
-    
+
     def doc(options={})
-      begin_doc(options)
+      open(options)
       yield(self)
-      end_doc
+      close
     end
 
     # page methods
-    def start_page(options={})
+    def open_page(options={})
       raise Exception.new("Already in page") if @in_page
       @cur_page = PageWriter.new(self, @options.clone.update(options))
-      # move_to(0, 0)
       @pages << @cur_page
       @in_page = true
       return @cur_page
     end
 
-    def end_page
+    def close_page
       raise Exception.new("Not in page") unless @in_page
       @cur_page.close
       @cur_page = nil
       @in_page = false
     end
-    
+
     def page(options={})
-      cur_page = start_page(options)
+      cur_page = open_page(options)
       yield(cur_page)
-      end_page
+      close_page
     end
 
     def new_page(options={})
-      end_page
-      start_page(options)
+      close_page
+      open_page(options)
     end
-    
+
     # coordinate methods
     def units
       cur_page.units

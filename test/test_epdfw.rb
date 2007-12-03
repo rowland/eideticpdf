@@ -403,14 +403,14 @@ class DocumentWriterTestCases < Test::Unit::TestCase
 
   def setup
     @doc = DocumentWriter.new
-    @doc.begin_doc
-    @doc.start_page(:units => :cm)
+    @doc.open
+    @doc.open_page(:units => :cm)
     @doc.set_font("Courier", 10)
   end
 
   def teardown
-    @doc.end_page
-    @doc.end_doc
+    @doc.close_page
+    @doc.close
   end
 
   def test_height
