@@ -47,6 +47,30 @@ def dp_grid(w, width=8000, height=10000, xoff=250, yoff=500)
   w.close_page
 end
 
+def four_grids(w, width=8, height=10, xoff=0.25, yoff=0.5)
+  w.page(:units => :in) do |p|
+    p.sub_page(0,2,0,2)
+    grid(p, width, height, xoff, yoff)
+    p.set_font("Helvetica", 10)
+    p.print_xy(0.25, 0.25, "Top, Left")
+
+    p.sub_page(1,2,0,2)
+    grid(p, width, height, xoff, yoff)
+    p.set_font("Helvetica", 10)
+    p.print_xy(0.25, 0.25, "Top, Right")
+
+    p.sub_page(0,2,1,2)
+    grid(p, width, height, xoff, yoff)
+    p.set_font("Helvetica", 10)
+    p.print_xy(0.25, 0.25, "Bottom, Left")
+
+    p.sub_page(1,2,1,2)
+    grid(p, width, height, xoff, yoff)
+    p.set_font("Helvetica", 10)
+    p.print_xy(0.25, 0.25, "Bottom, Right")
+  end
+end
+
 def pt_units(w)
   w.page(:units => :pt, :orientation => :portrait) do |p|
     p.rectangle(1,1,p.page_width-3, p.page_height-2)
@@ -457,6 +481,7 @@ docw.doc(:font => { :name => 'Courier', :size => 10 }) do |w|
   inch_grid(w)
   dp_grid(w)
   font_names(w)
+  four_grids(w)
 end
 
 File.open("test.pdf","w") { |f| f.write(docw) }

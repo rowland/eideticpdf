@@ -20,8 +20,8 @@ module EideticPDF
   class PageStyle
     attr_reader :page_size, :crop_size, :orientation, :landscape, :rotate
 
-    PORTRAIT = 0
-    LANDSCAPE = 270
+    # PORTRAIT = 0
+    # LANDSCAPE = 270
 
     def initialize(options={})
       page_size = options[:page_size] || :letter
@@ -55,7 +55,7 @@ module EideticPDF
         :landscape => [0,0,649,459].freeze
       }.freeze
     }
-    ROTATIONS = { :portrait => PORTRAIT, :landscape => LANDSCAPE }.freeze
+    # ROTATIONS = { :portrait => PORTRAIT, :landscape => LANDSCAPE }.freeze
 
   protected
     def make_size_rectangle(size, orientation)
@@ -748,9 +748,11 @@ module EideticPDF
       @fill_color = options[:fill_color] || 0
       @line_color = options[:line_color] || 0
       @line_height = options[:line_height] || 1.7
+      @text_angle = 0.0
       @auto_path = true
       start_misc
-      margins(options[:margins] || 0)
+      sub_page(*options[:sub_page]) if options[:sub_page]
+      margins(options[:margins]) if options[:margins]
     end
 
     def close
@@ -800,7 +802,7 @@ module EideticPDF
       end
       @canvas_width = @page_width - @margin_left - @margin_right
       @canvas_height = @page_height - @margin_top - @margin_bottom
-      @margins
+      nil
     end
 
     def page_width
@@ -833,6 +835,26 @@ module EideticPDF
 
     def canvas_height
       from_points(@units, @canvas_height)
+    end
+
+    # sub-page methods
+    def sub_page(*options)
+      unless @matrix.nil?
+        gw.restore_graphics_state
+        @matrix = nil
+      end
+      gw.restore_graphics_state unless @sub_page.nil?
+      return if options.nil?
+      x, tx, y, ty = options
+      @sub_page = IDENTITY_MATRIX.dup
+      @sub_page[4] = @page_width / tx * x
+      @sub_page[5] = @page_height / ty * (ty - 1 - y)
+      @sub_page[0] = 1.0 / tx
+      @sub_page[3] = 1.0 / ty
+
+      gw.save_graphics_state
+      gw.concat_matrix(*@sub_page)
+      @last_font = @last_page_font = nil
     end
 
     def move_to(x, y)
@@ -887,7 +909,6 @@ module EideticPDF
     end
 
     def curve(x0, y0, x1, y1, x2, y2, x3, y3)
-
       move_to(x0, y0)
       unless @last_loc == @loc
         if @in_path and @auto_path
