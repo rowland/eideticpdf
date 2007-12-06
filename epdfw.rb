@@ -20,8 +20,8 @@ module EideticPDF
   class PageStyle
     attr_reader :page_size, :crop_size, :orientation, :landscape, :rotate
 
-    # PORTRAIT = 0
-    # LANDSCAPE = 270
+    PORTRAIT = 0
+    LANDSCAPE = 270
 
     def initialize(options={})
       page_size = options[:page_size] || :letter
@@ -30,7 +30,7 @@ module EideticPDF
       @page_size = make_size_rectangle(page_size, @orientation)
       @crop_size = make_size_rectangle(crop_size, @orientation)
       @landscape = (@orientation == :landscape)
-      # @rotate = ROTATIONS[@orientation]
+      @rotate = ROTATIONS[options[:rotate] || :portrait]
     end
 
     SIZES = {
@@ -55,7 +55,7 @@ module EideticPDF
         :landscape => [0,0,649,459].freeze
       }.freeze
     }
-    # ROTATIONS = { :portrait => PORTRAIT, :landscape => LANDSCAPE }.freeze
+    ROTATIONS = { :portrait => PORTRAIT, :landscape => LANDSCAPE }.freeze
 
   protected
     def make_size_rectangle(size, orientation)
