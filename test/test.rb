@@ -462,7 +462,7 @@ end
 start = Time.now
 docw = EideticPDF::DocumentWriter.new
 
-docw.doc(:font => { :name => 'Courier', :size => 10 }) do |w|
+docw.doc(:font => { :name => 'Courier', :size => 10 }, :pages_up => [2, 2]) do |w|
   stars(w)
   polygons(w)
   pies(w)
@@ -473,7 +473,6 @@ docw.doc(:font => { :name => 'Courier', :size => 10 }) do |w|
   filled_rectangles(w)
   line_widths_and_patterns(w)
   print_text(w)
-  landscape_orientation(w)
   print_angled_text(w)
   arcs(w)
   pt_units(w)
@@ -481,7 +480,8 @@ docw.doc(:font => { :name => 'Courier', :size => 10 }) do |w|
   inch_grid(w)
   dp_grid(w)
   font_names(w)
-  four_grids(w)
+  landscape_orientation(w)
+  # four_grids(w)
 end
 
 File.open("test.pdf","w") { |f| f.write(docw) }

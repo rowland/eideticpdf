@@ -719,7 +719,7 @@ module EideticPDF
     end
 
   public
-    attr_reader :doc, :units
+    attr_reader :doc, :units, :page
     attr_reader :stream, :annotations
     attr_accessor :v_text_align
     attr_accessor :line_height
@@ -734,12 +734,16 @@ module EideticPDF
       @page_width = @page_style.page_size.x2
       @page_height = @page_style.page_size.y2
       @loc = translate(0, 0)
-      @page = PdfObjects::PdfPage.new(@doc.next_seq, 0, @doc.catalog.pages)
-      @page.media_box = @page_style.page_size.clone
-      @page.crop_box = @page_style.crop_size.clone
-      @page.rotate = @page_style.rotate
-      @page.resources = @doc.resources
-      @doc.file.body << @page
+      if @page = options[:_page]
+        @reused_page = true
+      else
+        @page = PdfObjects::PdfPage.new(@doc.next_seq, 0, @doc.catalog.pages)
+        @page.media_box = @page_style.page_size.clone
+        @page.crop_box = @page_style.crop_size.clone
+        @page.rotate = @page_style.rotate
+        @page.resources = @doc.resources
+        @doc.file.body << @page
+      end
       @stream = ''
       @annotations = []
       @char_spacing = @word_spacing = 0.0
@@ -752,11 +756,12 @@ module EideticPDF
       @auto_path = true
       start_misc
       sub_page(*options[:sub_page]) if options[:sub_page]
-      margins(options[:margins]) if options[:margins]
+      margins(options[:margins] || 0)
     end
 
     def close
       gw.restore_graphics_state unless @matrix.nil?
+      gw.restore_graphics_state unless @sub_page.nil?
       end_text if @in_text
       end_graph if @in_graph
       end_misc if @in_misc
@@ -764,7 +769,7 @@ module EideticPDF
       @doc.file.body << pdf_stream
       @page.annots = @annotations if @annotations.size.nonzero?
       @page.contents << pdf_stream
-      @doc.catalog.pages.kids << @page
+      @doc.catalog.pages.kids << @page unless @reused_page
       @stream = nil
     end
 
@@ -838,14 +843,13 @@ module EideticPDF
     end
 
     # sub-page methods
-    def sub_page(*options)
+    def sub_page(x, tx, y, ty)
       unless @matrix.nil?
         gw.restore_graphics_state
         @matrix = nil
       end
       gw.restore_graphics_state unless @sub_page.nil?
-      return if options.nil?
-      x, tx, y, ty = options
+      return unless x && tx && y && ty
       @sub_page = IDENTITY_MATRIX.dup
       @sub_page[4] = @page_width / tx * x
       @sub_page[5] = @page_height / ty * (ty - 1 - y)
@@ -1523,6 +1527,8 @@ module EideticPDF
       @file.body << pages << outlines << @catalog
       @file.trailer.root = @catalog
       define_resources
+      @pages_across, @pages_down = options[:pages_up] || [1, 1]
+      @pages_up = @pages_across * @pages_down
     end
 
     def close
@@ -1539,6 +1545,7 @@ module EideticPDF
     # page methods
     def open_page(options={})
       raise Exception.new("Already in page") if @in_page
+      options.update(:_page => pdf_page(@pages.size), :sub_page => sub_page(@pages.size))
       @cur_page = PageWriter.new(self, @options.clone.update(options))
       @pages << @cur_page
       @in_page = true
@@ -1641,9 +1648,9 @@ module EideticPDF
       cur_page.curve_points(points)
     end
 
-    def curve_to(points)
-      cur_page.curve_to(points)
-    end
+    # def curve_to(points)
+    #   cur_page.curve_to(points)
+    # end
 
     def circle(x, y, r, options={})
       cur_page.circle(x, y, r, options)
@@ -1833,6 +1840,24 @@ module EideticPDF
     end
 
     def make_font_descriptor(font_name)
+    end
+    
+    def sub_page(page_no)
+      if @pages_up == 1
+        nil
+      elsif @options[:pages_up_layout] == :down
+        [page_no % @pages_down, @pages_across, (page_no / @pages_down) % @pages_across, @pages_down]
+      else
+        [page_no % @pages_across, @pages_across, (page_no / @pages_down) % @pages_down, @pages_down]
+      end
+    end
+    
+    def pdf_page(page_no)
+      if page = @pages[page_no / @pages_up * @pages_up]
+        page.page
+      else
+        nil
+      end
     end
   end
 end

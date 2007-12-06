@@ -774,7 +774,8 @@ module EideticPDF
 
       def annots=(annots)
         # annots: array of dictionary objects
-        dictionary['Annots'] = PdfArray.new(annots.map { |annot| annot.reference_object })
+        (@annots ||= []).concat(annots)
+        dictionary['Annots'] = PdfArray.new(@annots.map { |annot| annot.reference_object })
       end
 
       def beads=(beads)
