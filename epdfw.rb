@@ -34,32 +34,19 @@ module EideticPDF
     end
 
     SIZES = {
-      :letter => {
-        :portrait => [0,0,612,792].freeze,
-        :landscape => [0,0,792,612].freeze        
-      }.freeze,
-      :legal => {
-        :portrait => [0,0,612,1008].freeze,
-        :landscape => [0,0,1008,612].freeze
-      }.freeze,
-      :A4 => {
-        :portrait => [0,0,595,842].freeze,
-        :landscape => [0,0,842,595].freeze
-      }.freeze,
-      :B5 => {
-        :portrait => [0,0,499,708].freeze,
-        :landscape => [0,0,708,499].freeze
-      }.freeze,
-      :C5 => {
-        :portrait => [0,0,459,649].freeze,
-        :landscape => [0,0,649,459].freeze
-      }.freeze
+      :letter => [612, 792].freeze,
+      :legal => [612, 1008].freeze,
+      :A4 => [595, 842].freeze,
+      :B5 => [499, 708].freeze,
+      :C5 => [459, 649].freeze
     }
     ROTATIONS = { :portrait => PORTRAIT, :landscape => LANDSCAPE }.freeze
 
   protected
     def make_size_rectangle(size, orientation)
-      PdfObjects::Rectangle.new(*(SIZES[size][orientation]))
+      w, h = SIZES[size]
+      w, h = h, w if orientation == :landscape
+      PdfObjects::Rectangle.new(0, 0, w, h)
     end
   end
 
@@ -516,6 +503,10 @@ module EideticPDF
       @mw ||= start_misc
     end
 
+    def sub_orientation(pages_across, pages_down)
+      @page_width / pages_across > @page_height / pages_down ? :landscape : :portrait
+    end
+
     # font methods
     def set_default_font
       set_font(@default_font[:name], @default_font[:size], @default_font)
@@ -728,6 +719,7 @@ module EideticPDF
     def initialize(doc, options)
       # doc: PdfDocumentWriter
       @doc = doc
+      @options = options
       @page_style = PageStyle.new(options)
       @units = options[:units] || :pt
       @v_text_align = options[:v_text_align] || :top
@@ -843,18 +835,27 @@ module EideticPDF
     end
 
     # sub-page methods
-    def sub_page(x, tx, y, ty)
+    def sub_page(x, pages_across, y, pages_down)
       unless @matrix.nil?
         gw.restore_graphics_state
         @matrix = nil
       end
       gw.restore_graphics_state unless @sub_page.nil?
-      return unless x && tx && y && ty
+      return unless x && pages_across && y && pages_down
+      ps = PageStyle.new(@options.merge(:orientation => sub_orientation(pages_across, pages_down)))
+      hw_ratio = @page_height / @page_width.to_f
+      width = ps.page_size.x2
+      height = ps.page_size.y2
+
+      ratio_w = @page_width / (pages_across * width).to_f
+      ratio_h = @page_height / (pages_down * height).to_f
+      ratio = [ratio_w, ratio_h].min
       @sub_page = IDENTITY_MATRIX.dup
-      @sub_page[4] = @page_width / tx * x
-      @sub_page[5] = @page_height / ty * (ty - 1 - y)
-      @sub_page[0] = 1.0 / tx
-      @sub_page[3] = 1.0 / ty
+      @sub_page[0] = ratio
+      @sub_page[3] = ratio
+      @sub_page[4] = @page_width / pages_across * x
+      @sub_page[5] = @page_height / pages_down * (pages_down - 1 - y)
+      @page_width, @page_height = width, width / ratio_w
 
       gw.save_graphics_state
       gw.concat_matrix(*@sub_page)
@@ -1546,7 +1547,7 @@ module EideticPDF
     def open_page(options={})
       raise Exception.new("Already in page") if @in_page
       options.update(:_page => pdf_page(@pages.size), :sub_page => sub_page(@pages.size))
-      @cur_page = PageWriter.new(self, @options.clone.update(options))
+      @cur_page = PageWriter.new(self, @options.merge(options))
       @pages << @cur_page
       @in_page = true
       return @cur_page
@@ -1841,7 +1842,7 @@ module EideticPDF
 
     def make_font_descriptor(font_name)
     end
-    
+
     def sub_page(page_no)
       if @pages_up == 1
         nil
@@ -1851,7 +1852,7 @@ module EideticPDF
         [page_no % @pages_across, @pages_across, (page_no / @pages_down) % @pages_down, @pages_down]
       end
     end
-    
+
     def pdf_page(page_no)
       if page = @pages[page_no / @pages_up * @pages_up]
         page.page

@@ -72,7 +72,7 @@ def four_grids(w, width=8, height=10, xoff=0.25, yoff=0.5)
 end
 
 def pt_units(w)
-  w.page(:units => :pt, :orientation => :portrait) do |p|
+  w.page(:units => :pt) do |p|
     p.rectangle(1,1,p.page_width-3, p.page_height-2)
     p.print_xy(5, 5, "Point Units")
 
@@ -294,7 +294,7 @@ def filled_rectangles(w)
 end
 
 def ellipses(w)
-  w.page(:units => :in, :orientation => :portrait) do |p|
+  w.page(:units => :in) do |p|
     p.print_xy(0.5, 0.5, "Ellipses")
     p.ellipse(4.25, 5.5, 3.75, 3.25)
     p.ellipse(4.25, 5.5, 3.75, 4.5)
@@ -462,7 +462,7 @@ end
 start = Time.now
 docw = EideticPDF::DocumentWriter.new
 
-docw.doc(:font => { :name => 'Courier', :size => 10 }, :pages_up => [2, 2]) do |w|
+docw.doc(:font => { :name => 'Courier', :size => 10 }, :orientation => :landscape, :pages_up => [2, 1]) do |w|
   stars(w)
   polygons(w)
   pies(w)
