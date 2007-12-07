@@ -725,7 +725,6 @@ module EideticPDF
       @v_text_align = options[:v_text_align] || :top
       @page_width = @page_style.page_size.x2
       @page_height = @page_style.page_size.y2
-      @loc = translate(0, 0)
       if @page = options[:_page]
         @reused_page = true
       else
@@ -799,6 +798,7 @@ module EideticPDF
       end
       @canvas_width = @page_width - @margin_left - @margin_right
       @canvas_height = @page_height - @margin_top - @margin_bottom
+      move_to(0, 0)
       nil
     end
 

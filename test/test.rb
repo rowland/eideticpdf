@@ -110,7 +110,7 @@ def print_text(w)
   w.print("Print Text")
 
   # test vertical text alignment
-  w.move_to(0, 3); w.line_to(20,3)
+  w.move_to(0, 3); w.line_to(w.canvas_width, 3)
   w.move_to(0, 3)
 
   w.v_text_align = :base
@@ -462,7 +462,7 @@ end
 start = Time.now
 docw = EideticPDF::DocumentWriter.new
 
-docw.doc(:font => { :name => 'Courier', :size => 10 }, :orientation => :landscape, :pages_up => [2, 1]) do |w|
+docw.doc(:font => { :name => 'Courier', :size => 10 }, :orientation => :landscape, :pages_up => [3, 2]) do |w|
   stars(w)
   polygons(w)
   pies(w)
