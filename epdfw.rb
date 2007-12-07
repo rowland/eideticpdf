@@ -843,7 +843,6 @@ module EideticPDF
       gw.restore_graphics_state unless @sub_page.nil?
       return unless x && pages_across && y && pages_down
       ps = PageStyle.new(@options.merge(:orientation => sub_orientation(pages_across, pages_down)))
-      hw_ratio = @page_height / @page_width.to_f
       width = ps.page_size.x2
       height = ps.page_size.y2
 
@@ -853,9 +852,13 @@ module EideticPDF
       @sub_page = IDENTITY_MATRIX.dup
       @sub_page[0] = ratio
       @sub_page[3] = ratio
-      @sub_page[4] = @page_width / pages_across * x
-      @sub_page[5] = @page_height / pages_down * (pages_down - 1 - y)
-      @page_width, @page_height = width, width / ratio_w
+      @sub_page[4] = @page_width / pages_across.to_f * x
+      @sub_page[5] = @page_height / pages_down.to_f * (pages_down - 1 - y)
+      if ratio_w >= ratio_h
+        @page_width, @page_height = width, height
+      else
+        @page_width, @page_height = width, width / ratio_w
+      end
 
       gw.save_graphics_state
       gw.concat_matrix(*@sub_page)
@@ -1849,7 +1852,7 @@ module EideticPDF
       elsif @options[:pages_up_layout] == :down
         [page_no % @pages_down, @pages_across, (page_no / @pages_down) % @pages_across, @pages_down]
       else
-        [page_no % @pages_across, @pages_across, (page_no / @pages_down) % @pages_down, @pages_down]
+        [page_no % @pages_across, @pages_across, (page_no / @pages_across) % @pages_down, @pages_down]
       end
     end
 
