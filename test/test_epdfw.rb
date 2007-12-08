@@ -402,10 +402,10 @@ class DocumentWriterTestCases < Test::Unit::TestCase
   S2_WRAPPED = ["\tThis paragraph starts with a tab", '', "and has two embedded newlines."]
 
   def setup
+    PageWriter::DEFAULT_FONT.update(:name => 'Courier', :size => 10)
     @doc = DocumentWriter.new
     @doc.open
     @doc.open_page(:units => :cm)
-    @doc.set_font("Courier", 10)
   end
 
   def teardown
@@ -424,22 +424,33 @@ class DocumentWriterTestCases < Test::Unit::TestCase
     lines = @doc.wrap(SAYING, 5)
     assert_equal(SAYING_WRAPPED, lines)
   end
-  
+
   def test_wrap2
     lines = @doc.wrap(S2, 10)
     assert_equal(S2_WRAPPED, lines)
   end
-  
+
   def test_pen_pos
+    # default position
+    assert_equal(0, @doc.pen_pos.x)
+    assert_equal(0, @doc.pen_pos.y)
+    
+    # after moving to integer position
     @doc.move_to(5, 6)
     assert_equal(5, @doc.pen_pos.x)
     assert_equal(6, @doc.pen_pos.y)
-    
+
+    # after moving to float position
     @doc.move_to(10.5, 11.6)
     assert_in_delta(10.5, @doc.pen_pos.x, 0.1)
     assert_in_delta(11.6, @doc.pen_pos.y, 0.1)
+
+    # also works like move_to
+    @doc.pen_pos(10, 20)
+    assert_equal(10, @doc.pen_pos.x)
+    assert_equal(20, @doc.pen_pos.y)
   end
-  
+
   def test_margins
     assert_equal([0, 0, 0, 0], @doc.margins)
     assert_equal(0, @doc.margin_top)
@@ -461,6 +472,89 @@ class DocumentWriterTestCases < Test::Unit::TestCase
     @doc.margins(5, 6, 7, 8, 9)
     assert_array_in_delta([1, 2, 3, 4], @doc.margins, 2 ** -20) # still unchanged
     assert_equal("q\n1 0 0 1 28.35 -28.35 cm\nQ\nq\n1 0 0 1 56.7 -28.35 cm\nQ\nq\n1 0 0 1 113.4 -28.35 cm\n", @doc.pages.first.stream)
+  end
+
+  def test_font
+    # default font
+    assert_equal('Courier', @doc.font.name)
+    assert_equal(10, @doc.font.size)
+    # changed
+    @doc.font 'Times', 12, :style => 'Italic'
+    assert_equal('Times', @doc.font.name)
+    assert_equal(12, @doc.font.size)
+    assert_equal('Italic', @doc.font.style)
+  end
+
+  def test_font_style
+    # default style
+    assert_equal('', @doc.font_style)
+    # changed
+    @doc.font_style 'Bold'
+    assert_equal('Bold', @doc.font_style)
+    assert_equal('Bold', @doc.font.style)
+    # invalid style
+    assert_raise(Exception) { @doc.font_style 'Bogus' }
+    # unchanged by invalid style
+    assert_equal('Bold', @doc.font_style)
+  end
+
+  def test_font_size
+    # default size
+    assert_equal(10, @doc.font_size)
+    # changed
+    @doc.font_size 12
+    assert_equal(12, @doc.font_size)
+    # changed to float
+    @doc.font_size 14.5
+    assert_equal(14.5, @doc.font_size)
+  end
+
+  def test_font_color
+    # default color
+    assert_equal(0, @doc.font_color)
+    # changed
+    @doc.font_color 'Blue'
+    assert_equal('Blue', @doc.font_color)
+    # rgb
+    @doc.font_color [0xFF,0,0]
+    assert_equal(0xFF0000, @doc.font_color)
+  end
+
+  def test_fill_color
+    # default color
+    assert_equal(0, @doc.fill_color)
+    # changed
+    @doc.fill_color 'Blue'
+    assert_equal('Blue', @doc.fill_color)
+    # rgb
+    @doc.fill_color [0xFF,0,0]
+    assert_equal(0xFF0000, @doc.fill_color)
+  end
+
+  def test_line_color
+    # default color
+    assert_equal(0, @doc.line_color)
+    # changed
+    @doc.line_color 'Blue'
+    assert_equal('Blue', @doc.line_color)
+    # rgb
+    @doc.line_color [0xFF,0,0]
+    assert_equal(0xFF0000, @doc.line_color)
+  end
+
+  def test_line_width
+    # default width
+    assert_equal(0, @doc.line_width)
+    assert_equal(0, @doc.line_width(:pt))
+    # changed
+    @doc.line_width 1
+    assert_equal(1, @doc.line_width)
+    # alternate units
+    assert_equal(28.35, @doc.line_width(:pt))
+    @doc.line_width 1, :in
+    assert_equal(72, @doc.line_width(:pt))
+    @doc.line_width "2in"
+    assert_in_delta(5.08, @doc.line_width, 0.01)
   end
 end
 

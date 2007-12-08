@@ -302,8 +302,6 @@ module EideticPDF
 
   class PageWriter
   private
-    DEFAULT_FONT = { :name => 'Helvetica', :size => 12 }
-
     def even?(n)
       n % 2 == 0
     end
@@ -509,7 +507,7 @@ module EideticPDF
 
     # font methods
     def set_default_font
-      set_font(@default_font[:name], @default_font[:size], @default_font)
+      font(@default_font[:name], @default_font[:size], @default_font)
     end
 
     def check_set_font
@@ -629,12 +627,12 @@ module EideticPDF
       
       def push(color)
         @stack.push(color)
-        @obj.send("#{@prop}=", color) if color.respond_to?(:to_int) or color.respond_to?(:to_str)
+        @obj.send(@prop, color) if color.respond_to?(:to_int) or color.respond_to?(:to_str)
       end
       
       def pop
         color = @stack.pop
-        @obj.send("#{@prop}=", color) if color.respond_to?(:to_int) or color.respond_to?(:to_str)
+        @obj.send(@prop, color) if color.respond_to?(:to_int) or color.respond_to?(:to_str)
       end
     end
 
@@ -710,10 +708,10 @@ module EideticPDF
     end
 
   public
+    DEFAULT_FONT = { :name => 'Helvetica', :size => 12 }
+
     attr_reader :doc, :units, :page
     attr_reader :stream, :annotations
-    attr_accessor :v_text_align
-    attr_accessor :line_height
     attr_reader :auto_path
 
     def initialize(doc, options)
@@ -869,8 +867,9 @@ module EideticPDF
       @loc = translate(x, y)
     end
 
-    def pen_pos
-      translate(@loc.x, @loc.y)
+    def pen_pos(x=nil, y=nil)
+      return translate(@loc.x, @loc.y) if x.nil?
+      move_to(x, y)
     end
 
     # graphics methods
@@ -1231,14 +1230,17 @@ module EideticPDF
       @auto_path = true
     end
 
-    attr_accessor :line_dash_pattern
-
-    def line_width
-      from_points(@units, @line_width)
+    def line_dash_pattern(pattern=nil)
+      return @line_dash_pattern if pattern.nil?
+      @line_dash_pattern = pattern
     end
 
-    def line_width=(width)
-      if width.respond_to?(:to_str) and width =~ /\D+/
+    def line_width(width=nil, units=nil)
+      return from_points(@units, @line_width || 0) if width.nil?
+      return from_points(width, @line_width || 0) if width.is_a?(Symbol)
+      if !units.nil?
+        u, width = units.to_sym, width.to_f
+      elsif width.respond_to?(:to_str) and width =~ /\D+/
         u, width = $&.to_sym, width.to_f
       else
         u = @units
@@ -1246,14 +1248,18 @@ module EideticPDF
       @line_width = to_points(u, width)
     end
 
+    def line_height(height=nil)
+      return @line_height if height.nil?
+      @line_height = height
+    end
+
     # color methods
     def named_colors
       @doc.named_colors
     end
 
-    attr_reader :line_color
-
-    def line_color=(color)
+    def line_color(color=nil)
+      return @line_color if color.nil?
       if color.is_a?(Array)
         r, g, b = color
         @line_color = color_from_rgb(r, g, b)
@@ -1265,11 +1271,8 @@ module EideticPDF
     # def set_fill_color_rgb(red, green, blue)
     # end
 
-    def fill_color(color)
-      @fill_color
-    end
-
-    def fill_color=(color)
+    def fill_color(color=nil)
+      return @fill_color if color.nil?
       if color.is_a?(Array)
         r, g, b = color
         @fill_color = color_from_rgb(r, g, b)
@@ -1278,11 +1281,8 @@ module EideticPDF
       end        
     end
 
-    def font_color
-      @font_color
-    end
-
-    def font_color=(color)
+    def font_color(color=nil)
+      return @font_color if color.nil?
       if color.is_a?(Array)
         r, g, b = color
         @font_color = color_from_rgb(r, g, b)
@@ -1377,6 +1377,7 @@ module EideticPDF
 
     def height(text='', units=nil) # may not include external leading?
       units ||= @units
+      set_default_font if @font.nil?
       if text.respond_to?(:to_str)
         0.001 * @font.height * @font.size / UNIT_CONVERSION[units].to_f * @line_height
       else
@@ -1401,7 +1402,7 @@ module EideticPDF
         end
         while piece = line.shift
           @font = piece.font
-          self.font_color = piece.color
+          font_color piece.color
           # self.underline = piece.underline
           print(piece.text)
         end
@@ -1414,6 +1415,11 @@ module EideticPDF
     def paragraph_xy(x, y, text, options={})
       move_to(x, y)
       paragraph(text, options)
+    end
+
+    def v_text_align(vta=nil)
+      return @v_text_align if vta.nil?
+      @v_text_align = vta
     end
 
     # font methods
@@ -1471,15 +1477,23 @@ module EideticPDF
       [font, page_font]
     end
 
-    def set_font(name, size, options={})
+    def font(name=nil, size=nil, options={})
+      return @font || set_default_font if name.nil?
+      size ||= @font.nil? ? @default_font[:size] : @font.size
       @font, @page_font = select_font(name, size, options)
       @font
     end
 
-    def set_font_style(style)
+    def font_style(style=nil)
+      set_default_font if @font.nil?
+      return @font.style if style.nil?
+      font(@font.name, @font.size, :style => style, :color => @font.color, :encoding => @font.encoding, :sub_type => @font.sub_type)
     end
 
-    def set_font_size(size)
+    def font_size(size=nil)
+      set_default_font if @font.nil?
+      return @font.size if size.nil?
+      font(@font.name, size, :style => @font.style, :color => @font.color, :encoding => @font.encoding, :sub_type => @font.sub_type)
     end
 
     # image methods
@@ -1575,12 +1589,8 @@ module EideticPDF
     end
 
     # coordinate methods
-    def units
-      cur_page.units
-    end
-
-    def units=(units)
-      cur_page.units=(units)
+    def units(units=nil)
+      cur_page.units(units)
     end
 
     def margins(*margins)
@@ -1619,20 +1629,16 @@ module EideticPDF
       cur_page.page_height
     end
 
-    def line_height
-      cur_page.line_height
-    end
-
-    def line_height=(height)
-      cur_page.line_height = height
+    def line_height(height=nil)
+      cur_page.line_height(height)
     end
 
     def move_to(x, y)
       cur_page.move_to(x, y)
     end
 
-    def pen_pos
-      cur_page.pen_pos
+    def pen_pos(x=nil, y=nil)
+      cur_page.pen_pos(x, y)
     end
 
     # graphics methods
@@ -1704,20 +1710,12 @@ module EideticPDF
       cur_page.fill_and_stroke
     end
 
-    def line_dash_pattern
-      cur_page.line_dash_pattern
+    def line_dash_pattern(pattern=nil)
+      cur_page.line_dash_pattern(pattern)
     end
 
-    def line_dash_pattern=(pattern)
-      cur_page.line_dash_pattern = pattern
-    end
-
-    def line_width
-      cur_page.line_width
-    end
-
-    def line_width=(width)
-      cur_page.line_width = width
+    def line_width(width=nil, units=nil)
+      cur_page.line_width(width, units)
     end
 
     # color methods
@@ -1725,36 +1723,16 @@ module EideticPDF
       @named_colors ||= PdfK::NAMED_COLORS
     end
 
-    def line_color
-      cur_page.line_color
+    def line_color(color=nil)
+      cur_page.line_color(color)
     end
 
-    def line_color=(color)
-      cur_page.line_color = color
+    def fill_color(color=nil)
+      cur_page.fill_color(color)
     end
 
-    def set_fill_color_rgb(red, green, blue)
-      cur_page.set_fill_color_rgb(red, green, blue)
-    end
-
-    def fill_color
-      cur_page.fill_color
-    end
-
-    def fill_color=(color)
-      cur_page.fill_color = color
-    end
-
-    def set_font_color_rgb(red, green, blue)
-      cur_page.set_font_color_rgb(red, green, blue)
-    end
-
-    def font_color
-      cur_page.font_color
-    end
-
-    def font_color=(color)
-      cur_page.font_color = color
+    def font_color(color=nil)
+      cur_page.font_color(color)
     end
 
     # text methods
@@ -1794,12 +1772,8 @@ module EideticPDF
       cur_page.paragraph_xy(x, y, text, options)
     end
 
-    def v_text_align
-      cur_page.v_text_align
-    end
-
-    def v_text_align=(vta)
-      cur_page.v_text_align = vta
+    def v_text_align(vta=nil)
+      cur_page.v_text_align(vta)
     end
 
     # font methods
@@ -1807,16 +1781,16 @@ module EideticPDF
       PdfK::FONT_NAMES
     end
 
-    def set_font(name, size, options = {})
-      cur_page.set_font(name, size, options)
+    def font(name=nil, size=nil, options={})
+      cur_page.font(name, size, options)
     end
 
-    def set_font_style(style)
-      cur_page.set_font_style(style)
+    def font_style(style=nil)
+      cur_page.font_style(style)
     end
 
-    def set_font_size(size)
-      cur_page.set_font_size(size)
+    def font_size(size=nil)
+      cur_page.font_size(size)
     end
 
     # image methods

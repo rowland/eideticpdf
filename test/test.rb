@@ -23,7 +23,7 @@ end
 
 def inch_grid(w, width=8, height=10, xoff=0.25, yoff=0.5)
   w.page(:units => :in) do |p|
-    p.set_font("Helvetica", 10)
+    p.font("Helvetica", 10)
     p.print_xy(0.25, 0.25, "Inch Squares")
     grid(p, width, height, xoff, yoff)
   end
@@ -31,7 +31,7 @@ end
 
 def cm_grid(w, width=20, height=26, xoff=0.75, yoff=1)
   w.page(:units => :cm) do |p|
-    p.set_font("Helvetica", 10)
+    p.font("Helvetica", 10)
     p.print_xy(0.5, 0.5, "Centimeter Squares")
     grid(p, width, height, xoff, yoff)
   end
@@ -41,34 +41,10 @@ def dp_grid(w, width=8000, height=10000, xoff=250, yoff=500)
   # set custom point scale
   EideticPDF::UNIT_CONVERSION[:dp] = 0.072
   w.open_page(:units => :dp)
-  w.set_font("Helvetica", 10)
+  w.font("Helvetica", 10)
   w.print_xy(250, 250, "Dave Points Squares")
   grid(w, width, height, xoff, yoff, 1000)
   w.close_page
-end
-
-def four_grids(w, width=8, height=10, xoff=0.25, yoff=0.5)
-  w.page(:units => :in) do |p|
-    p.sub_page(0,2,0,2)
-    grid(p, width, height, xoff, yoff)
-    p.set_font("Helvetica", 10)
-    p.print_xy(0.25, 0.25, "Top, Left")
-
-    p.sub_page(1,2,0,2)
-    grid(p, width, height, xoff, yoff)
-    p.set_font("Helvetica", 10)
-    p.print_xy(0.25, 0.25, "Top, Right")
-
-    p.sub_page(0,2,1,2)
-    grid(p, width, height, xoff, yoff)
-    p.set_font("Helvetica", 10)
-    p.print_xy(0.25, 0.25, "Bottom, Left")
-
-    p.sub_page(1,2,1,2)
-    grid(p, width, height, xoff, yoff)
-    p.set_font("Helvetica", 10)
-    p.print_xy(0.25, 0.25, "Bottom, Right")
-  end
 end
 
 def pt_units(w)
@@ -78,7 +54,7 @@ def pt_units(w)
 
     y = 24; size = 12
     while y < 700
-      p.set_font("Helvetica", size)
+      p.font("Helvetica", size)
       p.print_xy(5, y, "Size: #{size}, y: #{y}")
       y += size; size += 12
     end
@@ -98,7 +74,7 @@ end
 def font_names(w)
   w.page(:units => :cm, :margins => [1,2]) do |p|
     p.type1_font_names.each do |font_name|
-      p.set_font(font_name, 12)
+      p.font(font_name, 12)
       p.puts(font_name)
     end
   end
@@ -106,34 +82,34 @@ end
 
 def print_text(w)
   w.open_page(:units => :cm, :margins => 1)
-  w.set_font("Helvetica", 12)
+  w.font("Helvetica", 12)
   w.print("Print Text")
 
   # test vertical text alignment
   w.move_to(0, 3); w.line_to(w.canvas_width, 3)
   w.move_to(0, 3)
 
-  w.v_text_align = :base
+  w.v_text_align :base
   w.print("v_text_align = ")
-  w.v_text_align = :below
+  w.v_text_align :below
   w.print(":below ")
-  w.v_text_align = :base
+  w.v_text_align :base
   w.print(":base ")
-  w.v_text_align = :middle
+  w.v_text_align :middle
   w.print(":middle ")
-  w.v_text_align = :top
+  w.v_text_align :top
   w.print(":top ")
-  w.v_text_align = :above
+  w.v_text_align :above
   w.print(":above ")
 
-  w.v_text_align = :top
+  w.v_text_align :top
   w.move_to(0, 5)
   ['Black', 'Blue', 'Brown', 'Crimson', 'Gold', 'Green', 'Gray', 'Indigo'].each do |color|
-    w.font_color = color
+    w.font_color color
     w.print "#{color}     "
   end
 
-  w.font_color = 'Black'
+  w.font_color 'Black'
   lorem = "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
   w.move_to(0, 7); w.line_to(0, 9); w.move_to(w.canvas_width, 7); w.line_to(w.canvas_width, 9) 
   lorem2 = w.paragraph_xy(0.5, 7, lorem, :width => 18, :height => 2)
@@ -151,7 +127,7 @@ end
 
 def print_angled_text(w)
   w.page(:units => :in) do |p|
-    p.set_font("Helvetica", 12)
+    p.font("Helvetica", 12)
     angle = 0
     while angle < 360
       p.move_to(4.25, 5.5)
@@ -163,7 +139,7 @@ end
 
 def landscape_orientation(w)
   w.page(:units => :in, :orientation => :landscape) do |p|
-    p.set_font("Times-Roman", 12)
+    p.font("Times-Roman", 12)
     p.print_xy(0.5, 0.5, "Landscape Orientation")
     p.rectangle(1, 1, p.page_width - 2, p.page_height - 2)
   end
@@ -172,10 +148,10 @@ end
 def line_widths_and_patterns(w)
   w.page(:units => :cm) do |p|
     p.print_xy(1, 1, "Line Widths and Patterns")
-    p.v_text_align = :base
+    p.v_text_align :base
 
     0.upto(10) do |i|
-      p.line_width = "#{i}pt"
+      p.line_width "#{i}pt"
       p.move_to(1, 2 + i)
       p.line_to(p.page_width - 5, 2 + i)
       p.print("  #{i} points")
@@ -183,55 +159,55 @@ def line_widths_and_patterns(w)
 
     0.upto(8) do |i|
       pattern = [:solid,:dotted,:dashed][i % 3]
-      p.line_width = "#{i}pt"
-      p.line_dash_pattern = pattern
+      p.line_width "#{i}pt"
+      p.line_dash_pattern pattern
       p.move_to(1, 13 + i)
       p.line_to(p.page_width - 5, 13 + i)
       p.print("  #{pattern}")
     end
 
-    p.line_width = "3pt"
-    p.line_dash_pattern = :solid
+    p.line_width "3pt"
+    p.line_dash_pattern :solid
     p.print_xy(1, 22, "Line Colors")
     y = 23.0
 
     # blue
-    p.line_color = 0x0000FF
-    p.line_color = [0,0,255]
+    p.line_color 0x0000FF
+    p.line_color [0,0,255]
     p.move_to(1, 23)
     p.line_to(p.page_width - 5, 23)
     p.print("  #{p.line_color}")
 
     # green
-    p.line_color = 0x00FF00
-    p.line_color = [0,255,0]
+    p.line_color 0x00FF00
+    p.line_color [0,255,0]
     p.move_to(1, 23.5)
     p.line_to(p.page_width - 5, 23.5)
     p.print("  #{p.line_color}")
 
     # red
-    p.line_color = 0xFF0000
-    #p.line_color = [255,0,0]
+    p.line_color 0xFF0000
+    #p.line_color [255,0,0]
     p.move_to(1, 24)
     p.line_to(p.page_width - 5, 24)
     p.print("  #{p.line_color}")
 
     # fuchsia
-    p.line_color = [0xFF, 0, 0xFF]
+    p.line_color [0xFF, 0, 0xFF]
     p.move_to(1, 24.5)
     p.line_to(p.page_width - 5, 24.5)
     p.print("  #{p.line_color}")
 
     # yellow
-    p.line_color = [0xFF, 0xFF, 0]
+    p.line_color [0xFF, 0xFF, 0]
     p.move_to(1, 25)
     p.line_to(p.page_width - 5, 25)
     p.print("  #{p.line_color}")
 
     # black custom pattern
     EideticPDF::LINE_PATTERNS[:dotted2] = [1, 10]
-    p.line_color = 0
-    p.line_dash_pattern = :dotted2
+    p.line_color 0
+    p.line_dash_pattern :dotted2
     p.move_to(1, 26)
     p.line_to(p.page_width - 5, 26)
     p.print("  (custom pattern)")
@@ -278,14 +254,14 @@ def filled_rectangles(w)
   end
   pages.each_with_index do |page, page_index|
     w.open_page(:units => :in)
-    w.set_font("Helvetica", 10)
+    w.font("Helvetica", 10)
     w.print_xy(0.5, 0.5, "Filled Rectangles with Named Colors - #{page_index + 1}")
-    w.line_height = 1.3
+    w.line_height 1.3
     page.each_with_index do |list, list_index|
       list.each_with_index do |name, name_index|
         w.move_to(left + list_index * col_width, top + name_index * row_height)
         w.puts(name.scan(/[A-Z][a-z]*/))
-        w.fill_color = name
+        w.fill_color name
         w.rectangle(left + list_index * col_width + label_width, top + name_index * row_height, 0.5, 0.4, :fill => true)
       end
     end
@@ -307,8 +283,8 @@ def filled_shapes(w)
   y1, y2, y3, y4 = 1.0, 3.5, 6.0, 8.5
   w.page(:units => :in) do |p|
     p.print_xy(0.5, 0.5, "Filled Shapes")
-    p.line_color = 'Black'
-    p.fill_color = 'LightSteelBlue'
+    p.line_color 'Black'
+    p.fill_color 'LightSteelBlue'
 
     # empty rectangle w/ border
     p.rectangle(x1, y1, 2, 2)
@@ -332,19 +308,19 @@ def filled_shapes(w)
     p.ellipse(x3 + 1, y3 + 1, 0.75, 1, :fill => true, :border => false)
 
     # filled rectangles w/ borders
-    p.fill_color = 'LightSteelBlue'
+    p.fill_color 'LightSteelBlue'
     p.rectangle(x1, y4, 2, 2, :fill => true)
-    p.fill_color = 'White'
+    p.fill_color 'White'
     p.rectangle(x1 + 0.5, y4 + 0.5, 1, 1, :fill => true)
     # filled circles w/ borders
-    p.fill_color = 'LightSteelBlue'
+    p.fill_color 'LightSteelBlue'
     p.circle(x2 + 1, y4 + 1, 1, :fill => true)
-    p.fill_color = 'White'
+    p.fill_color 'White'
     p.circle(x2 + 1, y4 + 1, 0.5, :fill => true)
     # filled ellipses w/ borders
-    p.fill_color = 'LightSteelBlue'
+    p.fill_color 'LightSteelBlue'
     p.ellipse(x3 + 1, y4 + 1, 0.75, 1, :fill => true)
-    p.fill_color = 'White'
+    p.fill_color 'White'
     p.ellipse(x3 + 1, y4 + 1, 0.25, 0.5, :fill => true)
   end
 end
@@ -352,7 +328,7 @@ end
 def compound_paths(w)
   w.page(:units => :in) do |p|
     p.print_xy(0.5, 0.5, "Compound Paths")
-    p.fill_color = 'LightSteelBlue'
+    p.fill_color 'LightSteelBlue'
 
     # filled rectangle w/ only 3 borders
     p.path
@@ -388,10 +364,10 @@ end
 def pies(w)
   w.page(:units => :in) do |p|
     p.print_xy(0.5, 0.5, "Pies")
-    p.line_color = 0
+    p.line_color 0
 
     p.path(:fill => true, :stroke => true) do
-      p.fill_color = 'Crimson'
+      p.fill_color 'Crimson'
       p.pie(4, 3, 2, 0, 90)
       p.circle(4.75, 2.25, 0.5, :reverse => true)
     end
@@ -412,7 +388,7 @@ end
 def polygons(w)
   w.page(:units => :in) do |p|
     p.print_xy(0.5, 0.5, "Polygons")
-    p.fill_color = 'LightSteelBlue'
+    p.fill_color 'LightSteelBlue'
 
     x1, x2, x3 = 1.75, 4.25, 6.75
     y1, y2, y3, y4 = 2, 4.5, 7, 9.5
@@ -437,7 +413,7 @@ end
 def stars(w)
   w.page(:units => :in) do |p|
     p.print_xy(0.5, 0.5, "Stars")
-    p.fill_color = 'LightSteelBlue'
+    p.fill_color 'LightSteelBlue'
 
     x1, x2, x3 = 1.75, 4.25, 6.75
     y1, y2, y3, y4 = 2, 4.5, 7, 9.5
@@ -481,7 +457,6 @@ docw.doc(:font => { :name => 'Courier', :size => 10 }, :orientation => :landscap
   dp_grid(w)
   font_names(w)
   landscape_orientation(w)
-  # four_grids(w)
 end
 
 File.open("test.pdf","w") { |f| f.write(docw) }
