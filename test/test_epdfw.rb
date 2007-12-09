@@ -544,8 +544,7 @@ class DocumentWriterTestCases < Test::Unit::TestCase
 
   def test_line_width
     # default width
-    assert_equal(0, @doc.line_width)
-    assert_equal(0, @doc.line_width(:pt))
+    assert_equal(1.0, @doc.line_width(:pt))
     # changed
     @doc.line_width 1
     assert_equal(1, @doc.line_width)

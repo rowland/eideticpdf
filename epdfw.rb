@@ -467,12 +467,14 @@ module EideticPDF
       @gw = GraphWriter.new(@stream)
     end
 
+    def end_path
+      gw.stroke if @auto_path
+      @in_path = false
+    end
+
     def end_graph
       raise Exception.new("Not in graph") unless @in_graph
-      if @in_path
-        gw.stroke if @auto_path
-        @in_path = false
-      end
+      end_path if @in_path
       @gw = nil
       @in_graph = false
     end
@@ -499,6 +501,16 @@ module EideticPDF
 
     def mw
       @mw ||= start_misc
+    end
+
+    def end_margins
+      end_path if @in_path
+      gw.restore_graphics_state
+    end
+
+    def end_sub_page
+      end_path if @in_path
+      gw.restore_graphics_state
     end
 
     def sub_orientation(pages_across, pages_down)
@@ -741,6 +753,7 @@ module EideticPDF
       @fill_color = options[:fill_color] || 0
       @line_color = options[:line_color] || 0
       @line_height = options[:line_height] || 1.7
+      line_width(options[:line_width] || 1.0, :pt)
       @text_angle = 0.0
       @auto_path = true
       start_misc
@@ -749,8 +762,8 @@ module EideticPDF
     end
 
     def close
-      gw.restore_graphics_state unless @matrix.nil?
-      gw.restore_graphics_state unless @sub_page.nil?
+      end_margins unless @matrix.nil?
+      end_sub_page unless @sub_page.nil?
       end_text if @in_text
       end_graph if @in_graph
       end_misc if @in_misc
