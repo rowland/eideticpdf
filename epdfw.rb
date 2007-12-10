@@ -757,7 +757,7 @@ module EideticPDF
       @text_angle = 0.0
       @auto_path = true
       start_misc
-      sub_page(*options[:sub_page]) if options[:sub_page]
+      sub_page(*options[:sub_page] + Array(options[:unscaled])) if options[:sub_page]
       margins(options[:margins] || 0)
     end
 
@@ -846,29 +846,37 @@ module EideticPDF
     end
 
     # sub-page methods
-    def sub_page(x, pages_across, y, pages_down)
+    def sub_page(x, pages_across, y, pages_down, unscaled=false)
       unless @matrix.nil?
         gw.restore_graphics_state
         @matrix = nil
       end
       gw.restore_graphics_state unless @sub_page.nil?
       return unless x && pages_across && y && pages_down
-      ps = PageStyle.new(@options.merge(:orientation => sub_orientation(pages_across, pages_down)))
-      width = ps.page_size.x2
-      height = ps.page_size.y2
-
-      ratio_w = @page_width / (pages_across * width).to_f
-      ratio_h = @page_height / (pages_down * height).to_f
-      ratio = [ratio_w, ratio_h].min
-      @sub_page = IDENTITY_MATRIX.dup
-      @sub_page[0] = ratio
-      @sub_page[3] = ratio
-      @sub_page[4] = @page_width / pages_across.to_f * x
-      @sub_page[5] = @page_height / pages_down.to_f * (pages_down - 1 - y)
-      if ratio_w >= ratio_h
-        @page_width, @page_height = width, height
+      if unscaled
+        @canvas_width = @page_width / pages_across.to_f
+        @canvas_height = @page_height / pages_down.to_f
+        @sub_page = IDENTITY_MATRIX.dup
+        @sub_page[4] = @canvas_width * x
+        @sub_page[5] = @canvas_height * (pages_down - 1 - y)
       else
-        @page_width, @page_height = width, width / ratio_w
+        ps = PageStyle.new(@options.merge(:orientation => sub_orientation(pages_across, pages_down)))
+        width = ps.page_size.x2
+        height = ps.page_size.y2
+
+        ratio_w = @page_width / (pages_across * width).to_f
+        ratio_h = @page_height / (pages_down * height).to_f
+        ratio = [ratio_w, ratio_h].min
+        @sub_page = IDENTITY_MATRIX.dup
+        @sub_page[0] = ratio
+        @sub_page[3] = ratio
+        @sub_page[4] = @page_width / pages_across.to_f * x
+        @sub_page[5] = @page_height / pages_down.to_f * (pages_down - 1 - y)
+        if ratio_w >= ratio_h
+          @page_width, @page_height = width, height
+        else
+          @page_width, @page_height = width, width / ratio_w
+        end
       end
 
       gw.save_graphics_state
@@ -1528,7 +1536,7 @@ module EideticPDF
       @next_seq += 1
     end
 
-    attr_reader :cur_page, :pages
+    attr_reader :pages
     attr_reader :catalog, :file, :resources
     attr_reader :fonts, :images, :encodings
     attr_reader :in_page
@@ -1599,6 +1607,10 @@ module EideticPDF
     def new_page(options={})
       close_page
       open_page(options)
+    end
+
+    def cur_page
+      @cur_page || open_page
     end
 
     # coordinate methods
