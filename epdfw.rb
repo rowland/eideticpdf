@@ -319,7 +319,7 @@ module EideticPDF
     end
 
     def from_points(units, measurement)
-      measurement / UNIT_CONVERSION[units].to_f
+      measurement.quo(UNIT_CONVERSION[units])
     end
 
     def make_loc(x, y)
@@ -332,8 +332,8 @@ module EideticPDF
 
     def convert_units(loc, from_units, to_units)
       Location.new(
-        loc.x * UNIT_CONVERSION[from_units] / UNIT_CONVERSION[to_units].to_f,
-        loc.y * UNIT_CONVERSION[from_units] / UNIT_CONVERSION[to_units].to_f)
+        loc.x * UNIT_CONVERSION[from_units].quo(UNIT_CONVERSION[to_units]),
+        loc.y * UNIT_CONVERSION[from_units].quo(UNIT_CONVERSION[to_units]))
     end
 
     def get_quadrant_bezier_points(quadrant, x, y, rx, ry=nil)
@@ -854,8 +854,8 @@ module EideticPDF
       gw.restore_graphics_state unless @sub_page.nil?
       return unless x && pages_across && y && pages_down
       if unscaled
-        @canvas_width = @page_width / pages_across.to_f
-        @canvas_height = @page_height / pages_down.to_f
+        @canvas_width = @page_width.quo(pages_across)
+        @canvas_height = @page_height.quo(pages_down)
         @sub_page = IDENTITY_MATRIX.dup
         @sub_page[4] = @canvas_width * x
         @sub_page[5] = @canvas_height * (pages_down - 1 - y)
@@ -864,14 +864,14 @@ module EideticPDF
         width = ps.page_size.x2
         height = ps.page_size.y2
 
-        ratio_w = @page_width / (pages_across * width).to_f
-        ratio_h = @page_height / (pages_down * height).to_f
+        ratio_w = @page_width.quo(pages_across * width)
+        ratio_h = @page_height.quo(pages_down * height)
         ratio = [ratio_w, ratio_h].min
         @sub_page = IDENTITY_MATRIX.dup
         @sub_page[0] = ratio
         @sub_page[3] = ratio
-        @sub_page[4] = @page_width / pages_across.to_f * x
-        @sub_page[5] = @page_height / pages_down.to_f * (pages_down - 1 - y)
+        @sub_page[4] = @page_width.quo(pages_across) * x
+        @sub_page[5] = @page_height.quo(pages_down) * (pages_down - 1 - y)
         if ratio_w >= ratio_h
           @page_width, @page_height = width, height
         else
@@ -1049,10 +1049,10 @@ module EideticPDF
       if end_angle < start_angle
         ccwcw = -1.0
       end
-      while arc_span.abs / num_arcs.to_f > 90.0
+      while arc_span.abs.quo(num_arcs) > 90.0
         num_arcs += 1
       end
-      angle_bump = arc_span / num_arcs.to_f
+      angle_bump = arc_span.quo(num_arcs)
       half_bump = 0.5 * angle_bump
       cur_angle = start_angle + half_bump
       points = []
@@ -1074,10 +1074,10 @@ module EideticPDF
       if end_angle < start_angle
         ccwcw = -1.0
       end
-      while arc_span.abs / num_arcs.to_f > 90.0
+      while arc_span.abs.quo(num_arcs) > 90.0
         num_arcs += 1
       end
-      angle_bump = arc_span / num_arcs.to_f
+      angle_bump = arc_span.quo(num_arcs)
       half_bump = 0.5 * angle_bump
       cur_angle = start_angle + half_bump
       num_arcs.times do
@@ -1188,7 +1188,7 @@ module EideticPDF
       end
 
       rotation = options[:rotation] || 0
-      r2 = (points - 2).to_f / points.to_f
+      r2 = (points - 2).quo(points)
       vertices1 = points_for_polygon(x, y, r, points, options)
       vertices2 = points_for_polygon(x, y, r2, points, options.merge(:rotation => rotation + (360.0 / points / 2)))
       line_colors.push(border)
@@ -1400,7 +1400,7 @@ module EideticPDF
       units ||= @units
       set_default_font if @font.nil?
       if text.respond_to?(:to_str)
-        0.001 * @font.height * @font.size / UNIT_CONVERSION[units].to_f * @line_height
+        0.001 * @font.height * @font.size.quo(UNIT_CONVERSION[units]) * @line_height
       else
         text.inject(0) { |total, line| total + height(line, units) }
       end
@@ -1416,7 +1416,7 @@ module EideticPDF
       dy = 0
       while dy + from_points(@units, text.height) < height and line = text.next(to_points(@units, width))
         save_loc = pen_pos
-        line_dy = line.height / UNIT_CONVERSION[units].to_f * @line_height
+        line_dy = line.height.quo(UNIT_CONVERSION[units]) * @line_height
         case options[:align]
         when :center then move_to(save_loc.x + (width - from_points(@units, line.width)) / 2.0, save_loc.y)
         when :right then move_to(save_loc.x + width - from_points(@units, line.width), save_loc.y)
