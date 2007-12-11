@@ -767,7 +767,16 @@ module EideticPDF
       end_text if @in_text
       end_graph if @in_graph
       end_misc if @in_misc
-      pdf_stream = PdfObjects::PdfStream.new(@doc.next_seq, 0, @stream)
+      pdf_stream = if @options[:compress]
+        require 'zlib'
+        zipper = Zlib::Deflate.new
+        zstream = zipper.deflate(@stream, Zlib::FINISH)
+        zpdf_stream = PdfObjects::PdfStream.new(@doc.next_seq, 0, zstream)
+        zpdf_stream.filter = 'FlateDecode'
+        zpdf_stream
+      else
+        PdfObjects::PdfStream.new(@doc.next_seq, 0, @stream)
+      end
       @doc.file.body << pdf_stream
       @page.annots = @annotations if @annotations.size.nonzero?
       @page.contents << pdf_stream
