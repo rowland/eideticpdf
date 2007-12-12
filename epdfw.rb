@@ -1634,6 +1634,7 @@ module EideticPDF
     end
 
     def close
+      open_page if @pages.empty? # empty document needs at least one page
       close_page if @in_page
       @pages.each { |page| page.close unless page.closed? }
     end
