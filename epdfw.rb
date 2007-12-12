@@ -1504,6 +1504,7 @@ module EideticPDF
         @doc.resources.fonts[page_font] = f.reference_object
         @doc.fonts[font_key] = page_font
       end
+      font_color(options[:color]) if options[:color]
       [font, page_font]
     end
 

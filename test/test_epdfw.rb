@@ -506,6 +506,8 @@ class DocumentWriterTestCases < Test::Unit::TestCase
     assert_equal('Times', @doc.font.name)
     assert_equal(12, @doc.font.size)
     assert_equal('Italic', @doc.font.style)
+    @doc.font 'Helvetica', 14, :color => 'Blue'
+    assert_equal('Blue', @doc.font_color)
   end
 
   def test_font_style
