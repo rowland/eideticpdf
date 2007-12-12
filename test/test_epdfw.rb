@@ -395,6 +395,29 @@ class MiscWriterTestCases < Test::Unit::TestCase
   end
 end
 
+class PageWriterTestCases < Test::Unit::TestCase
+  def setup
+    @doc = DocumentWriter.new
+    @doc.open
+    @page = @doc.open_page
+  end
+  
+  def teardown
+    @page.close
+    @doc.close
+  end
+
+  def test_jpeg?
+    image = IO.read(File.join(File.dirname(__FILE__), "testimg.jpg"))
+    assert @page.jpeg?(image)
+  end
+
+  def test_jpeg_dimensions
+    image = IO.read(File.join(File.dirname(__FILE__), "testimg.jpg"))
+    assert_equal([227, 149, 3, 8], @page.jpeg_dimensions(image))
+  end
+end
+
 class DocumentWriterTestCases < Test::Unit::TestCase
   SAYING = "This is the first day of the *rest* of your life--or so it has been said (by a forgotten pundit)."
   SAYING_WRAPPED = ["This is the first day ", "of the *rest* of your ", "life--or so it has been", "said (by a forgotten ", "pundit)."]

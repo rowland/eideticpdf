@@ -1527,13 +1527,67 @@ module EideticPDF
     end
 
     # image methods
-    def load_image(image_file_name)
+    def jpeg?(image)
+      image[0, 2] == "\xFF\xD8"
     end
 
-    def print_image_handle(pdf_image_handle, x, y, width=nil, height=nil)
+    def jpeg_dimensions(image)
+      raise "Not a JPEG" unless jpeg?(image)
+      image = image.dup
+      image.slice!(0, 2) # delete jpeg marker
+      while marker = image.slice!(0, 4)
+        m, c, l = marker.unpack('aan')
+        raise "Bad JPEG" unless m == "\xFF"
+        if ["\xC0", "\xC1", "\xC2", "\xC3", "\xC5", "\xC6", "\xC7", "\xC9", "\xCA", "\xCB", "\xCD", "\xCE", "\xCF"].include?(c)
+          dims = image.slice(0, 6)
+          bits_per_component, height, width, components = dims.unpack('CnnC')
+          break
+        end
+        image.slice!(0, l - 2)
+      end
+      [width, height, components, bits_per_component]
     end
 
-    def print_image_file(image_file_name, x, y, width=nil, height=nil)
+    def load_image(image_file_name, stream=nil)
+      image, name = @doc.images[image_file_name]
+      return [image, name] unless image.nil?
+      stream ||= IO.read(image_file_name)
+      image = PdfObjects::PdfImage.new(@doc.next_seq, 0, stream)
+      image.width, image.height, components, image.bits_per_component = jpeg_dimensions(stream)
+      image.color_space = { 1 => 'DeviceGray', 3 => 'DeviceRGB', 4 => 'DeviceCMYK' }[components]
+      image.filter = 'DCTDecode'
+      name = "Im#{@doc.images.size}"
+      @doc.file.body << image
+      @doc.resources.x_objects[name] = image.reference_object
+      @doc.images[image_file_name] = [image, name]
+      [image, name]
+    end
+
+    def print_image_file(image_file_name, x=nil, y=nil, width=nil, height=nil)
+      image, name = load_image(image_file_name)
+      x ||= pen_pos.x
+      y ||= pen_pos.y
+      if width.nil? and height.nil?
+        width, height = image.width, image.height
+      elsif width.nil?
+        height = to_points(@units, height)
+        width = height * image.width.quo(image.height)
+      elsif height.nil?
+        width = to_points(@units, width)
+        height = width * image.height.quo(image.width)
+      end
+      end_path if @in_path
+      gw.save_graphics_state
+      gw.concat_matrix(width, 0, 0, height, to_points(@units, x), to_points(@units, page_height - y) - height)
+      mw.x_object(name)
+      gw.restore_graphics_state
+      [from_points(@units, width), from_points(@units, height)]
+    end
+
+    def print_image(data, x=nil, y=nil, width=nil, height=nil)
+      image_file_name = data.hash.to_s
+      image, name = load_image(image_file_name, data)
+      print_image_file(image_file_name, x, y, width, height)
     end
 
     def print_link(s, uri)
@@ -1828,16 +1882,16 @@ module EideticPDF
     end
 
     # image methods
-    def load_image(image_file_name)
-      cur_page.load_image(image_file_name)
-    end
-
-    def print_image_handle(pdf_image_handle, x, y, width=nil, height=nil)
-      cur_page.print_image_handle(pdf_image_handle, x, y, width, height)
+    def load_image(image_file_name, stream=nil)
+      cur_page.load_image(image_file_name, stream)
     end
 
     def print_image_file(image_file_name, x, y, width=nil, height=nil)
       cur_page.print_image_file(image_file_name, x, y, width, height)
+    end
+
+    def print_image(data, x=nil, y=nil, width=nil, height=nil)
+      cur_page.print_image(data, x, y, width, height)
     end
 
     def print_link(s, uri)

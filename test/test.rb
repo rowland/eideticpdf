@@ -435,10 +435,23 @@ def stars(w)
   end
 end
 
+def images(w)
+  w.page(:units => :in, :margins => 1) do |p|
+    # natural size @ current location
+    p.print_image_file('testimg.jpg')
+    # from a buffer at a specified position and width with auto-height
+    img = IO.read('testimg.jpg')
+    p.print_image(img, 1, 3, 4.5)
+    # specified height with auto-width
+    p.print_image_file('testimg.jpg', 3.25, 7, nil, 2)
+  end
+end
+
 start = Time.now
 docw = EideticPDF::DocumentWriter.new
 
-docw.doc(:font => { :name => 'Courier', :size => 10 }, :orientation => :landscape, :pages_up => [3, 2]) do |w|
+# docw.doc(:font => { :name => 'Courier', :size => 10 }, :orientation => :landscape, :pages_up => [3, 2]) do |w|
+docw.doc(:font => { :name => 'Courier', :size => 10 }) do |w|
   stars(w)
   polygons(w)
   pies(w)
@@ -456,6 +469,7 @@ docw.doc(:font => { :name => 'Courier', :size => 10 }, :orientation => :landscap
   inch_grid(w)
   dp_grid(w)
   font_names(w)
+  images(w)
   landscape_orientation(w)
 end
 
