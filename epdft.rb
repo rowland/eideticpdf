@@ -6,16 +6,24 @@
 module EideticPDF
   module TextLine
     def height
-      map { |p| 0.001 * p.font.height * p.font.size }.max
+      @height ||= map { |p| 0.001 * p.font.height * p.font.size }.max
     end
 
     def width
-      inject(0) { |total, p| total + p.width }
+      @width ||= inject(0) { |total, p| total + p.width }
+    end
+
+    def chars
+      @chars ||= inject(0) { |total, p| total + p.chars }
+    end
+
+    def tokens
+      @tokens ||= inject(0) { |total, p| total + p.tokens }
     end
   end
 
   module PdfText
-    TextPiece = Struct.new(:text, :width, :font, :color, :underline)
+    TextPiece = Struct.new(:text, :width, :font, :color, :underline, :chars, :tokens)
 
     class RichText
       TOKEN_RE = /\n|\t|[ ]|[\S]+-+|[\S]+/
@@ -36,7 +44,7 @@ module EideticPDF
             width += fsize * font.widths[b] + char_spacing
             width += word_spacing if b == 32 # space
           end
-          TextPiece.new(token, width, font, color, underlined)
+          TextPiece.new(token, width, font, color, underlined, token.length, 1)
         end
         @words.concat(words)
       end
@@ -49,6 +57,8 @@ module EideticPDF
           else
             pieces.last.text << piece.text
             pieces.last.width += piece.width
+            pieces.last.chars += piece.chars
+            pieces.last.tokens += piece.tokens
           end
           pieces
         end

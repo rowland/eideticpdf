@@ -532,21 +532,6 @@ module EideticPDF
       end
     end
 
-    # color methods
-    def check_set_line_color
-      unless @line_color == @last_line_color
-        r, g, b = rgb_from_color(@line_color)
-        if @in_path and @auto_path
-          gw.stroke
-          @in_path = false
-        end
-        if @in_misc
-          mw.set_rgb_color_stroke(r / 255.0, g / 255.0, b / 255.0)
-          @last_line_color = @line_color
-        end
-      end
-    end
-
     def check_set_v_text_align(force=false)
       if force or @last_v_text_align != @v_text_align
         if @v_text_align == :above
@@ -561,6 +546,32 @@ module EideticPDF
           @tw.set_rise(0.0)
         end
         @last_v_text_align = @v_text_align
+      end
+    end
+    
+    def check_set_spacing
+      unless @word_spacing == @last_word_spacing
+        tw.set_word_spacing(@word_spacing)
+        @last_word_spacing = @word_spacing
+      end
+      unless @char_spacing == @last_char_spacing
+        tw.set_char_spacing(@char_spacing)
+        @last_char_spacing = @char_spacing
+      end
+    end
+
+    # color methods
+    def check_set_line_color
+      unless @line_color == @last_line_color
+        r, g, b = rgb_from_color(@line_color)
+        if @in_path and @auto_path
+          gw.stroke
+          @in_path = false
+        end
+        if @in_misc
+          mw.set_rgb_color_stroke(r / 255.0, g / 255.0, b / 255.0)
+          @last_line_color = @line_color
+        end
       end
     end
 
@@ -748,6 +759,7 @@ module EideticPDF
       @stream = ''
       @annotations = []
       @char_spacing = @word_spacing = 0.0
+      @last_char_spacing = @last_word_spacing = 0.0
       @default_font = options[:font] || DEFAULT_FONT
       @font_color = @default_font[:color] || 0
       @fill_color = options[:fill_color] || 0
@@ -1334,6 +1346,7 @@ module EideticPDF
       check_set_font
       check_set_font_color
       check_set_v_text_align
+      check_set_spacing
 
       tw.show(text)
       @last_loc = @loc.clone
@@ -1429,6 +1442,19 @@ module EideticPDF
         case options[:align]
         when :center then move_to(save_loc.x + (width - from_points(@units, line.width)) / 2.0, save_loc.y)
         when :right then move_to(save_loc.x + width - from_points(@units, line.width), save_loc.y)
+        when :justify then
+          width_pt = to_points(@units, width)
+          delta_pt = width_pt - line.width
+          if delta_pt.quo(width_pt) < 0.2
+            if delta_pt / (line.tokens - 1) > 3
+              @word_spacing = 3
+              delta_pt -= (line.tokens - 1) * @word_spacing
+              @char_spacing = delta_pt / line.chars
+            else
+              @word_spacing = delta_pt / (line.tokens - 1) * 2
+              @char_spacing = 0
+            end
+          end
         end
         while piece = line.shift
           @font = piece.font
@@ -1436,6 +1462,7 @@ module EideticPDF
           # self.underline = piece.underline
           print(piece.text)
         end
+        @word_spacing = @char_spacing = 0.0 if options[:align] == :justify
         dy += line_dy
         move_to(save_loc.x, save_loc.y + line_dy)
       end

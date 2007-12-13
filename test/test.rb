@@ -116,7 +116,7 @@ def print_text(w)
   w.puts
   w.paragraph(lorem2, :width => 18) unless lorem2.nil?
   w.puts
-  w.paragraph(lorem, :width => 18)
+  w.paragraph(lorem, :width => 18, :align => :justify)
   w.puts
   w.paragraph(lorem, :width => 18, :align => :right)
   w.puts
