@@ -213,10 +213,12 @@ module EideticPDF
       @stream << "b*\n"
     end
 
+    # use nonzero winding number rule
     def clip
       @stream << "W\n"
     end
 
+    # use even-odd rule
     def eo_clip
       @stream << "W*\n"
     end
@@ -647,12 +649,12 @@ module EideticPDF
         @obj, @prop = obj, prop
         @stack = []
       end
-      
+
       def push(color)
-        @stack.push(color)
+        @stack.push @obj.send(@prop)
         @obj.send(@prop, color) if color.respond_to?(:to_int) or color.respond_to?(:to_str)
       end
-      
+
       def pop
         color = @stack.pop
         @obj.send(@prop, color) if color.respond_to?(:to_int) or color.respond_to?(:to_str)
