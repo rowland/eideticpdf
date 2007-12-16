@@ -49,14 +49,15 @@ end
 
 def pt_units(w)
   w.page(:units => :pt) do |p|
-    p.rectangle(1,1,p.page_width-3, p.page_height-2)
-    p.print_xy(5, 5, "Point Units")
+    p.rectangle(1,1,p.page_width-2, p.page_height-2, :clip => true) do
+      p.print_xy(5, 5, "Point Units")
 
-    y = 24; size = 12
-    while y < 700
-      p.font("Helvetica", size)
-      p.print_xy(5, y, "Size: #{size}, y: #{y}")
-      y += size; size += 12
+      y = 24; size = 12
+      while y < 700
+        p.font("Helvetica", size)
+        p.print_xy(5, y, "Size: #{size}, y: #{y}")
+        y += size; size += 12
+      end
     end
   end
 end
@@ -437,13 +438,36 @@ end
 
 def images(w)
   w.page(:units => :in, :margins => 1) do |p|
+    p.print_xy(-0.5, -0.5, "Images")
     # natural size @ current location
-    p.print_image_file('testimg.jpg')
+    p.print_image_file('testimg.jpg', 0, 0)
     # from a buffer at a specified position and width with auto-height
     img = IO.read('testimg.jpg')
     p.print_image(img, 1, 3, 4.5)
     # specified height with auto-width
     p.print_image_file('testimg.jpg', 3.25, 7, nil, 2)
+  end
+end
+
+def clipping(w)
+  lorem = "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+  w.page(:units => :in, :margins => 1) do |p|
+    p.print_xy(-0.5, -0.5, "Clipping")
+    # grid(p, 6.5, 9, 0, 0)
+    p.star(1, 1, 1, 5, :border => false, :clip => true) do
+      p.print_image_file('testimg.jpg', 0, 0, nil, 2)
+    end
+    p.circle(4.5, 1, 1, :clip => true) do
+      p.print_image_file('testimg.jpg', 3, 0, 3)
+    end
+    p.ellipse(1.5, 4, 1.5, 1, :clip => true) do
+      p.paragraph_xy(0, 3, lorem, :width => 3, :height => 2)
+    end
+    p.path
+    p.rectangle(0, 6, 4.5, 3, :corners => [1])
+    p.clip do
+      p.print_image_file('testimg.jpg', 0, 6, nil, 3)
+    end
   end
 end
 
@@ -470,6 +494,7 @@ docw.doc(:font => { :name => 'Courier', :size => 10 }) do |w|
   dp_grid(w)
   font_names(w)
   images(w)
+  clipping(w)
   landscape_orientation(w)
 end
 

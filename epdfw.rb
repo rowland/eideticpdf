@@ -671,12 +671,15 @@ module EideticPDF
 
     def auto_stroke_and_fill(options)
       if @auto_path
+        gw.clip if options[:clip]
         if (options[:stroke] and options[:fill])
           gw.fill_and_stroke
         elsif options[:stroke] then
           gw.stroke
         elsif options[:fill] then
           gw.fill
+        else
+          gw.new_path
         end
         @in_path = false
       end
@@ -935,6 +938,7 @@ module EideticPDF
     def rectangle(x, y, width, height, options={})
       border = options[:border].nil? ? true : options[:border]
       fill = options[:fill].nil? ? false : options[:fill]
+      clip = options[:clip].nil? ? false : block_given?
       gw.stroke if @in_path and @auto_path
 
       line_colors.push(border)
@@ -953,7 +957,10 @@ module EideticPDF
           to_points(@units, height))
       end
 
-      auto_stroke_and_fill(:stroke => border, :fill => fill)
+      gw.save_graphics_state if clip
+      auto_stroke_and_fill(:stroke => border, :fill => fill, :clip => clip)
+      yield if block_given?
+      gw.restore_graphics_state if clip
       line_colors.pop
       fill_colors.pop
       move_to(x + width, y)
@@ -1024,6 +1031,7 @@ module EideticPDF
     def circle(x, y, r, options={})
       border = options[:border].nil? ? true : options[:border]
       fill = options[:fill].nil? ? false : options[:fill]
+      clip = options[:clip].nil? ? false : block_given?
 
       line_colors.push(border)
       fill_colors.push(fill)
@@ -1033,7 +1041,10 @@ module EideticPDF
       points.reverse! if options[:reverse]
       curve_points(points)
 
-      auto_stroke_and_fill(:stroke => border, :fill => fill)
+      gw.save_graphics_state if clip
+      auto_stroke_and_fill(:stroke => border, :fill => fill, :clip => clip)
+      yield if block_given?
+      gw.restore_graphics_state if clip
       line_colors.pop
       fill_colors.pop
     end
@@ -1048,6 +1059,7 @@ module EideticPDF
       rotation = options[:rotation] || 0
       border = options[:border].nil? ? true : options[:border]
       fill = options[:fill].nil? ? false : options[:fill]
+      clip = options[:clip].nil? ? false : block_given?
 
       line_colors.push(border)
       fill_colors.push(fill)
@@ -1058,7 +1070,10 @@ module EideticPDF
       points.reverse! if options[:reverse]
       curve_points(points)
 
-      auto_stroke_and_fill(:stroke => border, :fill => fill)
+      gw.save_graphics_state if clip
+      auto_stroke_and_fill(:stroke => border, :fill => fill, :clip => clip)
+      yield if block_given?
+      gw.restore_graphics_state if clip
       line_colors.pop
       fill_colors.pop
     end
@@ -1113,6 +1128,7 @@ module EideticPDF
     def pie(x, y, r, start_angle, end_angle, options={})
       border = options[:border].nil? ? true : options[:border]
       fill = options[:fill].nil? ? false : options[:fill]
+      clip = options[:clip].nil? ? false : block_given?
       unless @last_loc == @loc
         gw.stroke if @in_path and @auto_path
         @in_path = false
@@ -1130,7 +1146,10 @@ module EideticPDF
       arc(x, y, r, start_angle, end_angle)
       line_to(x, y)
 
-      auto_stroke_and_fill(:stroke => border, :fill => fill)
+      gw.save_graphics_state if clip
+      auto_stroke_and_fill(:stroke => border, :fill => fill, :clip => clip)
+      yield if block_given?
+      gw.restore_graphics_state if clip
       line_colors.pop
       fill_colors.pop
     end
@@ -1140,6 +1159,7 @@ module EideticPDF
       start_angle, end_angle = end_angle, start_angle if options[:reverse]
       border = options[:border].nil? ? true : options[:border]
       fill = options[:fill].nil? ? false : options[:fill]
+      clip = options[:clip].nil? ? false : block_given?
       unless @last_loc == @loc
         gw.stroke if @in_path and @auto_path
         @in_path = false
@@ -1157,7 +1177,10 @@ module EideticPDF
       curve_points(arc2)
       line_to(arc1.first.x, arc1.first.y)
       
-      auto_stroke_and_fill(:stroke => border, :fill => fill)
+      gw.save_graphics_state if clip
+      auto_stroke_and_fill(:stroke => border, :fill => fill, :clip => clip)
+      yield if block_given?
+      gw.restore_graphics_state if clip
       line_colors.pop
       fill_colors.pop
     end
@@ -1179,6 +1202,7 @@ module EideticPDF
     def polygon(x, y, r, sides, options={})
       border = options[:border].nil? ? true : options[:border]
       fill = options[:fill].nil? ? false : options[:fill]
+      clip = options[:clip].nil? ? false : block_given?
       unless @last_loc == @loc
         gw.stroke if @in_path and @auto_path
         @in_path = false
@@ -1196,7 +1220,10 @@ module EideticPDF
           line_to(point.x, point.y)
         end
       end
-      auto_stroke_and_fill(:stroke => border, :fill => fill)
+      gw.save_graphics_state if clip
+      auto_stroke_and_fill(:stroke => border, :fill => fill, :clip => clip)
+      yield if block_given?
+      gw.restore_graphics_state if clip
       line_colors.pop
       fill_colors.pop
     end
@@ -1205,6 +1232,7 @@ module EideticPDF
       return if points < 5
       border = options[:border].nil? ? true : options[:border]
       fill = options[:fill].nil? ? false : options[:fill]
+      clip = options[:clip].nil? ? false : block_given?
       unless @last_loc == @loc
         gw.stroke if @in_path and @auto_path
         @in_path = false
@@ -1223,7 +1251,10 @@ module EideticPDF
         line_to(vertices1[i].x, vertices1[i].y)
         line_to(vertices2[i+1].x, vertices2[i+1].y)
       end
-      auto_stroke_and_fill(:stroke => border, :fill => fill)
+      gw.save_graphics_state if clip
+      auto_stroke_and_fill(:stroke => border, :fill => fill, :clip => clip)
+      yield if block_given?
+      gw.restore_graphics_state if clip
       line_colors.pop
       fill_colors.pop
     end
@@ -1238,6 +1269,8 @@ module EideticPDF
           gw.stroke
         elsif options[:fill]
           gw.fill
+        else
+          gw.new_path
         end
         @in_path = false
         @auto_path = true
@@ -1270,6 +1303,27 @@ module EideticPDF
 
       check_set(:fill_color,:line_color)
       gw.fill_and_stroke
+      @in_path = false
+      @auto_path = true
+    end
+
+    def clip(options={})
+      raise Exception.new("Not in graph") unless @in_graph
+      raise Exception.new("Not in path") unless @in_path
+
+      gw.save_graphics_state
+      gw.clip
+      if options[:fill] and options[:stroke]
+        gw.fill_and_stroke
+      elsif options[:stroke]
+        gw.stroke
+      elsif options[:fill]
+        gw.fill
+      else
+        gw.new_path
+      end
+      yield if block_given?
+      gw.restore_graphics_state
       @in_path = false
       @auto_path = true
     end
