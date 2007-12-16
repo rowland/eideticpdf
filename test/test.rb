@@ -468,6 +468,15 @@ def clipping(w)
     p.clip do
       p.print_image_file('testimg.jpg', 0, 6, nil, 3)
     end
+    
+    p.path
+    p.circle(4.5, 3.5, 0.3)
+    p.circle(5.5, 3.5, 0.3)
+    p.circle(5, 4, 0.2)
+    p.arch(5, 4, 0.5, 0.9, 210, 330)
+    p.clip do
+      p.print_image_file('testimg.jpg', 3.5, 3, 3)
+    end
   end
 end
 
