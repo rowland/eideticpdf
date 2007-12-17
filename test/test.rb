@@ -480,6 +480,17 @@ def clipping(w)
   end
 end
 
+def text_clipping(w)
+  w.page(:units => :in, :margins => 1) do |p|
+    p.print_xy(-0.5, -0.5, "Text Clipping")
+    # grid(p, 6.5, 9, 0, 0)
+    p.font('Helvetica', 144, :style => 'Bold')
+    p.print_xy(0.25, 0.5, "ROSE", :clip => true, :stroke => true) do
+      p.print_image_file('testimg.jpg', 0, 0, 6.5)
+    end
+  end
+end
+
 start = Time.now
 docw = EideticPDF::DocumentWriter.new
 
@@ -504,6 +515,7 @@ docw.doc(:font => { :name => 'Courier', :size => 10 }) do |w|
   font_names(w)
   images(w)
   clipping(w)
+  text_clipping(w)
   landscape_orientation(w)
 end
 

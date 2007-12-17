@@ -562,6 +562,53 @@ module EideticPDF
       end
     end
 
+    def check_set_scale
+      unless @scale == @last_scale
+        tw.set_horiz_scaling(@scale * 100)
+        @last_scale = @scale
+      end
+    end
+
+    def check_set_scale
+      unless @scale == @last_scale
+        tw.set_horiz_scaling(@scale)
+        @last_scale = @scale
+      end
+    end
+
+    def text_rendering_mode(options)
+      if options[:fill] and options[:stroke]
+        @text_rendering_mode = 2
+      elsif options[:stroke]
+        @text_rendering_mode = 1
+      elsif options[:fill]
+        @text_rendering_mode = 0
+      elsif options[:invisible]
+        @text_rendering_mode = 3 # Why is this an option in PDF?
+      else
+        @text_rendering_mode = 0
+      end
+    end
+
+    def text_clipping_mode(options)
+      if options[:fill] and options[:stroke]
+        @text_rendering_mode = 6
+      elsif options[:stroke]
+        @text_rendering_mode = 5
+      elsif options[:fill]
+        @text_rendering_mode = 4
+      else
+        @text_rendering_mode = 7
+      end
+    end
+
+    def check_set_text_rendering_mode
+      unless @text_rendering_mode == @last_text_rendering_mode
+        tw.set_rendering_mode(@text_rendering_mode)
+        @last_text_rendering_mode = @text_rendering_mode
+      end
+    end
+
     # color methods
     def check_set_line_color
       unless @line_color == @last_line_color
@@ -765,6 +812,8 @@ module EideticPDF
       @annotations = []
       @char_spacing = @word_spacing = 0.0
       @last_char_spacing = @last_word_spacing = 0.0
+      @last_scale = @scale = 1.0
+      @last_text_rendering_mode = @text_rendering_mode = 0
       @default_font = options[:font] || DEFAULT_FONT
       @font_color = @default_font[:color] || 0
       @fill_color = options[:fill_color] || 0
@@ -1260,6 +1309,10 @@ module EideticPDF
     end
 
     def path(options={})
+      stroke = options[:stroke].nil? ? false : options[:stroke]
+      fill = options[:fill].nil? ? false : options[:fill]
+      line_colors.push(stroke)
+      fill_colors.push(fill)
       @auto_path = false
       if block_given?
         yield
@@ -1272,6 +1325,8 @@ module EideticPDF
         else
           gw.new_path
         end
+        line_colors.pop
+        fill_colors.pop
         @in_path = false
         @auto_path = true
       end
@@ -1283,6 +1338,8 @@ module EideticPDF
 
       check_set(:fill_color)
       gw.fill
+      line_colors.pop
+      fill_colors.pop
       @in_path = false
       @auto_path = true
     end
@@ -1293,6 +1350,8 @@ module EideticPDF
 
       check_set(:line_color)
       gw.stroke
+      line_colors.pop
+      fill_colors.pop
       @in_path = false
       @auto_path = true
     end
@@ -1303,27 +1362,35 @@ module EideticPDF
 
       check_set(:fill_color,:line_color)
       gw.fill_and_stroke
+      line_colors.pop
+      fill_colors.pop
       @in_path = false
       @auto_path = true
     end
 
     def clip(options={})
-      raise Exception.new("Not in graph") unless @in_graph
-      raise Exception.new("Not in path") unless @in_path
+      # raise Exception.new("Not in graph") unless @in_graph
+      # raise Exception.new("Not in path") unless @in_path
 
       gw.save_graphics_state
-      gw.clip
-      if options[:fill] and options[:stroke]
-        gw.fill_and_stroke
-      elsif options[:stroke]
-        gw.stroke
-      elsif options[:fill]
-        gw.fill
-      else
-        gw.new_path
+      if @in_path
+        gw.clip
+        if options[:fill] and options[:stroke]
+          gw.fill_and_stroke
+        elsif options[:stroke]
+          gw.stroke
+        elsif options[:fill]
+          gw.fill
+        else
+          gw.new_path
+        end
       end
+      save_text_rendering_mode = @text_rendering_mode
+      text_clipping_mode(options)
       yield if block_given?
+      # gw.clip
       gw.restore_graphics_state
+      @text_rendering_mode = save_text_rendering_mode
       @in_path = false
       @auto_path = true
     end
@@ -1393,6 +1460,12 @@ module EideticPDF
     def print(text, options={})
       return if text.empty?
       angle = options[:angle] || 0.0
+      @scale = options[:scale] || 1.0
+      clip = options[:clip] and block_given?
+      if clip
+        gw.save_graphics_state
+        text_clipping_mode(options)
+      end
       start_text unless @in_text
       if (@text_angle != angle) or (angle != 0.0)
         set_text_angle(angle, @loc.x, @loc.y)
@@ -1403,6 +1476,8 @@ module EideticPDF
       check_set_font_color
       check_set_v_text_align
       check_set_spacing
+      check_set_scale
+      check_set_text_rendering_mode
 
       tw.show(text)
       @last_loc = @loc.clone
@@ -1414,27 +1489,31 @@ module EideticPDF
         @loc.y += Math::sin(rad_angle) * ds
         @loc.x += Math::cos(rad_angle) * ds
       end
+      if clip
+        yield
+        gw.restore_graphics_state
+      end
     end
 
-    def print_xy(x, y, text, options={})
+    def print_xy(x, y, text, options={}, &block)
       move_to(x, y)
-      print(text, options)
+      print(text, options, &block)
     end
 
-    def puts(text='')
+    def puts(text='', &block)
       # if it's not a real string, assume it's an enumeration of strings
       unless text.respond_to?(:to_str)
         text.each { |t| puts(t) }
       else
         save_loc = @loc.clone
-        print(text)
+        print(text, &block)
         @loc = Location.new(save_loc.x, save_loc.y - height)
       end
     end
 
-    def puts_xy(x, y, text)
+    def puts_xy(x, y, text, &block)
       move_to(x, y)
-      puts(text)
+      puts(text, &block)
     end
 
     def width(text)
@@ -1588,6 +1667,7 @@ module EideticPDF
         @doc.fonts[font_key] = page_font
       end
       font_color(options[:color]) if options[:color]
+      text_rendering_mode(options)
       [font, page_font]
     end
 
@@ -1835,12 +1915,24 @@ module EideticPDF
     #   cur_page.curve_to(points)
     # end
 
+    def points_for_circle(x, y, r)
+      cur_page.points_for_circle(x, y, r)
+    end
+
     def circle(x, y, r, options={})
       cur_page.circle(x, y, r, options)
     end
 
+    def points_for_ellipse(x, y, rx, ry)
+      cur_page.points_for_ellipse(x, y, rx, ry)
+    end
+
     def ellipse(x, y, rx, ry, options={})
       cur_page.ellipse(x, y, rx, ry, options)
+    end
+
+    def points_for_arc(x, y, r, start_angle, end_angle)
+      cur_page.points_for_arc(x, y, r, start_angle, end_angle)
     end
 
     def arc(x, y, r, start_angle, end_angle, move_to0=false)
@@ -1883,6 +1975,10 @@ module EideticPDF
       cur_page.fill_and_stroke
     end
 
+    def clip(options={})
+      cur_page.clip(options)
+    end
+
     def line_dash_pattern(pattern=nil)
       cur_page.line_dash_pattern(pattern)
     end
@@ -1909,20 +2005,20 @@ module EideticPDF
     end
 
     # text methods
-    def print(text, options={})
-      cur_page.print(text, options)
+    def print(text, options={}, &block)
+      cur_page.print(text, options, &block)
     end
 
-    def print_xy(x, y, text, options={})
-      cur_page.print_xy(x, y, text, options)
+    def print_xy(x, y, text, options={}, &block)
+      cur_page.print_xy(x, y, text, options, &block)
     end
 
-    def puts(text='')
-      cur_page.puts(text)
+    def puts(text='', &block)
+      cur_page.puts(text, &block)
     end
 
-    def puts_xy(x, y, text)
-      cur_page.puts_xy(x, y, text)
+    def puts_xy(x, y, text, &block)
+      cur_page.puts_xy(x, y, text, &block)
     end
 
     def width(text)
@@ -1967,11 +2063,19 @@ module EideticPDF
     end
 
     # image methods
+    def jpeg?(image)
+      cur_page.jpeg?(image)
+    end
+
+    def jpeg_dimensions(image)
+      cur_page.jpeg_dimensions(image)
+    end
+
     def load_image(image_file_name, stream=nil)
       cur_page.load_image(image_file_name, stream)
     end
 
-    def print_image_file(image_file_name, x, y, width=nil, height=nil)
+    def print_image_file(image_file_name, x=nil, y=nil, width=nil, height=nil)
       cur_page.print_image_file(image_file_name, x, y, width, height)
     end
 
