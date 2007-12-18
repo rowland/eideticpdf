@@ -785,7 +785,7 @@ module EideticPDF
   public
     DEFAULT_FONT = { :name => 'Helvetica', :size => 12 }
 
-    attr_reader :doc, :units, :page
+    attr_reader :doc, :page
     attr_reader :stream, :annotations
     attr_reader :auto_path
 
@@ -855,9 +855,10 @@ module EideticPDF
     end
 
     # coordinate methods
-    def units=(units)
+    def units(units=nil)
+      return @units if units.nil?
       @loc = convert_units(@loc, @units, units)
-      @last_loc = convert_units(@last_loc, @units, units)
+      @last_loc = convert_units(@last_loc, @units, units) unless @last_loc.nil?
       @units = units
     end
 

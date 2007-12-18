@@ -401,7 +401,7 @@ class PageWriterTestCases < Test::Unit::TestCase
     @doc.open
     @page = @doc.open_page
   end
-  
+
   def teardown
     @page.close
     @doc.close
@@ -415,6 +415,13 @@ class PageWriterTestCases < Test::Unit::TestCase
   def test_jpeg_dimensions
     image = IO.read(File.join(File.dirname(__FILE__), "testimg.jpg"))
     assert_equal([227, 149, 3, 8], @page.jpeg_dimensions(image))
+  end
+
+  def test_units
+    [:pt, :cm, :in].each do |units|
+      @page.units(units)
+      assert_equal(units, @page.units)
+    end
   end
 end
 
@@ -579,6 +586,13 @@ class DocumentWriterTestCases < Test::Unit::TestCase
     assert_equal(72, @doc.line_width(:pt))
     @doc.line_width "2in"
     assert_in_delta(5.08, @doc.line_width, 0.01)
+  end
+
+  def test_units
+    [:pt, :cm, :in].each do |units|
+      @doc.units(units)
+      assert_equal(units, @doc.units)
+    end
   end
 end
 
