@@ -6,6 +6,8 @@
 $: << File.dirname(__FILE__) + '/../'
 require 'epdfw'
 
+TestImg = File.join(File.dirname(__FILE__), 'testimg.jpg')
+
 def grid(w, width, height, xoff, yoff, step=1)
   w.path(:stroke => true) do
     # vertical lines
@@ -440,12 +442,12 @@ def images(w)
   w.page(:units => :in, :margins => 1) do |p|
     p.print_xy(-0.5, -0.5, "Images")
     # natural size @ current location
-    p.print_image_file('testimg.jpg', 0, 0)
+    p.print_image_file(TestImg, 0, 0)
     # from a buffer at a specified position and width with auto-height
-    img = IO.read('testimg.jpg')
+    img = IO.read(TestImg)
     p.print_image(img, 1, 3, 4.5)
     # specified height with auto-width
-    p.print_image_file('testimg.jpg', 3.25, 7, nil, 2)
+    p.print_image_file(TestImg, 3.25, 7, nil, 2)
   end
 end
 
@@ -455,10 +457,10 @@ def clipping(w)
     p.print_xy(-0.5, -0.5, "Clipping")
     # grid(p, 6.5, 9, 0, 0)
     p.star(1, 1, 1, 5, :border => false, :clip => true) do
-      p.print_image_file('testimg.jpg', 0, 0, nil, 2)
+      p.print_image_file(TestImg, 0, 0, nil, 2)
     end
     p.circle(4.5, 1, 1, :clip => true) do
-      p.print_image_file('testimg.jpg', 3, 0, 3)
+      p.print_image_file(TestImg, 3, 0, 3)
     end
     p.ellipse(1.5, 4, 1.5, 1, :clip => true) do
       p.paragraph_xy(0, 3, lorem, :width => 3, :height => 2)
@@ -466,7 +468,7 @@ def clipping(w)
     p.path
     p.rectangle(0, 6, 4.5, 3, :corners => [1])
     p.clip do
-      p.print_image_file('testimg.jpg', 0, 6, nil, 3)
+      p.print_image_file(TestImg, 0, 6, nil, 3)
     end
     
     p.path
@@ -475,7 +477,7 @@ def clipping(w)
     p.circle(5, 4, 0.2)
     p.arch(5, 4, 0.5, 0.9, 210, 330)
     p.clip do
-      p.print_image_file('testimg.jpg', 3.5, 3, 3)
+      p.print_image_file(TestImg, 3.5, 3, 3)
     end
   end
 end
@@ -486,7 +488,7 @@ def text_clipping(w)
     # grid(p, 6.5, 9, 0, 0)
     p.font('Helvetica', 144, :style => 'Bold')
     p.print_xy(0.25, 0.5, "ROSE", :clip => true, :stroke => true) do
-      p.print_image_file('testimg.jpg', 0, 0, 6.5)
+      p.print_image_file(TestImg, 0, 0, 6.5)
     end
   end
 end
