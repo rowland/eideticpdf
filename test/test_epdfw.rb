@@ -594,8 +594,70 @@ class DocumentWriterTestCases < Test::Unit::TestCase
       assert_equal(units, @doc.units)
     end
   end
+
+  def test_tabs
+    assert_nil @doc.tabs
+    @doc.tabs [1, 2, 3]
+    assert_equal [1, 2, 3], @doc.tabs
+    @doc.tabs []
+    assert_nil @doc.tabs
+    @doc.tabs '4, 5, 6'
+    assert_equal [4, 5, 6], @doc.tabs
+    @doc.tabs false
+    assert_nil @doc.tabs
+  end
+  
+  def test_tab
+    @doc.tabs [1.5, 3, 4.5, 6]
+    assert_close([0, 0], @doc.pen_pos.to_a)
+    @doc.tab
+    assert_close([1.5, 0], @doc.pen_pos.to_a)
+    @doc.tab
+    assert_close([3, 0], @doc.pen_pos.to_a)
+    @doc.tab
+    assert_close([4.5, 0], @doc.pen_pos.to_a)
+    @doc.tab
+    assert_close([6, 0], @doc.pen_pos.to_a)
+    @doc.tab
+    assert_close([1.5, @doc.height], @doc.pen_pos.to_a)
+  end
+
+  def test_vtabs
+    assert_nil @doc.vtabs
+    @doc.vtabs [1, 2, 3]
+    assert_equal [1, 2, 3], @doc.vtabs
+    @doc.vtabs []
+    assert_nil @doc.vtabs
+    @doc.vtabs '4, 5, 6'
+    assert_equal [4, 5, 6], @doc.vtabs
+    @doc.vtabs false
+    assert_nil @doc.vtabs
+  end
+
+  def test_vtab
+    @doc.vtabs [1.5, 3, 4.5, 6]
+    assert_close([0, 0], @doc.pen_pos.to_a)
+    @doc.vtab
+    assert_close([0, 1.5], @doc.pen_pos.to_a)
+    @doc.vtab
+    assert_close([0, 3], @doc.pen_pos.to_a)
+    @doc.vtab
+    assert_close([0, 4.5], @doc.pen_pos.to_a)
+    @doc.vtab
+    assert_close([0, 6], @doc.pen_pos.to_a)
+    @doc.vtab { 2.5 }
+    assert_close([2.5, 1.5], @doc.pen_pos.to_a)
+  end
 end
 
 def assert_array_in_delta(expected_floats, actual_floats, delta)
   expected_floats.each_with_index { |e, i| assert_in_delta(e, actual_floats[i], delta) }
+end
+
+def assert_close(expected, actual)
+  if expected.respond_to?(:each_with_index) and actual.respond_to?(:[])
+    expected.each_with_index { |e, i| assert_in_delta(e, actual[i], 2 ** -20) }
+  else
+    assert_in_delta(e, actual, 2 ** -20)
+  end
 end

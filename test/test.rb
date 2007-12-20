@@ -77,7 +77,8 @@ end
 def font_names(w)
   w.page(:units => :cm, :margins => [1,2]) do |p|
     p.type1_font_names.each do |font_name|
-      p.font(font_name, 12)
+      encoding = ['Symbol','ZapfDingbats'].include?(font_name) ? 'StandardEncoding' : 'WinAnsiEncoding'
+      p.font(font_name, 12, :encoding => encoding)
       p.puts(font_name)
     end
   end
@@ -493,6 +494,29 @@ def text_clipping(w)
   end
 end
 
+def text_encodings(w)
+  fonts = [
+    ['Helvetica', 'WinAnsiEncoding'], 
+    ['Times-Roman', 'WinAnsiEncoding'], 
+    ['Courier', 'WinAnsiEncoding'], 
+    ['Symbol', 'StandardEncoding'], 
+    ['ZapfDingbats', 'StandardEncoding']
+  ]
+  fonts.each do |name, encoding|
+    w.page(:units => :in, :margins => 0.5) do |p|
+      p.print "#{name} - #{encoding}"
+      p.font name, 16, :encoding => encoding
+      p.move_to 0, 0.5
+      stops = (1..16).map { |stop| stop.quo(2.3) }
+      p.tabs stops
+      32.upto(255) do |i|
+        p.tab { 1 / 2.3 }
+        p.print i.chr
+      end
+    end
+  end
+end
+
 start = Time.now
 docw = EideticPDF::DocumentWriter.new
 
@@ -518,6 +542,7 @@ docw.doc(:font => { :name => 'Courier', :size => 10 }) do |w|
   images(w)
   clipping(w)
   text_clipping(w)
+  text_encodings(w)
   landscape_orientation(w)
 end
 

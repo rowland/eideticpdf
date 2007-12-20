@@ -1757,6 +1757,43 @@ module EideticPDF
 
     def print_link(s, uri)
     end
+
+    def tabs(tabs=nil)
+      return @tabs if tabs.nil?
+      return @tabs = nil if tabs == false or tabs.empty?
+      tabs = tabs.split(',') if tabs.respond_to?(:to_str)
+      @tabs = tabs.map { |stop| stop.to_f }.select { |stop| stop > 0 }.sort
+    end
+
+    def tab
+      return if @tabs.nil?
+      p = pen_pos
+      x = @tabs.detect { |stop| stop > p.x }
+      if x.nil?
+        dy = block_given? ? yield : height
+        move_to(@tabs.first, p.y + dy)
+      else
+        move_to(x, p.y)
+      end
+    end
+
+    def vtabs(tabs=nil)
+      return @vtabs if tabs.nil?
+      return @vtabs = nil if tabs == false or tabs.empty?
+      tabs = tabs.split(',') if tabs.respond_to?(:to_str)
+      @vtabs = tabs.map { |stop| stop.to_f }.select { |stop| stop > 0 }.sort
+    end
+
+    def vtab
+      return if @vtabs.nil?
+      p = pen_pos
+      y = @vtabs.detect { |stop| stop > p.y }
+      if y.nil?
+        move_to(p.x + yield, @vtabs.first) if block_given?
+      else
+        move_to(p.x, y)
+      end
+    end
   end
 
   class DocumentWriter
@@ -2086,6 +2123,22 @@ module EideticPDF
 
     def print_link(s, uri)
       cur_page.print_link(s, uri)
+    end
+
+    def tabs(tabs=nil)
+      cur_page.tabs(tabs)
+    end
+
+    def tab(&block)
+      cur_page.tab(&block)
+    end
+
+    def vtabs(tabs=nil)
+      cur_page.vtabs(tabs)
+    end
+
+    def vtab(&block)
+      cur_page.vtab(&block)
     end
 
   protected
