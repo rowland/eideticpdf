@@ -3100,6 +3100,8 @@ module EideticPDF
       'YellowGreen' => 0x9ACD32
     }
 
+    STANDARD_ENCODINGS = ['WinAnsiEncoding','StandardEncoding','MacRomanEncoding','MacExpertEncoding']
+
   module_function
     def font_index(font_name)
       FONT_NAMES.index(font_name)

@@ -3,6 +3,8 @@
 #  Created by Brent Rowland on 2007-07-13.
 #  Copyright (c) 2007, Eidetic Software. All rights reserved.
 
+require 'epdfk'
+
 module EideticPDF
   module PdfObjects
     class Header
@@ -451,9 +453,9 @@ module EideticPDF
         dictionary['Widths'] = widths.reference_object unless widths.nil?
         dictionary['FontDescriptor'] = font_descriptor.reference_object unless font_descriptor.nil?
       end
-    
+
       def self.standard_encoding?(encoding)
-        ['WinAnsiEncoding','StandardEncoding','MacRomanEncoding','MacExpertEncoding'].include?(encoding)
+        PdfK::STANDARD_ENCODINGS.include?(encoding)
       end
     end
 
