@@ -6,6 +6,7 @@
 require 'epdfo'
 require 'epdfk'
 require 'epdft'
+require 'epdfafm'
 
 module EideticPDF
   Font = Struct.new(:name, :size, :style, :color, :encoding, :sub_type, :widths, :ascent, :descent, :height)
@@ -1633,7 +1634,11 @@ module EideticPDF
       full_name << punc << font.style unless font.style.empty?
       font_key = "#{full_name}/#{font.encoding}-#{font.sub_type}"
       if font.sub_type == 'Type1'
-        metrics = PdfK::font_metrics(full_name)
+        if @options[:built_in_fonts]
+          metrics = PdfK::font_metrics(full_name)
+        else
+          metrics = AFM::font_metrics(font.name, :style => font.style, :encoding => font.encoding)
+        end
         font.widths = metrics.widths
         font.ascent = metrics.ascent
         font.descent = metrics.descent
@@ -2085,7 +2090,11 @@ module EideticPDF
 
     # font methods
     def type1_font_names
-      PdfK::FONT_NAMES
+      if @options[:built_in_fonts]
+        PdfK::FONT_NAMES
+      else
+        AFM::font_names
+      end
     end
 
     def font(name=nil, size=nil, options={})

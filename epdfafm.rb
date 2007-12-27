@@ -37,6 +37,9 @@ module EideticPDF
             load_line(line)
           end
         end
+        # symbolic fonts don't specify ascender and descender, so borrow them from FontBBox
+        @ascender ||= font_b_box[3]
+        @descender ||= font_b_box[1]
       end
 
       def flags
@@ -59,6 +62,8 @@ module EideticPDF
 
       def self.find_font(family_name, weight, italic)
         afm = afm_cache.find do |afm|
+          # puts "wanted: #{family_name}, #{weight}, #{italic}"
+          # puts "family: #{afm.family_name}, weight: #{afm.weight}, angle: #{afm.italic_angle}"
           (family_name.casecmp(afm.family_name) == 0) and 
           (weight.casecmp(afm.weight) == 0) and
           (italic ? afm.italic_angle != 0 : afm.italic_angle == 0)
@@ -149,10 +154,18 @@ module EideticPDF
       end
     end
 
+  module_function
     def font_metrics(family, options={})
-      style = Array(options[:style] || '').map { |style| style.capitalize }
+      family, style = family.split('-', 2)
+      style = style || options[:style] || ''
+      if style.respond_to?(:to_str)
+        style = style.scan(/[A-Z]+[a-z]+/)
+      else
+        style = style.map { |style| style.capitalize }
+      end
       bold, italic = style.include?('Bold'), style.include?('Italic')
       weight = bold ? 'Bold' : options[:weight] || ((family =~ /Times/i && !italic) ? 'Roman' : 'Medium')
+      # puts "style: #{style.inspect}, bold: #{bold}, italic: #{italic}, weight: #{weight}"
       afm = AdobeFontMetrics.find_font(family, weight, italic)
       raise Exception.new("Unknown font %s-%s%s." % [family, weight, italic ? 'Italic' : '']) if afm.nil?
       if afm.encoding_scheme == 'FontSpecific'
@@ -168,10 +181,9 @@ module EideticPDF
         differences = nil
       end
       if encoding.nil? or encoding == 'StandardEncoding'
-        widths = afm.chars_by_code.inject([]) do |widths, ch|
-          next widths if ch.nil?
-          widths[ch.code] = ch.width
-          widths
+        widths = Array.new(256, 0)
+        afm.chars_by_code.each do |ch|
+          widths[ch.code] = ch.width unless ch.nil?
         end
       else
         widths = widths_for_encoding(encoding, afm.chars_by_name)
@@ -182,6 +194,10 @@ module EideticPDF
       fm = FontMetrics.new(needs_descriptor, widths, afm.ascender, afm.descender, afm.flags, afm.font_b_box, missing_width,
         afm.std_v_w, afm.std_h_w, afm.italic_angle, afm.cap_height, afm.x_height, leading, cwidths.max, cwidths.avg, differences)
       fm
+    end
+
+    def font_names(reload=false)
+      AdobeFontMetrics.afm_cache(reload).map { |afm| afm.font_name }
     end
 
     def codepoints_for_encoding(encoding)

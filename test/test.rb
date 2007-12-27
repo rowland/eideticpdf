@@ -76,6 +76,7 @@ end
 
 def font_names(w)
   w.page(:units => :cm, :margins => [1,2]) do |p|
+    # $stdout.puts p.type1_font_names.join("\n")
     p.type1_font_names.each do |font_name|
       encoding = ['Symbol','ZapfDingbats'].include?(font_name) ? 'StandardEncoding' : 'WinAnsiEncoding'
       p.font(font_name, 12, :encoding => encoding)
@@ -521,7 +522,7 @@ start = Time.now
 docw = EideticPDF::DocumentWriter.new
 
 # docw.doc(:font => { :name => 'Courier', :size => 10 }, :orientation => :landscape, :pages_up => [3, 2]) do |w|
-docw.doc(:font => { :name => 'Courier', :size => 10 }) do |w|
+docw.doc(:font => { :name => 'Courier', :size => 10 }, :built_in_fonts => false) do |w|
   stars(w)
   polygons(w)
   pies(w)
