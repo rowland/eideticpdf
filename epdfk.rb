@@ -3117,6 +3117,7 @@ module EideticPDF
     end
 
     def glyph_name(codepoint)
+      return nil if codepoint.nil? or codepoint < 0x20
       GLYPHS[codepoint] || 'question'
     end
   end

@@ -1637,7 +1637,7 @@ module EideticPDF
         if @options[:built_in_fonts]
           metrics = PdfK::font_metrics(full_name)
         else
-          metrics = AFM::font_metrics(font.name, :style => font.style, :encoding => font.encoding)
+          metrics = AFM::font_metrics(full_name, :encoding => font.encoding)
         end
         font.widths = metrics.widths
         font.ascent = metrics.ascent

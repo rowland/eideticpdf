@@ -21,15 +21,18 @@ module EideticPDF
       Script      = 0x08
       NonSymbolic = 0x20
       Italic      = 0x40
+      AllCap      = 0x10000
+      SmallCap    = 0x20000
+      ForceBold   = 0x40000
 
       attr_reader :font_name, :full_name, :family_name, :weight, :italic_angle, :is_fixed_pitch
       attr_reader :font_b_box, :underline_position, :underline_thickness
       attr_reader :version, :notice
       attr_reader :character_set, :encoding_scheme
-      attr_reader :cap_height, :x_height, :ascender, :descender, :std_h_w, :std_v_w
+      attr_reader :cap_height, :x_height, :ascender, :descender, :std_h_w, :std_v_w, :serif
       attr_reader :chars_by_name, :chars_by_code
 
-      def initialize(lines)
+      def load_afm(lines)
         lines.each do |line|
           if @char_metrics_started
             load_char_metrics(line)
@@ -40,12 +43,20 @@ module EideticPDF
         # symbolic fonts don't specify ascender and descender, so borrow them from FontBBox
         @ascender ||= font_b_box[3]
         @descender ||= font_b_box[1]
+        self
       end
+
+      def load_inf(lines)
+        lines.grep(/^Serif/).each do |line|
+          load_line(line)
+        end
+        self
+      end          
 
       def flags
         @flags = 0
         @flags |= FixedPitch if @is_fixed_pitch
-        @flags |= Serif if @family_name =~ /Times/
+        @flags |= Serif if @serif
         if ['Symbol','ZapfDingbats'].include?(@family_name)
           @flags |= Symbolic
         else
@@ -53,22 +64,38 @@ module EideticPDF
         end
         # TODO: detect Script
         @flags |= Italic if @italic_angle != 0
+        @flags |= ForceBold if @weight =~ /Bold|Demi/i
         @flags
       end
 
-      def self.load(file)
-        self.new(IO.readlines(file))
+      def italic
+        @italic_angle != 0
       end
 
-      def self.find_font(family_name, weight, italic)
-        afm = afm_cache.find do |afm|
-          # puts "wanted: #{family_name}, #{weight}, #{italic}"
-          # puts "family: #{afm.family_name}, weight: #{afm.weight}, angle: #{afm.italic_angle}"
-          (family_name.casecmp(afm.family_name) == 0) and 
-          (weight.casecmp(afm.weight) == 0) and
-          (italic ? afm.italic_angle != 0 : afm.italic_angle == 0)
+      def self.load(afm_file)
+        result = self.new
+        result.load_afm(IO.readlines(afm_file))
+        inf_file = afm_file.sub(/\.afm$/, '.inf')
+        result.load_inf(IO.readlines(inf_file)) if File.exist?(inf_file)
+        result
+      end
+
+      def self.find_font(full_name)
+        afm_cache.find { |afm| full_name.casecmp(afm.font_name) == 0 }
+      end
+
+      def self.find_fonts(options)
+        afm_cache.select do |afm|
+          options.all? do |key, value|
+            if value.respond_to?(:to_str)
+              value.casecmp(afm.send(key)) == 0
+            elsif value.is_a?(Regexp)
+              value =~ afm.send(key)
+            else
+              value == afm.send(key)
+            end
+          end
         end
-        afm
       end
 
       def self.afm_cache(reload=false)
@@ -89,11 +116,11 @@ module EideticPDF
           @font_name = $1.chomp
         when /FullName\s+(.*)/
           @full_name = $1.chomp
-        when /FamilyName\s+(\w+)/
-          @family_name = $1
+        when /FamilyName\s+(.*)/
+          @family_name = $1.chomp
         when /Weight\s+(\w+)/
           @weight = $1
-        when /ItalicAngle\s+(-?\d+)/
+        when /ItalicAngle\s+(-?\d+(\.\d+)?)/
           @italic_angle = $1.to_f
         when /IsFixedPitch\s+(\w+)/
           @is_fixed_pitch = ($1 == 'true')
@@ -127,6 +154,9 @@ module EideticPDF
           @chars_by_name = {}
           @chars_by_code = []
           @char_metrics_started = true
+        when /Serif\s+(\w+)/
+          @serif = ($1 == 'true')
+          puts "Serif: #{@serif}"
         end
       end
 
@@ -155,25 +185,20 @@ module EideticPDF
     end
 
   module_function
-    def font_metrics(family, options={})
-      family, style = family.split('-', 2)
-      style = style || options[:style] || ''
-      if style.respond_to?(:to_str)
-        style = style.scan(/[A-Z]+[a-z]+/)
-      else
-        style = style.map { |style| style.capitalize }
+    def font_metrics(name, options={})
+      unless options[:weight].nil? and options[:italic].nil?
+        weight = options[:weight] || /Medium|Roman/
+        italic = options[:italic] || false
+        afm = AdobeFontMetrics.find_fonts(:family_name => name, :weight => weight, :italic => italic).first
       end
-      bold, italic = style.include?('Bold'), style.include?('Italic')
-      weight = bold ? 'Bold' : options[:weight] || ((family =~ /Times/i && !italic) ? 'Roman' : 'Medium')
-      # puts "style: #{style.inspect}, bold: #{bold}, italic: #{italic}, weight: #{weight}"
-      afm = AdobeFontMetrics.find_font(family, weight, italic)
-      raise Exception.new("Unknown font %s-%s%s." % [family, weight, italic ? 'Italic' : '']) if afm.nil?
+      afm = AdobeFontMetrics.find_font(name) if afm.nil?
+      raise Exception.new("Unknown font %s-%s%s." % name) if afm.nil?
       if afm.encoding_scheme == 'FontSpecific'
         encoding = nil
         needs_descriptor = false
       else
         encoding = options[:encoding] || 'WinAnsiEncoding'
-        needs_descriptor = !PdfK::STANDARD_ENCODINGS.include?(encoding)
+        needs_descriptor = !(0...14).include?(PdfK::font_index(afm.font_name)) # !PdfK::STANDARD_ENCODINGS.include?(encoding)
       end
       if needs_descriptor
         differences = glyph_differences_for_encodings('WinAnsiEncoding', encoding)
@@ -194,6 +219,10 @@ module EideticPDF
       fm = FontMetrics.new(needs_descriptor, widths, afm.ascender, afm.descender, afm.flags, afm.font_b_box, missing_width,
         afm.std_v_w, afm.std_h_w, afm.italic_angle, afm.cap_height, afm.x_height, leading, cwidths.max, cwidths.avg, differences)
       fm
+    end
+
+    def font_weights(family_name)
+      AdobeFontMetrics.find_fonts(:family_name => family_name).map { |afm| afm.weight }.sort.uniq
     end
 
     def font_names(reload=false)
@@ -217,7 +246,7 @@ module EideticPDF
     end
 
     def widths_for_glyphs(glyphs, chars_by_name)
-      glyphs.map { |glyph| chars_by_name[glyph].width }
+      glyphs.map { |glyph| (ch = chars_by_name[glyph]) ? ch.width : 0 }
     end
 
     def widths_for_encoding(encoding, chars_by_name)

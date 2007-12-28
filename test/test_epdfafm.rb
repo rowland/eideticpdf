@@ -31,11 +31,11 @@ class AdobeFontMetricsTestCases < Test::Unit::TestCase
   end
 
   def test_afm_cache
-    assert_equal(14, AdobeFontMetrics.afm_cache.size)
+    assert_equal(39, AdobeFontMetrics.afm_cache.size)
   end
 
   def test_find_font
-    afm = AdobeFontMetrics.find_font('Helvetica', 'Bold', true)
+    afm = AdobeFontMetrics.find_font('Helvetica-BoldOblique')
     assert_not_nil(afm)
     assert_equal('Helvetica-BoldOblique', afm.font_name, "font_name")
     assert_equal('Helvetica Bold Oblique', afm.full_name, "full_name")
@@ -63,6 +63,20 @@ class AdobeFontMetricsTestCases < Test::Unit::TestCase
     assert_equal(556, ch.width)
   end
 
+  def test_find_fonts
+    helv = AdobeFontMetrics.find_fonts(:family_name => 'Helvetica')
+    assert_equal(12, helv.size)
+    demi = AdobeFontMetrics.find_fonts(:weight => 'Demi')
+    assert_equal(4, demi.size)
+    italic = AdobeFontMetrics.find_fonts(:italic => true)
+    assert_equal(19, italic.size)
+  end
+
+  def test_font_weights
+    assert_equal(['Demi', 'Light'], font_weights('ITC Bookman'))
+    assert_equal(['Bold', 'Medium', 'Roman'], font_weights('Palatino'))
+  end
+
   def test_codepoints_for_encoding
     codepoints = codepoints_for_encoding('WinAnsiEncoding')
     assert_equal(32, codepoints[32])
@@ -82,7 +96,8 @@ class AdobeFontMetricsTestCases < Test::Unit::TestCase
   end
 
   def test_widths_for_glyphs
-    afm = AdobeFontMetrics.find_font('Helvetica', 'Bold', true)
+    afm = AdobeFontMetrics.find_font('Helvetica-BoldOblique')
+    assert_not_nil(afm, "Font not found.")
     glyphs = glyphs_for_encoding('WinAnsiEncoding')
     widths = widths_for_glyphs(glyphs, afm.chars_by_name)
     assert_equal(278, widths[32])
@@ -90,7 +105,8 @@ class AdobeFontMetricsTestCases < Test::Unit::TestCase
   end
 
   def test_widths_for_encoding
-    afm = AdobeFontMetrics.find_font('Helvetica', 'Bold', true)
+    afm = AdobeFontMetrics.find_font('Helvetica-BoldOblique')
+    assert_not_nil(afm, "Font not found.")
     widths = widths_for_encoding('WinAnsiEncoding', afm.chars_by_name)
     assert_equal(278, widths[32])
     assert_equal(722, widths[65])
@@ -98,14 +114,17 @@ class AdobeFontMetricsTestCases < Test::Unit::TestCase
 
   def test_font_metrics1
     families = ['Courier', 'Helvetica', 'Times']
-    styles = ['', 'Bold', ['Bold','Italic'], 'Italic']
+    weights = [nil, 'Bold']
+    italics = [nil, true]
     families.each do |family|
-      styles.each do |style|
-        fm = font_metrics(family, :style => style)
-        assert_not_nil(fm)
-        assert_equal(AdobeFontMetrics::NonSymbolic, fm.flags & AdobeFontMetrics::NonSymbolic)
-        assert_equal(Array(style).include?('Italic') ? AdobeFontMetrics::Italic : 0, fm.flags & AdobeFontMetrics::Italic)
-        assert_equal(family == 'Courier' ? AdobeFontMetrics::FixedPitch : 0, fm.flags & AdobeFontMetrics::FixedPitch)
+      weights.each do |weight|
+        italics.each do |italic|
+          fm = font_metrics(family, :weight => weight, :italic => italic)
+          assert_not_nil(fm)
+          assert_equal(AdobeFontMetrics::NonSymbolic, fm.flags & AdobeFontMetrics::NonSymbolic)
+          assert_equal(italic ? AdobeFontMetrics::Italic : 0, fm.flags & AdobeFontMetrics::Italic)
+          assert_equal(family == 'Courier' ? AdobeFontMetrics::FixedPitch : 0, fm.flags & AdobeFontMetrics::FixedPitch)
+        end
       end
     end
   end
@@ -113,11 +132,11 @@ class AdobeFontMetricsTestCases < Test::Unit::TestCase
   def test_font_metrics2
     symbol = font_metrics('Symbol')
     assert_not_nil(symbol)
-    assert_equal(189, symbol.widths.compact.size) # apple symbol not mapped by default
+    assert_equal(189, symbol.widths.select { |w| w != 0 }.size) # apple symbol not mapped by default
 
     zapf = font_metrics('ZapfDingbats')
     assert_not_nil(zapf)
-    assert_equal(202, zapf.widths.compact.size)
+    assert_equal(202, zapf.widths.select { |w| w != 0 }.size)
   end
 
   def test_font_metrics3

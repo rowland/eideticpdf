@@ -471,8 +471,8 @@ module EideticPDF
         dictionary['Flags'] = PdfInteger.new(flags)
         dictionary['FontBBox'] = PdfArray.new(font_b_box.map { |i| PdfInteger.new(i) })
         dictionary['MissingWidth'] = PdfInteger.new(missing_width)
-        dictionary['StemV'] = PdfInteger.new(stem_v)
-        dictionary['StemH'] = PdfInteger.new(stem_h)
+        dictionary['StemV'] = PdfInteger.new(stem_v) if stem_v
+        dictionary['StemH'] = PdfInteger.new(stem_h) if stem_h
         dictionary['ItalicAngle'] = PdfReal.new(italic_angle)
         dictionary['CapHeight'] = PdfInteger.new(cap_height)
         dictionary['XHeight'] = PdfInteger.new(x_height)
