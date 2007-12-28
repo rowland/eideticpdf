@@ -15,7 +15,7 @@ class AdobeFontMetricsTestCases < Test::Unit::TestCase
 
   def test_from_array
     courier_ary = IO.readlines(CourierAfmFile)
-    afm = AdobeFontMetrics.new(courier_ary)
+    afm = AdobeFontMetrics.new.load_afm(courier_ary)
     ch = afm.chars_by_name['space']
     assert_equal('space', ch.name)
     assert_equal(32, ch.code)
@@ -31,7 +31,7 @@ class AdobeFontMetricsTestCases < Test::Unit::TestCase
   end
 
   def test_afm_cache
-    assert_equal(39, AdobeFontMetrics.afm_cache.size)
+    assert_equal(77, AdobeFontMetrics.afm_cache.size)
   end
 
   def test_find_font
@@ -43,7 +43,7 @@ class AdobeFontMetricsTestCases < Test::Unit::TestCase
     assert_equal('Bold', afm.weight, "weight")
     assert_equal(-12, afm.italic_angle, "italic_angle")
     assert_equal(false, afm.is_fixed_pitch, "is_fixed_pitch")
-    assert_equal(0x60, afm.flags, "flags")
+    assert_equal(0x40060, afm.flags, "flags")
     assert_equal([-174, -228, 1114, 962], afm.font_b_box, "font_b_box")
     assert_equal(-100, afm.underline_position, "underline_position")
     assert_equal(50, afm.underline_thickness, "underline_thickness")
@@ -67,14 +67,18 @@ class AdobeFontMetricsTestCases < Test::Unit::TestCase
     helv = AdobeFontMetrics.find_fonts(:family_name => 'Helvetica')
     assert_equal(12, helv.size)
     demi = AdobeFontMetrics.find_fonts(:weight => 'Demi')
-    assert_equal(4, demi.size)
+    assert_equal(6, demi.size)
     italic = AdobeFontMetrics.find_fonts(:italic => true)
-    assert_equal(19, italic.size)
+    assert_equal(35, italic.size)
   end
 
   def test_font_weights
     assert_equal(['Demi', 'Light'], font_weights('ITC Bookman'))
-    assert_equal(['Bold', 'Medium', 'Roman'], font_weights('Palatino'))
+    assert_equal(['Bold', 'Medium'], font_weights('Palatino'))
+  end
+
+  def test_font_names
+    assert_equal('ZapfDingbats', font_names.last)
   end
 
   def test_codepoints_for_encoding
@@ -82,7 +86,7 @@ class AdobeFontMetricsTestCases < Test::Unit::TestCase
     assert_equal(32, codepoints[32])
     assert_equal(65, codepoints[65])
   end
-  
+
   def test_glyphs_for_codepoints
     assert_equal(['space', 'A'], glyphs_for_codepoints([32,65]))
   end
@@ -90,7 +94,6 @@ class AdobeFontMetricsTestCases < Test::Unit::TestCase
   def test_glyphs_for_encoding
     glyphs = glyphs_for_encoding('WinAnsiEncoding')
     assert_equal(256, glyphs.size, "Wrong number of glyphs")
-    # assert_equal([], glyphs)
     assert_equal('space', glyphs[32])
     assert_equal('A', glyphs[65])
   end
@@ -114,16 +117,16 @@ class AdobeFontMetricsTestCases < Test::Unit::TestCase
 
   def test_font_metrics1
     families = ['Courier', 'Helvetica', 'Times']
-    weights = [nil, 'Bold']
-    italics = [nil, true]
+    weights = [false, 'Bold']
+    italics = [false, true]
     families.each do |family|
       weights.each do |weight|
         italics.each do |italic|
           fm = font_metrics(family, :weight => weight, :italic => italic)
-          assert_not_nil(fm)
-          assert_equal(AdobeFontMetrics::NonSymbolic, fm.flags & AdobeFontMetrics::NonSymbolic)
-          assert_equal(italic ? AdobeFontMetrics::Italic : 0, fm.flags & AdobeFontMetrics::Italic)
-          assert_equal(family == 'Courier' ? AdobeFontMetrics::FixedPitch : 0, fm.flags & AdobeFontMetrics::FixedPitch)
+          assert_not_nil(fm, "Should never return nil.")
+          assert_equal(AdobeFontMetrics::NonSymbolic, fm.flags & AdobeFontMetrics::NonSymbolic, "#{family}: NonSymbolic")
+          assert_equal(italic ? AdobeFontMetrics::Italic : 0, fm.flags & AdobeFontMetrics::Italic, "#{family}: Italic test")
+          assert_equal(family == 'Courier' ? AdobeFontMetrics::FixedPitch : 0, fm.flags & AdobeFontMetrics::FixedPitch, "#{family}: Fixed Pitch test")
         end
       end
     end
@@ -146,6 +149,6 @@ class AdobeFontMetricsTestCases < Test::Unit::TestCase
     assert_equal(278, fm.widths[32])
     assert_equal(722, fm.widths[65])
     assert_not_nil(fm.differences)
-    assert_equal(83, fm.differences.values.size)
+    assert_equal(77, fm.differences.values.size)
   end
 end

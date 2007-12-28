@@ -498,8 +498,24 @@ end
 def text_encodings(w)
   fonts = [
     ['Helvetica', 'WinAnsiEncoding'], 
-    ['Times-Roman', 'WinAnsiEncoding'], 
-    ['Courier', 'WinAnsiEncoding'], 
+    ['Helvetica', 'ISO-8859-1'], 
+    ['Helvetica', 'ISO-8859-2'], 
+    ['Helvetica', 'ISO-8859-3'], 
+    ['Helvetica', 'ISO-8859-4'], 
+    ['Helvetica', 'ISO-8859-7'], 
+    ['Helvetica', 'ISO-8859-9'], 
+    ['Helvetica', 'ISO-8859-10'], 
+    ['Helvetica', 'ISO-8859-13'], 
+    ['Helvetica', 'ISO-8859-14'], 
+    ['Helvetica', 'ISO-8859-15'], 
+    ['Helvetica', 'ISO-8859-16'], 
+    ['Times-Roman', 'CP1250'], 
+    ['Times-Roman', 'CP1252'], 
+    ['Times-Roman', 'CP1254'], 
+    ['Courier', 'MacTurkish'], 
+    ['Courier', 'Macintosh'], 
+    # ['Times-Roman', 'WinAnsiEncoding'], 
+    # ['Courier', 'WinAnsiEncoding'], 
     ['Symbol', 'StandardEncoding'], 
     ['ZapfDingbats', 'StandardEncoding']
   ]

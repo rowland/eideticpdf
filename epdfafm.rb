@@ -156,7 +156,6 @@ module EideticPDF
           @char_metrics_started = true
         when /Serif\s+(\w+)/
           @serif = ($1 == 'true')
-          puts "Serif: #{@serif}"
         end
       end
 
@@ -192,13 +191,14 @@ module EideticPDF
         afm = AdobeFontMetrics.find_fonts(:family_name => name, :weight => weight, :italic => italic).first
       end
       afm = AdobeFontMetrics.find_font(name) if afm.nil?
-      raise Exception.new("Unknown font %s-%s%s." % name) if afm.nil?
+      raise Exception.new("Unknown font %s." % name) if afm.nil?
       if afm.encoding_scheme == 'FontSpecific'
         encoding = nil
         needs_descriptor = false
       else
         encoding = options[:encoding] || 'WinAnsiEncoding'
-        needs_descriptor = !(0...14).include?(PdfK::font_index(afm.font_name)) # !PdfK::STANDARD_ENCODINGS.include?(encoding)
+        needs_descriptor = !(0...14).include?(PdfK::font_index(afm.font_name)) || !PdfK::STANDARD_ENCODINGS.include?(encoding)
+        # $stdout.puts "needs descriptor: #{needs_descriptor}"
       end
       if needs_descriptor
         differences = glyph_differences_for_encodings('WinAnsiEncoding', encoding)
@@ -252,14 +252,14 @@ module EideticPDF
     def widths_for_encoding(encoding, chars_by_name)
       widths_for_glyphs(glyphs_for_encoding(encoding), chars_by_name)
     end
-    
+
     def glyph_differences_for_encodings(encoding1, encoding2)
       glyphs1, glyphs2 = glyphs_for_encoding(encoding1), glyphs_for_encoding(encoding2)
       result = []
       same = true
       1.upto(255) do |i|
         if same
-          if glyphs1[i] != glyphs2[i]
+          if (glyphs1[i] != glyphs2[i]) and !glyphs2[i].nil?
             same = false
             result << PdfObjects::PdfInteger.new(i)
             result << PdfObjects::PdfName.new(glyphs2[i])

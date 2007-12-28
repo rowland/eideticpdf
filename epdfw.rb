@@ -1628,6 +1628,7 @@ module EideticPDF
       font.style = options[:style] || ''
       font.color = options[:color]
       font.encoding = options[:encoding] || 'WinAnsiEncoding'
+      font.encoding = 'WinAnsiEncoding' if font.encoding.casecmp('CP1252') == 0
       font.sub_type = options[:sub_type] || 'Type1'
       punc = (font.sub_type == 'TrueType') ? ',' : '-'
       full_name = name.gsub(' ','')
@@ -1667,7 +1668,14 @@ module EideticPDF
         if PdfObjects::PdfFont.standard_encoding?(font.encoding)
           f.encoding = font.encoding
         else
-          raise Exception.new("Unsupported encoding #{font.encoding}")
+          encoding = @doc.encodings[font.encoding]
+          if encoding.nil?
+            encoding = PdfObjects::PdfFontEncoding.new(@doc.next_seq, 0, 'WinAnsiEncoding', metrics.differences)
+            @doc.encodings[font.encoding] = encoding
+            @doc.file.body << encoding
+          end
+          f.encoding = encoding.reference_object
+          # raise Exception.new("Unsupported encoding #{font.encoding}")
         end
         @doc.resources.fonts[page_font] = f.reference_object
         @doc.fonts[font_key] = page_font
