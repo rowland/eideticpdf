@@ -3102,6 +3102,16 @@ module EideticPDF
 
     STANDARD_ENCODINGS = ['WinAnsiEncoding','StandardEncoding','MacRomanEncoding','MacExpertEncoding']
 
+    # GlyphList = File.join(File.dirname(__FILE__), 'glyphlist.txt')
+    # if File.exist?(GlyphList)
+    #   GLYPHS.clear
+    #   File.foreach(GlyphList) do |line|
+    #     if line =~ /^(\w+);(\w{4})$/
+    #       codepoint = $2.to_i(16)
+    #       GLYPHS[codepoint] = $1 unless GLYPHS[codepoint]
+    #     end
+    #   end
+    # end
   module_function
     def font_index(font_name)
       FONT_NAMES.index(font_name)
