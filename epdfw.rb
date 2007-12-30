@@ -7,6 +7,7 @@ require 'epdfo'
 require 'epdfk'
 require 'epdft'
 require 'epdfafm'
+require 'epdftt'
 
 module EideticPDF
   Font = Struct.new(:name, :size, :style, :color, :encoding, :sub_type, :widths, :ascent, :descent, :height)
@@ -1624,6 +1625,10 @@ module EideticPDF
       @doc.type1_font_names
     end
 
+    def truetype_font_names
+      @doc.truetype_font_names
+    end
+
     def select_font(name, size, options={})
       font = Font.new
       font.name = name
@@ -1643,13 +1648,19 @@ module EideticPDF
         else
           metrics = AFM::font_metrics(full_name, :encoding => font.encoding)
         end
-        font.widths = metrics.widths
-        font.ascent = metrics.ascent
-        font.descent = metrics.descent
-        font.height = font.ascent + font.descent.abs
+      elsif font.sub_type == 'TrueType'
+        if @options[:built_in_fonts]
+          metrics = PdfTT::font_metrics(full_name)
+        else
+          raise Exception.new("Non-built-in TrueType fonts not supported yet.")
+        end
       else
         raise Exception.new("Unsupported subtype #{font.sub_type}.")
       end
+      font.widths = metrics.widths
+      font.ascent = metrics.ascent
+      font.descent = metrics.descent
+      font.height = font.ascent + font.descent.abs
       page_font = @doc.fonts[font_key]
       unless page_font
         widths = nil
@@ -2105,6 +2116,14 @@ module EideticPDF
         PdfK::FONT_NAMES
       else
         AFM::font_names
+      end
+    end
+
+    def truetype_font_names
+      if @options[:built_in_fonts]
+        PdfTT::FONT_NAMES
+      else
+        raise Exception.new("Non-built-in TrueType fonts not supported yet.")
       end
     end
 

@@ -8,8 +8,6 @@ require 'epdfo'
 
 module EideticPDF
   module AFM
-    FontMetrics = Struct.new(:needs_descriptor, :widths, :ascent, :descent, :flags, :b_box, :missing_width,
-      :stem_v, :stem_h, :italic_angle, :cap_height, :x_height, :leading, :max_width, :avg_width, :differences)
     # AfmChar = Struct.new(:code, :name, :w0x, :w1x, :w0y, :w1y, :w0, :w1, :vv, :b, :l)
     AfmChar = Struct.new(:code, :name, :width)
     FontPath = [File.join(File.dirname(__FILE__), 'fonts')]
@@ -216,7 +214,7 @@ module EideticPDF
       missing_width = 0 # for CJK charsets only?
       leading = 0 # for CJK charsets only?
       cwidths = widths.compact.extend(Statistics)
-      fm = FontMetrics.new(needs_descriptor, widths, afm.ascender, afm.descender, afm.flags, afm.font_b_box, missing_width,
+      fm = PdfK::FontMetrics.new(needs_descriptor, widths, afm.ascender, afm.descender, afm.flags, afm.font_b_box, missing_width,
         afm.std_v_w, afm.std_h_w, afm.italic_angle, afm.cap_height, afm.x_height, leading, cwidths.max, cwidths.avg, differences)
       fm
     end

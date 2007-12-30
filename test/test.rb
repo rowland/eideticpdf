@@ -7,6 +7,7 @@ $: << File.dirname(__FILE__) + '/../'
 require 'epdfw'
 
 TestImg = File.join(File.dirname(__FILE__), 'testimg.jpg')
+BuiltInFonts = true
 
 def grid(w, width, height, xoff, yoff, step=1)
   w.path(:stroke => true) do
@@ -74,12 +75,22 @@ def circles_and_rectangles(w)
   w.close_page
 end
 
-def font_names(w)
+def type1_font_names(w)
   w.page(:units => :cm, :margins => [1,2]) do |p|
     p.type1_font_names.sort.each_with_index do |font_name, index|
       p.move_to(p.canvas_width / 2, 0) if index == 39
       encoding = ['Symbol','ZapfDingbats'].include?(font_name) ? 'StandardEncoding' : 'WinAnsiEncoding'
       p.font(font_name, 12, :encoding => encoding)
+      p.puts(font_name)
+    end
+  end
+end
+
+def truetype_font_names(w)
+  w.page(:units => :cm, :margins => [1,2]) do |p|
+    p.truetype_font_names.sort.each_with_index do |font_name, index|
+      p.move_to(p.canvas_width / 2, 0) if index == 40
+      p.font(font_name, 12, :sub_type => 'TrueType')
       p.puts(font_name)
     end
   end
@@ -538,7 +549,7 @@ start = Time.now
 docw = EideticPDF::DocumentWriter.new
 
 # docw.doc(:font => { :name => 'Courier', :size => 10 }, :orientation => :landscape, :pages_up => [3, 2]) do |w|
-docw.doc(:font => { :name => 'Courier', :size => 10 }, :built_in_fonts => false) do |w|
+docw.doc(:font => { :name => 'Courier', :size => 10 }, :built_in_fonts => BuiltInFonts) do |w|
   stars(w)
   polygons(w)
   pies(w)
@@ -555,11 +566,12 @@ docw.doc(:font => { :name => 'Courier', :size => 10 }, :built_in_fonts => false)
   cm_grid(w)
   inch_grid(w)
   dp_grid(w)
-  font_names(w)
+  type1_font_names(w)
+  truetype_font_names(w)
   images(w)
   clipping(w)
   text_clipping(w)
-  text_encodings(w)
+  text_encodings(w) unless BuiltInFonts
   landscape_orientation(w)
 end
 
@@ -568,4 +580,3 @@ File.open("test.pdf","w") { |f| f.write(docw) }
 elapsed = Time.now - start
 puts "Elapsed: #{(elapsed * 1000).round} ms"
 `open test.pdf`
-#print docw

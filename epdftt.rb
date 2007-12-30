@@ -3,6 +3,8 @@
 #  Created by Brent Rowland on 2007-08-26.
 #  Copyright (c) 2007, Eidetic Software. All rights reserved.
 
+require 'epdfk'
+
 module EideticPDF
   module PdfTT
     NUM_FONTS = 12
@@ -331,22 +333,26 @@ module EideticPDF
         600,  600,  600,  600,  600,  600,  600,  600,  600,  600,  # 220 
         600,  600,  600,  600,  600,  600,  600,  600,  600,  600,  # 230 
         600,  600,  600,  600,  600,  600,  600,  600,  600,  600,  # 240 
-        600,  600,  600,  600,  600,  600]]                         # 250 
+        600,  600,  600,  600,  600,  600]                          # 250 
+    ]
 
     FONT_ASCENDERS = [
       905, 905, 905, 905,
       891, 891, 891, 891,
-      833, 833, 833, 833]
+      833, 833, 833, 833
+    ]
 
     FONT_DESCENDERS = [
       -212, -212, -212, -212,
       -216, -216, -216, -216,
-      -300, -300, -300, -300]
+      -300, -300, -300, -300
+    ]
 
     FONT_FLAGS = [
       32, 16416, 96, 16480,
       34, 16418, 98, 16482,
-      34, 16418, 98, 16482]
+      34, 16418, 98, 16482
+    ]
 
     FONT_BBOXES = [
       [ -250, -212, 1213, 1000 ],
@@ -360,52 +366,62 @@ module EideticPDF
       [ -250, -300, 767, 1000 ],
       [ -250, -300, 719, 1000 ],
       [ -250, -300, 739, 1000 ],
-      [ -250, -300, 712, 1000 ]]
+      [ -250, -300, 712, 1000 ]
+    ]
 
     FONT_ITALIC_ANGLES = [
       0, 0, -11, -11,
       0, 0, -11, -11,
-      0, 0, -11, -11]
+      0, 0, -11, -11
+    ]
 
     FONT_STEM_VS = [
       80, 153, 80, 153,
       73, 136, 73, 131,
-      109, 191, 109, 191]
+      109, 191, 109, 191
+    ]
 
     FONT_X_HEIGHTS = [
       453, 453, 453, 453,
       446, 446, 446, 446,
-      417, 417, 417, 417]
+      417, 417, 417, 417
+    ]
 
     FONT_MISSING_WIDTHS = [
       277, 321, 277, 329,
       321, 250, 376, 325,
-      639, 599, 616, 593]
+      639, 599, 616, 593
+    ]
 
     FONT_STEM_HS = [
       80, 153, 80, 153,
       73, 136, 73, 131,
-      109, 191, 109, 191]
+      109, 191, 109, 191
+    ]
 
     FONT_LEADINGS = [
       150, 150, 150, 150,
       149, 149, 149, 149,
-      133, 133, 133, 133]
+      133, 133, 133, 133
+    ]
 
     FONT_MAX_WIDTHS = [
       1011, 965, 1011, 987,
       965, 977, 965, 976,
-      639, 599, 616, 593]
+      639, 599, 616, 593
+    ]
 
     FONT_AVG_WIDTHS = [
       441, 479, 441, 479,
       401, 427, 402, 412,
-      600, 600, 600, 600]
+      600, 600, 600, 600
+    ]
 
     FONT_CAP_HEIGHTS = [
       905, 905, 905, 905,
       891, 891, 891, 891,
-      833, 833, 833, 833]
+      833, 833, 833, 833
+    ]
 
     FONT_NAMES = [
       'Arial',
@@ -419,10 +435,21 @@ module EideticPDF
       'CourierNew',
       'CourierNew,Bold',
       'CourierNew,Italic',
-      'CourierNew,BoldItalic']
+      'CourierNew,BoldItalic'
+    ]
 
+  module_function
     def font_index(font_name)
       FONT_NAMES.index(font_name)
+    end
+
+    def font_metrics(font_name)
+      index = font_index(font_name)
+      raise Exception.new("Unknown font #{font_name}.") unless index
+      needs_descriptor = index >= 12
+      PdfK::FontMetrics.new(needs_descriptor, FONT_WIDTHS[index], FONT_ASCENDERS[index], FONT_DESCENDERS[index], FONT_FLAGS[index], FONT_BBOXES[index], 
+        FONT_MISSING_WIDTHS[index], FONT_STEM_VS[index], FONT_STEM_HS[index], FONT_ITALIC_ANGLES[index], 
+        FONT_CAP_HEIGHTS[index], FONT_X_HEIGHTS[index], FONT_LEADINGS[index], FONT_MAX_WIDTHS[index], FONT_AVG_WIDTHS[index])
     end
   end
 end

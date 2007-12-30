@@ -6,7 +6,7 @@
 module EideticPDF
   module PdfK
     FontMetrics = Struct.new(:needs_descriptor, :widths, :ascent, :descent, :flags, :b_box, :missing_width,
-      :stem_v, :stem_h, :italic_angle, :cap_height, :x_height, :leading, :max_width, :avg_width)
+      :stem_v, :stem_h, :italic_angle, :cap_height, :x_height, :leading, :max_width, :avg_width, :differences)
     NUM_BASE_FONTS = 39
     NUM_ASIAN_FONTS = 7
     NUM_FONTS = NUM_BASE_FONTS + NUM_ASIAN_FONTS
