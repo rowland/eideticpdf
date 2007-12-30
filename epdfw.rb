@@ -570,12 +570,12 @@ module EideticPDF
       end
     end
 
-    def check_set_scale
-      unless @scale == @last_scale
-        tw.set_horiz_scaling(@scale)
-        @last_scale = @scale
-      end
-    end
+    # def check_set_scale
+    #   unless @scale == @last_scale
+    #     tw.set_horiz_scaling(@scale)
+    #     @last_scale = @scale
+    #   end
+    # end
 
     def text_rendering_mode(options)
       if options[:fill] and options[:stroke]
@@ -687,9 +687,11 @@ module EideticPDF
 
     def check_set(*options)
       check_set_line_color if options.include?(:line_color)
+      check_set_fill_color if options.include?(:fill_color)
       check_set_line_width if options.include?(:line_width)
       check_set_line_dash_pattern if options.include?(:line_dash_pattern)
-      check_set_fill_color if options.include?(:fill_color)
+      check_set_font if options.include?(:font)
+      check_set_font_color if options.include?(:font_color)
     end
 
     class ColorStack
@@ -1052,7 +1054,7 @@ module EideticPDF
 
       check_set(:line_color, :line_width, :line_dash_pattern)
 
-      gw.move_to(to_points(@units, @loc.x), to_points(@units, @loc.y)) unless @loc == @last_loc # @in_path
+      gw.move_to(to_points(@units, @loc.x), to_points(@units, @loc.y)) unless (@loc == @last_loc) and @in_path
       i = 1
       while i + 2 < points.size
         gw.curve_to(
@@ -1474,8 +1476,9 @@ module EideticPDF
       elsif @loc != @last_loc
         tw.move_by(to_points(@units, @loc.x - @last_loc.x), to_points(@units, @loc.y - @last_loc.y))
       end
-      check_set_font
-      check_set_font_color
+      check_set(:font, :font_color, :line_color)
+      # check_set_font
+      # check_set_font_color
       check_set_v_text_align
       check_set_spacing
       check_set_scale
