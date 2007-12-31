@@ -7,7 +7,7 @@ $: << File.dirname(__FILE__) + '/../'
 require 'epdfw'
 
 TestImg = File.join(File.dirname(__FILE__), 'testimg.jpg')
-BuiltInFonts = true
+BuiltInFonts = false
 
 def grid(w, width, height, xoff, yoff, step=1)
   w.path(:stroke => true) do
@@ -78,7 +78,7 @@ end
 def type1_font_names(w)
   w.page(:units => :cm, :margins => [1,2]) do |p|
     p.type1_font_names.sort.each_with_index do |font_name, index|
-      p.move_to(p.canvas_width / 2, 0) if index == 39
+      p.move_to(p.canvas_width / 2, 0) if index == 40
       encoding = ['Symbol','ZapfDingbats'].include?(font_name) ? 'StandardEncoding' : 'WinAnsiEncoding'
       p.font(font_name, 12, :encoding => encoding)
       p.puts(font_name)
@@ -567,7 +567,7 @@ docw.doc(:font => { :name => 'Courier', :size => 10 }, :built_in_fonts => BuiltI
   inch_grid(w)
   dp_grid(w)
   type1_font_names(w)
-  truetype_font_names(w)
+  truetype_font_names(w) if BuiltInFonts
   images(w)
   clipping(w)
   text_clipping(w)

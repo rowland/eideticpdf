@@ -2908,6 +2908,8 @@ module EideticPDF
       0x03B6 => 'zeta'
     }
 
+    CODEPOINTS = GLYPHS.invert
+
     FONT_NAMES = [
       'Helvetica',
       'Helvetica-Bold',

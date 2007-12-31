@@ -19,6 +19,23 @@ module EideticPDF
   LINE_PATTERNS = { :solid => [], :dotted => [1, 2], :dashed => [4, 2] }
   IDENTITY_MATRIX = [1, 0, 0, 1, 0, 0].freeze
 
+  class ColorStack
+    def initialize(obj, prop)
+      @obj, @prop = obj, prop
+      @stack = []
+    end
+
+    def push(color)
+      @stack.push @obj.send(@prop)
+      @obj.send(@prop, color) if color.respond_to?(:to_int) or color.respond_to?(:to_str)
+    end
+
+    def pop
+      color = @stack.pop
+      @obj.send(@prop, color) if color.respond_to?(:to_int) or color.respond_to?(:to_str)
+    end
+  end
+
   class PageStyle
     attr_reader :page_size, :crop_size, :orientation, :landscape, :rotate
 
@@ -291,6 +308,10 @@ module EideticPDF
       @stream << "(%s) Tj\n" % PdfObjects::PdfString.escape(s)
     end
 
+    def show_wide(ws)
+      @stream << "(%s) Tj\n" % PdfObjects::PdfString.escape_wide(ws)
+    end
+
     def next_line_show(s)
       @stream << "(%s) '" % PdfObjects::PdfString.escape(s)
     end
@@ -306,6 +327,20 @@ module EideticPDF
 
   class PageWriter
   private
+    def iconv_encoding(encoding)
+      case encoding
+      when 'WinAnsiEncoding': 'CP1252'
+      else encoding
+      end
+    end
+
+    def pdf_encoding(encoding)
+      case encoding.upcase
+      when 'CP1252': 'WinAnsiEncoding'
+      else encoding
+      end
+    end
+
     def even?(n)
       n % 2 == 0
     end
@@ -693,23 +728,6 @@ module EideticPDF
       check_set_line_dash_pattern if options.include?(:line_dash_pattern)
       check_set_font if options.include?(:font)
       check_set_font_color if options.include?(:font_color)
-    end
-
-    class ColorStack
-      def initialize(obj, prop)
-        @obj, @prop = obj, prop
-        @stack = []
-      end
-
-      def push(color)
-        @stack.push @obj.send(@prop)
-        @obj.send(@prop, color) if color.respond_to?(:to_int) or color.respond_to?(:to_str)
-      end
-
-      def pop
-        color = @stack.pop
-        @obj.send(@prop, color) if color.respond_to?(:to_int) or color.respond_to?(:to_str)
-      end
     end
 
     def line_colors
@@ -1485,7 +1503,12 @@ module EideticPDF
       check_set_scale
       check_set_text_rendering_mode
 
-      tw.show(text)
+      if @ic.nil?
+        tw.show(text)
+      else
+        text = @ic.iconv(text)
+        tw.show_wide(text)
+      end
       @last_loc = @loc.clone
       if angle == 0.0
         @loc.x += width(text)
@@ -1526,9 +1549,16 @@ module EideticPDF
       set_default_font if @font.nil?
       result = 0.0
       fsize = @font.size * 0.001
-      text.each_byte do |b|
-        result += fsize * @font.widths[b] + @char_spacing
-        result += @word_spacing if b == 32 # space
+      if @ic.nil?
+        text.each_byte do |b|
+          result += fsize * @font.widths[b] + @char_spacing
+          result += @word_spacing if b == 32 # space
+        end
+      else
+        text.unpack('n*').each do |cp|
+          result += fsize * @font.widths[cp] + @char_spacing
+          result += @word_spacing if cp == 32 # space
+        end
       end
       from_points(@units, result - @char_spacing)
     end
@@ -1630,13 +1660,11 @@ module EideticPDF
     end
 
     def select_font(name, size, options={})
-      font = Font.new
-      font.name = name
-      font.size = size
-      font.style = options[:style] || ''
-      font.color = options[:color]
-      font.encoding = options[:encoding] || 'WinAnsiEncoding'
-      font.encoding = 'WinAnsiEncoding' if font.encoding.casecmp('CP1252') == 0
+      unless @ic.nil?
+        @ic.close
+        @ic = nil
+      end
+      font = Font.new(name, size, options[:style] || '', options[:color], pdf_encoding(options[:encoding] || 'WinAnsiEncoding'))
       font.sub_type = options[:sub_type] || 'Type1'
       punc = (font.sub_type == 'TrueType') ? ',' : '-'
       full_name = name.gsub(' ','')
@@ -1654,12 +1682,14 @@ module EideticPDF
         else
           raise Exception.new("Non-built-in TrueType fonts not supported yet.")
         end
+      elsif font.sub_type == 'Type0'
+        metrics = AFM::font_metrics(full_name, :encoding => :unicode)
+        require 'iconv'
+        @ic = Iconv.new('UCS-2BE', iconv_encoding(font.encoding))
       else
         raise Exception.new("Unsupported subtype #{font.sub_type}.")
       end
-      font.widths = metrics.widths
-      font.ascent = metrics.ascent
-      font.descent = metrics.descent
+      font.widths, font.ascent, font.descent = metrics.widths, metrics.ascent, metrics.descent
       font.height = font.ascent + font.descent.abs
       page_font = @doc.fonts[font_key]
       unless page_font

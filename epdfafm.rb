@@ -196,14 +196,15 @@ module EideticPDF
       else
         encoding = options[:encoding] || 'WinAnsiEncoding'
         needs_descriptor = !(0...14).include?(PdfK::font_index(afm.font_name)) || !PdfK::STANDARD_ENCODINGS.include?(encoding)
-        # $stdout.puts "needs descriptor: #{needs_descriptor}"
       end
-      if needs_descriptor
-        differences = glyph_differences_for_encodings('WinAnsiEncoding', encoding)
-      else
-        differences = nil
-      end
-      if encoding.nil? or encoding == 'StandardEncoding'
+      missing_width = 0 # for CJK charsets only?
+      leading = 0 # for CJK charsets only?
+      if encoding == :unicode
+        widths = Hash.new(missing_width)
+        afm.chars_by_name.each do |name, ch|
+          widths[PdfK::CODEPOINTS[name]] = ch.width
+        end
+      elsif encoding.nil? or encoding == 'StandardEncoding'
         widths = Array.new(256, 0)
         afm.chars_by_code.each do |ch|
           widths[ch.code] = ch.width unless ch.nil?
@@ -211,8 +212,11 @@ module EideticPDF
       else
         widths = widths_for_encoding(encoding, afm.chars_by_name)
       end
-      missing_width = 0 # for CJK charsets only?
-      leading = 0 # for CJK charsets only?
+      if needs_descriptor and encoding != :unicode
+        differences = glyph_differences_for_encodings('WinAnsiEncoding', encoding)
+      else
+        differences = nil
+      end
       cwidths = widths.compact.extend(Statistics)
       fm = PdfK::FontMetrics.new(needs_descriptor, widths, afm.ascender, afm.descender, afm.flags, afm.font_b_box, missing_width,
         afm.std_v_w, afm.std_h_w, afm.italic_angle, afm.cap_height, afm.x_height, leading, cwidths.max, cwidths.avg, differences)

@@ -173,7 +173,11 @@ module EideticPDF
       end
 
       def self.escape(string)
-        #string.gsub(/[()\\]/,"\\\\1")
+        string.gsub('\\','\\\\\\').gsub('(','\\(').gsub(')','\\)')
+      end
+
+      # TODO: What kind of changes are needed here?
+      def self.escape_wide(string)
         string.gsub('\\','\\\\\\').gsub('(','\\(').gsub(')','\\)')
       end
 

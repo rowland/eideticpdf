@@ -19,6 +19,15 @@ class PdfKTestCases < Test::Unit::TestCase
     assert_not_nil(PdfK::font_metrics('Helvetica'))
     assert_raise(Exception) { PdfK::font_metrics('BogusFontName') }
   end
+  
+  def test_glyphs
+    assert_equal('space', PdfK::GLYPHS[32])
+  end
+
+  def test_codepoints
+    assert_equal(32, PdfK::CODEPOINTS['space'])
+    # assert_equal(PdfK::GLYPHS.size, PdfK::CODEPOINTS.size) # 1051 != 1035
+  end
 end
 
 class FontMetricsTestCases < Test::Unit::TestCase
