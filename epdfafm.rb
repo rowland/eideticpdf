@@ -32,6 +32,7 @@ module EideticPDF
 
       def load_afm(lines)
         lines.each do |line|
+          break if @kern_data_started
           if @char_metrics_started
             load_char_metrics(line)
           else
@@ -110,65 +111,73 @@ module EideticPDF
     protected
       def load_line(line)
         case line
-        when /FontName\s+(.*)$/
+        when /^FontName\s+(.*)$/
           @font_name = $1.chomp
-        when /FullName\s+(.*)/
+        when /^FullName\s+(.*)/
           @full_name = $1.chomp
-        when /FamilyName\s+(.*)/
+        when /^FamilyName\s+(.*)/
           @family_name = $1.chomp
-        when /Weight\s+(\w+)/
+        when /^Weight\s+(\w+)/
           @weight = $1
-        when /ItalicAngle\s+(-?\d+(\.\d+)?)/
+        when /^ItalicAngle\s+(-?\d+(\.\d+)?)/
           @italic_angle = $1.to_f
-        when /IsFixedPitch\s+(\w+)/
+        when /^IsFixedPitch\s+(\w+)/
           @is_fixed_pitch = ($1 == 'true')
-        when /CharacterSet\s+(\w+)/
+        when /^CharacterSet\s+(\w+)/
           @character_set = $1
-        when /FontBBox((\s+-?\d+){4})/
+        when /^FontBBox((\s+-?\d+){4})/
           @font_b_box = $1.split.map { |d| d.to_i }
-        when /UnderlinePosition\s+(-?\d+)/
+        when /^UnderlinePosition\s+(-?\d+)/
           @underline_position = $1.to_i
-        when /UnderlineThickness\s+(\d+)/
+        when /^UnderlineThickness\s+(\d+)/
           @underline_thickness = $1.to_i
-        when /Version\s+(.*)/
+        when /^Version\s+(.*)/
           @version = $1.chomp
-        when /Notice\s+(.*)/
+        when /^Notice\s+(.*)/
           @notice = $1.chomp
-        when /EncodingScheme\s+(\w+)/
+        when /^EncodingScheme\s+(\w+)/
           @encoding_scheme = $1
-        when /CapHeight\s+(\d+)/
+        when /^CapHeight\s+(\d+)/
           @cap_height = $1.to_i
-        when /XHeight\s+(\d+)/
+        when /^XHeight\s+(\d+)/
           @x_height = $1.to_i
-        when /Ascender\s+(\d+)/
+        when /^Ascender\s+(\d+)/
           @ascender = $1.to_i
-        when /Descender\s+(-?\d+)/
+        when /^Descender\s+(-?\d+)/
           @descender = $1.to_i
-        when /StdHW\s+(\d+)/
+        when /^StdHW\s+(\d+)/
           @std_h_w = $1.to_i
-        when /StdVW\s+(\d+)/
+        when /^StdVW\s+(\d+)/
           @std_v_w = $1.to_i
-        when /StartCharMetrics/
+        when /^StartCharMetrics/
           @chars_by_name = {}
           @chars_by_code = []
           @char_metrics_started = true
-        when /Serif\s+(\w+)/
+        when /^Serif\s+(\w+)/
           @serif = ($1 == 'true')
+        when /^StartKernData/
+          @kern_data_started = true
         end
       end
 
       def load_char_metrics(line)
-        if line =~ /EndCharMetrics/
+        if line =~ /^EndCharMetrics/
           @char_metrics_started = false
         else
           ch = AfmChar.new
-          line.split(';').map { |kv| kv.strip }.each do |kv|
-            k, v = kv.split
-            case k
-            when 'C': ch.code = v.to_i
-            when 'CH': ch.code = v[1..-2].to_i(16)
-            when 'WX', 'W0X': ch.width = v.to_i
-            when 'N': ch.name = v
+          if line =~ /^C\s+(-?\d+)\s*;\s*WX\s+(\d+)\s*;\s*N\s+(\w+)/
+            ch.code = $1.to_i
+            ch.width = $2.to_i
+            ch.name = $3
+          else
+            line.split(';').map { |kv| kv.strip }.each do |kv|
+              k, v = kv.split
+              case k
+              when 'C': ch.code = v.to_i
+              when 'CH': ch.code = v[1..-2].to_i(16)
+              when 'WX', 'W0X': ch.width = v.to_i
+              when 'N': ch.name = v
+              end
             end
           end
           raise Exception.new("bad: #{kv}") if ch.name.nil? or ch.code.nil?
