@@ -82,17 +82,17 @@ class AdobeFontMetricsTestCases < Test::Unit::TestCase
   end
 
   def test_codepoints_for_encoding
-    codepoints = codepoints_for_encoding('WinAnsiEncoding')
+    codepoints = Codepoints.for_encoding('WinAnsiEncoding')
     assert_equal(32, codepoints[32])
     assert_equal(65, codepoints[65])
   end
 
   def test_glyphs_for_codepoints
-    assert_equal(['space', 'A'], glyphs_for_codepoints([32,65]))
+    assert_equal(['space', 'A'], Glyphs.for_codepoints([32,65]))
   end
 
   def test_glyphs_for_encoding
-    glyphs = glyphs_for_encoding('WinAnsiEncoding')
+    glyphs = Glyphs.for_encoding('WinAnsiEncoding')
     assert_equal(256, glyphs.size, "Wrong number of glyphs")
     assert_equal('space', glyphs[32])
     assert_equal('A', glyphs[65])
@@ -101,8 +101,8 @@ class AdobeFontMetricsTestCases < Test::Unit::TestCase
   def test_widths_for_glyphs
     afm = AdobeFontMetrics.find_font('Helvetica-BoldOblique')
     assert_not_nil(afm, "Font not found.")
-    glyphs = glyphs_for_encoding('WinAnsiEncoding')
-    widths = widths_for_glyphs(glyphs, afm.chars_by_name)
+    glyphs = Glyphs.for_encoding('WinAnsiEncoding')
+    widths = Glyphs.widths_for_glyphs(glyphs, afm.chars_by_name)
     assert_equal(278, widths[32])
     assert_equal(722, widths[65])
   end
@@ -110,7 +110,7 @@ class AdobeFontMetricsTestCases < Test::Unit::TestCase
   def test_widths_for_encoding
     afm = AdobeFontMetrics.find_font('Helvetica-BoldOblique')
     assert_not_nil(afm, "Font not found.")
-    widths = widths_for_encoding('WinAnsiEncoding', afm.chars_by_name)
+    widths = Glyphs.widths_for_encoding('WinAnsiEncoding', afm.chars_by_name)
     assert_equal(278, widths[32])
     assert_equal(722, widths[65])
   end

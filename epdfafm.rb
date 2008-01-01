@@ -12,6 +12,64 @@ module EideticPDF
     AfmChar = Struct.new(:code, :name, :width)
     FontPath = [File.join(File.dirname(__FILE__), 'fonts')]
 
+    class Codepoints
+      def self.for_encoding(encoding)
+        require 'iconv'
+        encoding = 'CP1252' if encoding == 'WinAnsiEncoding'
+        @@codepoints_by_encoding ||= {}
+        @@codepoints_by_encoding[encoding] ||= Iconv.open("UCS-2BE//IGNORE", encoding) do |ic|
+          (0..255).map { |c| ic.iconv(c.chr) }.map { |s| s.unpack('n') }.map { |a| a.first }
+        end
+      end
+    end
+
+    class Glyphs
+      def self.for_codepoints(codepoints)
+        codepoints.map { |codepoint| PdfK::glyph_name(codepoint) }
+      end
+
+      def self.for_encoding(encoding)
+        @@glyphs_by_encoding ||= {}
+        @@glyphs_by_encoding[encoding] ||= for_codepoints(Codepoints.for_encoding(encoding))
+      end
+
+      def self.widths_for_glyphs(glyphs, chars_by_name)
+        glyphs.map { |glyph| (ch = chars_by_name[glyph]) ? ch.width : 0 }
+      end
+
+      def self.widths_for_encoding(encoding, chars_by_name)
+        widths_for_glyphs(for_encoding(encoding), chars_by_name)
+      end
+
+      def self.differences_for_encodings(encoding1, encoding2)
+        @@glyph_differences_for_encodings ||= {}
+        key = "#{encoding1}-#{encoding2}"
+        result = @@glyph_differences_for_encodings[key]
+        if result.nil?
+          glyphs1, glyphs2 = for_encoding(encoding1), for_encoding(encoding2)
+          diffs = []
+          same = true
+          1.upto(255) do |i|
+            if same
+              if (glyphs1[i] != glyphs2[i]) and !glyphs2[i].nil?
+                same = false
+                diffs << PdfObjects::PdfInteger.new(i)
+                diffs << PdfObjects::PdfName.new(glyphs2[i])
+              end
+            else
+              if glyphs1[i] == glyphs2[i]
+                same = true
+              else
+                diffs << PdfObjects::PdfName.new(glyphs2[i])
+              end
+            end
+          end
+          result = @@glyph_differences_for_encodings[key] = PdfObjects::PdfArray.new(diffs)
+        end
+        result
+      end
+    end
+
     class AdobeFontMetrics
       FixedPitch  = 0x01
       Serif       = 0x02
@@ -24,7 +82,7 @@ module EideticPDF
       ForceBold   = 0x40000
 
       attr_reader :font_name, :full_name, :family_name, :weight, :italic_angle, :is_fixed_pitch
-      attr_reader :font_b_box, :underline_position, :underline_thickness
+      attr_reader :font_b_box, :underline_position, :underline_thickness, :missing_width, :leading
       attr_reader :version, :notice
       attr_reader :character_set, :encoding_scheme
       attr_reader :cap_height, :x_height, :ascender, :descender, :std_h_w, :std_v_w, :serif
@@ -42,6 +100,8 @@ module EideticPDF
         # symbolic fonts don't specify ascender and descender, so borrow them from FontBBox
         @ascender ||= font_b_box[3]
         @descender ||= font_b_box[1]
+        @missing_width = 0 # for CJK charsets only?
+        @leading = 0 # for CJK charsets only?
         self
       end
 
@@ -69,6 +129,43 @@ module EideticPDF
 
       def italic
         @italic_angle != 0
+      end
+
+      def needs_descriptor(encoding)
+        if encoding_scheme == 'FontSpecific'
+          false
+        else
+          !(0...14).include?(PdfK::font_index(font_name)) || !PdfK::STANDARD_ENCODINGS.include?(encoding)
+        end
+      end
+
+      def differences(encoding)
+        if (encoding != :unicode) and needs_descriptor(encoding)
+          Glyphs.differences_for_encodings('WinAnsiEncoding', encoding)
+        else
+          false
+        end
+      end
+
+      def widths(encoding)
+        result = (@widths ||= {})[encoding]
+        if result.nil?
+          if encoding == :unicode
+            result = Hash.new(missing_width)
+            chars_by_name.each do |name, ch|
+              results[PdfK::CODEPOINTS[name]] = ch.width
+            end
+          elsif encoding.nil? or encoding == 'StandardEncoding'
+            result = Array.new(256, 0)
+            chars_by_code.each do |ch|
+              result[ch.code] = ch.width unless ch.nil?
+            end
+          else
+            result = Glyphs.widths_for_encoding(encoding, chars_by_name)
+          end
+          @widths[encoding] = result
+        end
+        result
       end
 
       def self.load(afm_file)
@@ -199,36 +296,13 @@ module EideticPDF
       end
       afm = AdobeFontMetrics.find_font(name) if afm.nil?
       raise Exception.new("Unknown font %s." % name) if afm.nil?
-      if afm.encoding_scheme == 'FontSpecific'
-        encoding = nil
-        needs_descriptor = false
-      else
-        encoding = options[:encoding] || 'WinAnsiEncoding'
-        needs_descriptor = !(0...14).include?(PdfK::font_index(afm.font_name)) || !PdfK::STANDARD_ENCODINGS.include?(encoding)
-      end
-      missing_width = 0 # for CJK charsets only?
-      leading = 0 # for CJK charsets only?
-      if encoding == :unicode
-        widths = Hash.new(missing_width)
-        afm.chars_by_name.each do |name, ch|
-          widths[PdfK::CODEPOINTS[name]] = ch.width
-        end
-      elsif encoding.nil? or encoding == 'StandardEncoding'
-        widths = Array.new(256, 0)
-        afm.chars_by_code.each do |ch|
-          widths[ch.code] = ch.width unless ch.nil?
-        end
-      else
-        widths = widths_for_encoding(encoding, afm.chars_by_name)
-      end
-      if needs_descriptor and encoding != :unicode
-        differences = glyph_differences_for_encodings('WinAnsiEncoding', encoding)
-      else
-        differences = nil
-      end
+      encoding = (afm.encoding_scheme == 'FontSpecific') ? nil : options[:encoding] || 'WinAnsiEncoding'
+      needs_descriptor = afm.needs_descriptor(encoding)
+      differences = afm.differences(encoding)
+      widths = afm.widths(encoding)
       cwidths = widths.compact.extend(Statistics)
-      fm = PdfK::FontMetrics.new(needs_descriptor, widths, afm.ascender, afm.descender, afm.flags, afm.font_b_box, missing_width,
-        afm.std_v_w, afm.std_h_w, afm.italic_angle, afm.cap_height, afm.x_height, leading, cwidths.max, cwidths.avg, differences)
+      fm = PdfK::FontMetrics.new(needs_descriptor, widths, afm.ascender, afm.descender, afm.flags, afm.font_b_box, afm.missing_width,
+        afm.std_v_w, afm.std_h_w, afm.italic_angle, afm.cap_height, afm.x_height, afm.leading, cwidths.max, cwidths.avg, differences)
       fm
     end
 
@@ -238,52 +312,6 @@ module EideticPDF
 
     def font_names(reload=false)
       AdobeFontMetrics.afm_cache(reload).map { |afm| afm.font_name }
-    end
-
-    def codepoints_for_encoding(encoding)
-      require 'iconv'
-      encoding = 'CP1252' if encoding == 'WinAnsiEncoding'
-      Iconv.open("UCS-2BE//IGNORE", encoding) do |ic|
-        (0..255).map { |c| ic.iconv(c.chr) }.map { |s| s.unpack('n') }.map { |a| a.first }
-      end
-    end
-
-    def glyphs_for_codepoints(codepoints)
-      codepoints.map { |codepoint| PdfK::glyph_name(codepoint) }
-    end
-
-    def glyphs_for_encoding(encoding)
-      glyphs_for_codepoints(codepoints_for_encoding(encoding))
-    end
-
-    def widths_for_glyphs(glyphs, chars_by_name)
-      glyphs.map { |glyph| (ch = chars_by_name[glyph]) ? ch.width : 0 }
-    end
-
-    def widths_for_encoding(encoding, chars_by_name)
-      widths_for_glyphs(glyphs_for_encoding(encoding), chars_by_name)
-    end
-
-    def glyph_differences_for_encodings(encoding1, encoding2)
-      glyphs1, glyphs2 = glyphs_for_encoding(encoding1), glyphs_for_encoding(encoding2)
-      result = []
-      same = true
-      1.upto(255) do |i|
-        if same
-          if (glyphs1[i] != glyphs2[i]) and !glyphs2[i].nil?
-            same = false
-            result << PdfObjects::PdfInteger.new(i)
-            result << PdfObjects::PdfName.new(glyphs2[i])
-          end
-        else
-          if glyphs1[i] == glyphs2[i]
-            same = true
-          else
-            result << PdfObjects::PdfName.new(glyphs2[i])
-          end
-        end
-      end
-      PdfObjects::PdfArray.new(result)
     end
 
     module Statistics
