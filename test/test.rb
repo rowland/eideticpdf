@@ -27,7 +27,7 @@ end
 def inch_grid(w, width=8, height=10, xoff=0.25, yoff=0.5)
   w.page(:units => :in) do |p|
     p.font("Helvetica", 10)
-    p.print_xy(0.25, 0.25, "Inch Squares")
+    p.print_xy(0.25, 0.25, "Inch Squares", :underline => true)
     grid(p, width, height, xoff, yoff)
   end
 end
@@ -35,7 +35,7 @@ end
 def cm_grid(w, width=20, height=26, xoff=0.75, yoff=1)
   w.page(:units => :cm) do |p|
     p.font("Helvetica", 10)
-    p.print_xy(0.5, 0.5, "Centimeter Squares")
+    p.print_xy(0.5, 0.5, "Centimeter Squares", :underline => true)
     grid(p, width, height, xoff, yoff)
   end
 end
@@ -45,7 +45,7 @@ def dp_grid(w, width=8000, height=10000, xoff=250, yoff=500)
   EideticPDF::UNIT_CONVERSION[:dp] = 0.072
   w.open_page(:units => :dp)
   w.font("Helvetica", 10)
-  w.print_xy(250, 250, "Dave Points Squares")
+  w.print_xy(250, 250, "Dave Points Squares", :underline => true)
   grid(w, width, height, xoff, yoff, 1000)
   w.close_page
 end
@@ -53,7 +53,7 @@ end
 def pt_units(w)
   w.page(:units => :pt) do |p|
     p.rectangle(1,1,p.page_width-2, p.page_height-2, :clip => true) do
-      p.print_xy(5, 5, "Point Units")
+      p.print_xy(5, 5, "Point Units", :underline => true)
 
       y = 24; size = 12
       while y < 700
@@ -67,7 +67,7 @@ end
 
 def circles_and_rectangles(w)
   w.open_page(:units => :in)
-  w.print_xy(0.5, 0.5, "Circles and Rectangles")
+  w.print_xy(0.5, 0.5, "Circles and Rectangles", :underline => true)
   w.rectangle(1, 1, 6.5, 9)
   w.rectangle(2, 2, 4.5, 7)
   w.circle(4.25, 5.5, 3.25)
@@ -99,7 +99,7 @@ end
 def print_text(w)
   w.open_page(:units => :cm, :margins => 1)
   w.font("Helvetica", 12)
-  w.print("Print Text")
+  w.print("Print Text", :underline => true)
 
   # test vertical text alignment
   w.move_to(0, 3); w.line_to(w.canvas_width, 3)
@@ -147,7 +147,7 @@ def print_angled_text(w)
     angle = 0
     while angle < 360
       p.move_to(4.25, 5.5)
-      p.print("     Text at #{angle} degrees", :angle => angle)
+      p.print("     Text at #{angle} degrees", :angle => angle, :underline => (angle == 45))
       angle += 45
     end
   end
@@ -156,14 +156,14 @@ end
 def landscape_orientation(w)
   w.page(:units => :in, :orientation => :landscape) do |p|
     p.font("Times-Roman", 12)
-    p.print_xy(0.5, 0.5, "Landscape Orientation")
+    p.print_xy(0.5, 0.5, "Landscape Orientation", :underline => true)
     p.rectangle(1, 1, p.page_width - 2, p.page_height - 2)
   end
 end
 
 def line_widths_and_patterns(w)
   w.page(:units => :cm) do |p|
-    p.print_xy(1, 1, "Line Widths and Patterns")
+    p.print_xy(1, 1, "Line Widths and Patterns", :underline => true)
     p.v_text_align :base
 
     0.upto(10) do |i|
@@ -232,7 +232,7 @@ end
 
 def arcs(w)
   w.page(:units => :in) do |p|
-    p.print_xy(0.5, 0.5, "Arcs")
+    p.print_xy(0.5, 0.5, "Arcs", :underline => true)
 
     x1, x2, y1, y2 = 4.0, 4.5, 2.25, 2.75
     s = 0
@@ -271,7 +271,7 @@ def filled_rectangles(w)
   pages.each_with_index do |page, page_index|
     w.open_page(:units => :in)
     w.font("Helvetica", 10)
-    w.print_xy(0.5, 0.5, "Filled Rectangles with Named Colors - #{page_index + 1}")
+    w.print_xy(0.5, 0.5, "Filled Rectangles with Named Colors - #{page_index + 1}", :underline => true)
     w.line_height 1.3
     page.each_with_index do |list, list_index|
       list.each_with_index do |name, name_index|
@@ -287,7 +287,7 @@ end
 
 def ellipses(w)
   w.page(:units => :in) do |p|
-    p.print_xy(0.5, 0.5, "Ellipses")
+    p.print_xy(0.5, 0.5, "Ellipses", :underline => true)
     p.ellipse(4.25, 5.5, 3.75, 3.25)
     p.ellipse(4.25, 5.5, 3.75, 4.5)
     p.ellipse(4.25, 5.5, 3, 2, :rotation => 45)
@@ -298,7 +298,7 @@ def filled_shapes(w)
   x1, x2, x3 = 0.75, 3.25, 5.75
   y1, y2, y3, y4 = 1.0, 3.5, 6.0, 8.5
   w.page(:units => :in) do |p|
-    p.print_xy(0.5, 0.5, "Filled Shapes")
+    p.print_xy(0.5, 0.5, "Filled Shapes", :underline => true)
     p.line_color 'Black'
     p.fill_color 'LightSteelBlue'
 
@@ -343,7 +343,7 @@ end
 
 def compound_paths(w)
   w.page(:units => :in) do |p|
-    p.print_xy(0.5, 0.5, "Compound Paths")
+    p.print_xy(0.5, 0.5, "Compound Paths", :underline => true)
     p.fill_color 'LightSteelBlue'
 
     # filled rectangle w/ only 3 borders
@@ -379,7 +379,7 @@ end
 
 def pies(w)
   w.page(:units => :in) do |p|
-    p.print_xy(0.5, 0.5, "Pies")
+    p.print_xy(0.5, 0.5, "Pies", :underline => true)
     p.line_color 0
 
     p.path(:fill => true, :stroke => true) do
@@ -393,7 +393,7 @@ def pies(w)
     
     p.pie(4.25, 3.25, 2, 270, 360, :fill => 'MediumSeaGreen')
 
-    p.print_xy(0.5, 6, "Arches")
+    p.print_xy(0.5, 6, "Arches", :underline => true)
     p.arch(4, 8, 1.5, 2, 0, 90, :fill => 'MediumSeaGreen')
     p.arch(4, 8, 1, 1.5, 90, 180, :fill => 'Crimson')
     p.arch(4, 8, 0.5, 1, 0, 90, :fill => 'DarkOrange')
@@ -403,7 +403,7 @@ end
 
 def polygons(w)
   w.page(:units => :in) do |p|
-    p.print_xy(0.5, 0.5, "Polygons")
+    p.print_xy(0.5, 0.5, "Polygons", :underline => true)
     p.fill_color 'LightSteelBlue'
 
     x1, x2, x3 = 1.75, 4.25, 6.75
@@ -428,7 +428,7 @@ end
 
 def stars(w)
   w.page(:units => :in) do |p|
-    p.print_xy(0.5, 0.5, "Stars")
+    p.print_xy(0.5, 0.5, "Stars", :underline => true)
     p.fill_color 'LightSteelBlue'
 
     x1, x2, x3 = 1.75, 4.25, 6.75
@@ -453,7 +453,7 @@ end
 
 def images(w)
   w.page(:units => :in, :margins => 1) do |p|
-    p.print_xy(-0.5, -0.5, "Images")
+    p.print_xy(-0.5, -0.5, "Images", :underline => true)
     # natural size @ current location
     p.print_image_file(TestImg, 0, 0)
     # from a buffer at a specified position and width with auto-height
@@ -467,7 +467,7 @@ end
 def clipping(w)
   lorem = "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
   w.page(:units => :in, :margins => 1) do |p|
-    p.print_xy(-0.5, -0.5, "Clipping")
+    p.print_xy(-0.5, -0.5, "Clipping", :underline => true)
     # grid(p, 6.5, 9, 0, 0)
     p.star(1, 1, 1, 5, :border => false, :clip => true) do
       p.print_image_file(TestImg, 0, 0, nil, 2)
@@ -497,7 +497,7 @@ end
 
 def text_clipping(w)
   w.page(:units => :in, :margins => 1) do |p|
-    p.print_xy(-0.5, -0.5, "Text Clipping")
+    p.print_xy(-0.5, -0.5, "Text Clipping", :underline => true)
     # grid(p, 6.5, 9, 0, 0)
     p.font('Helvetica', 144, :style => 'Bold')
     p.print_xy(0.25, 0.5, "ROSE", :clip => true, :stroke => true) do
@@ -532,7 +532,7 @@ def text_encodings(w)
   ]
   fonts.each do |name, encoding|
     w.page(:units => :in, :margins => 0.5) do |p|
-      p.print "#{name} - #{encoding}"
+      p.print "#{name} - #{encoding}", :underline => true
       p.font name, 16, :encoding => encoding
       p.move_to 0, 0.5
       stops = (1..16).map { |stop| stop.quo(2.3) }

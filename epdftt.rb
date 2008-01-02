@@ -449,7 +449,8 @@ module EideticPDF
       needs_descriptor = index >= 12
       PdfK::FontMetrics.new(needs_descriptor, FONT_WIDTHS[index], FONT_ASCENDERS[index], FONT_DESCENDERS[index], FONT_FLAGS[index], FONT_BBOXES[index], 
         FONT_MISSING_WIDTHS[index], FONT_STEM_VS[index], FONT_STEM_HS[index], FONT_ITALIC_ANGLES[index], 
-        FONT_CAP_HEIGHTS[index], FONT_X_HEIGHTS[index], FONT_LEADINGS[index], FONT_MAX_WIDTHS[index], FONT_AVG_WIDTHS[index])
+        FONT_CAP_HEIGHTS[index], FONT_X_HEIGHTS[index], FONT_LEADINGS[index], FONT_MAX_WIDTHS[index], FONT_AVG_WIDTHS[index],
+        PdfK::UNDERLINE_POSITION, PdfK::UNDERLINE_THICKNESS)
     end
   end
 end

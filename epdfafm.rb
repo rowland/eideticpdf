@@ -302,7 +302,8 @@ module EideticPDF
       widths = afm.widths(encoding)
       cwidths = widths.compact.extend(Statistics)
       fm = PdfK::FontMetrics.new(needs_descriptor, widths, afm.ascender, afm.descender, afm.flags, afm.font_b_box, afm.missing_width,
-        afm.std_v_w, afm.std_h_w, afm.italic_angle, afm.cap_height, afm.x_height, afm.leading, cwidths.max, cwidths.avg, differences)
+        afm.std_v_w, afm.std_h_w, afm.italic_angle, afm.cap_height, afm.x_height, afm.leading, cwidths.max, cwidths.avg,
+        afm.underline_position, afm.underline_thickness, differences)
       fm
     end
 

@@ -10,7 +10,8 @@ require 'epdfafm'
 require 'epdftt'
 
 module EideticPDF
-  Font = Struct.new(:name, :size, :style, :color, :encoding, :sub_type, :widths, :ascent, :descent, :height)
+  Font = Struct.new(:name, :size, :style, :color, :encoding, :sub_type, :widths, :ascent, :descent, :height,
+    :underline_position, :underline_thickness)
   Location = Struct.new(:x, :y)
   Signs = Struct.new(:x, :y)
 
@@ -368,6 +369,10 @@ module EideticPDF
     def translate(x, y)
       Location.new(x, page_height - y)
     end
+    
+    def translate_p(p)
+      Location.new(p.x, page_height - p.y)
+    end
 
     def convert_units(loc, from_units, to_units)
       Location.new(
@@ -573,17 +578,14 @@ module EideticPDF
 
     def check_set_v_text_align(force=false)
       if force or @last_v_text_align != @v_text_align
-        if @v_text_align == :above
-          @tw.set_rise(-@font.height * 0.001 * @font.size)
-        elsif @v_text_align == :top
-          @tw.set_rise(-@font.ascent * 0.001 * @font.size)
-        elsif @v_text_align == :middle
-          @tw.set_rise(-@font.ascent * 0.001 * @font.size / 2.0)
-        elsif @v_text_align == :below
-          @tw.set_rise(-@font.descent * 0.001 * @font.size)
-        else # @v_text_align == :base
-          @tw.set_rise(0.0)
+        @v_text_align_pts = case @v_text_align
+        when :above  : -@font.height * 0.001 * @font.size
+        when :top    : -@font.ascent * 0.001 * @font.size
+        when :middle : -@font.ascent * 0.001 * @font.size / 2.0
+        when :below  : -@font.descent * 0.001 * @font.size
+        else 0.0 # :base
         end
+        @tw.set_rise(@v_text_align_pts)
         @last_v_text_align = @v_text_align
       end
     end
@@ -722,12 +724,16 @@ module EideticPDF
     end
 
     def check_set(*options)
-      check_set_line_color if options.include?(:line_color)
-      check_set_fill_color if options.include?(:fill_color)
-      check_set_line_width if options.include?(:line_width)
-      check_set_line_dash_pattern if options.include?(:line_dash_pattern)
-      check_set_font if options.include?(:font)
-      check_set_font_color if options.include?(:font_color)
+      check_set_line_color          if options.include?(:line_color)
+      check_set_fill_color          if options.include?(:fill_color)
+      check_set_line_width          if options.include?(:line_width)
+      check_set_line_dash_pattern   if options.include?(:line_dash_pattern)
+      check_set_font                if options.include?(:font)
+      check_set_font_color          if options.include?(:font_color)
+      check_set_v_text_align        if options.include?(:v_text_align)
+      check_set_spacing             if options.include?(:spacing)
+      check_set_scale               if options.include?(:scale)
+      check_set_text_rendering_mode if options.include?(:text_rendering_mode)
     end
 
     def line_colors
@@ -804,6 +810,20 @@ module EideticPDF
       line_to(x, y)
     end
 
+    def draw_underline(pos1, pos2, position, thickness)
+      # $stdout.puts "draw_underline: #{pos1.inspect}, #{pos2.inspect}, #{position}, #{thickness}"
+      # position and thickness are in points
+      if @units != :pt
+        pos1, pos2 = convert_units(pos1, @units, :pt), convert_units(pos2, @units, :pt)
+      end
+      save_units = units(:pt)
+      save_line_width = line_width(thickness)
+      move_to(pos1.x, pos1.y + position - @v_text_align_pts)
+      line_to(pos2.x, pos2.y + position - @v_text_align_pts)
+      line_width(save_line_width)
+      units(save_units)
+    end
+
   public
     DEFAULT_FONT = { :name => 'Helvetica', :size => 12 }
 
@@ -844,6 +864,7 @@ module EideticPDF
       line_width(options[:line_width] || 1.0, :pt)
       @text_angle = 0.0
       @auto_path = true
+      @underline = false
       start_misc
       sub_page(*options[:sub_page] + Array(options[:unscaled])) if options[:sub_page]
       margins(options[:margins] || 0)
@@ -881,7 +902,8 @@ module EideticPDF
       return @units if units.nil?
       @loc = convert_units(@loc, @units, units)
       @last_loc = convert_units(@last_loc, @units, units) unless @last_loc.nil?
-      @units = units
+      prev_units, @units = @units, units
+      prev_units
     end
 
     def margins(*margins)
@@ -1432,8 +1454,9 @@ module EideticPDF
         u, width = $&.to_sym, width.to_f
       else
         u = @units
-      end        
-      @line_width = to_points(u, width)
+      end
+      prev_line_width, @line_width = @line_width, to_points(u, width)
+      prev_line_width
     end
 
     def line_height(height=nil)
@@ -1450,10 +1473,11 @@ module EideticPDF
       return @line_color if color.nil?
       if color.is_a?(Array)
         r, g, b = color
-        @line_color = color_from_rgb(r, g, b)
+        prev_line_color, @line_color = @line_color, color_from_rgb(r, g, b)
       else
-        @line_color = color
-      end        
+        prev_line_color, @line_color = @line_color, color
+      end
+      prev_line_color
     end
 
     # def set_fill_color_rgb(red, green, blue)
@@ -1463,20 +1487,22 @@ module EideticPDF
       return @fill_color if color.nil?
       if color.is_a?(Array)
         r, g, b = color
-        @fill_color = color_from_rgb(r, g, b)
+        prev_fill_color, @fill_color = @fill_color, color_from_rgb(r, g, b)
       else
-        @fill_color = color
-      end        
+        prev_fill_color, @fill_color = @fill_color, color
+      end
+      prev_fill_color
     end
 
     def font_color(color=nil)
       return @font_color if color.nil?
       if color.is_a?(Array)
         r, g, b = color
-        @font_color = color_from_rgb(r, g, b)
+        prev_font_color, @font_color = @font_color, color_from_rgb(r, g, b)
       else
-        @font_color = color
-      end        
+        prev_font_color, @font_color = @font_color, color
+      end
+      prev_font_color
     end
 
     # text methods
@@ -1484,6 +1510,7 @@ module EideticPDF
       return if text.empty?
       angle = options[:angle] || 0.0
       @scale = options[:scale] || 1.0
+      prev_underline = underline(options[:underline]) unless options[:underline].nil?
       clip = options[:clip] and block_given?
       if clip
         gw.save_graphics_state
@@ -1495,13 +1522,7 @@ module EideticPDF
       elsif @loc != @last_loc
         tw.move_by(to_points(@units, @loc.x - @last_loc.x), to_points(@units, @loc.y - @last_loc.y))
       end
-      check_set(:font, :font_color, :line_color)
-      # check_set_font
-      # check_set_font_color
-      check_set_v_text_align
-      check_set_spacing
-      check_set_scale
-      check_set_text_rendering_mode
+      check_set(:font, :font_color, :line_color, :v_text_align, :spacing, :scale, :text_rendering_mode)
 
       if @ic.nil?
         tw.show(text)
@@ -1510,14 +1531,18 @@ module EideticPDF
         tw.show_wide(text)
       end
       @last_loc = @loc.clone
+      new_loc = @loc.clone
       if angle == 0.0
-        @loc.x += width(text)
+        new_loc.x += width(text)
       else
         ds = width(text)
         rad_angle = radians_from_degrees(angle)
-        @loc.y += Math::sin(rad_angle) * ds
-        @loc.x += Math::cos(rad_angle) * ds
+        new_loc.y += Math::sin(rad_angle) * ds
+        new_loc.x += Math::cos(rad_angle) * ds
       end
+      draw_underline(translate_p(@last_loc), translate_p(new_loc), @font.underline_position, @font.underline_thickness) if @underline
+      underline(prev_underline) unless options[:underline].nil?
+      @loc = new_loc
       if clip
         yield
         gw.restore_graphics_state
@@ -1630,7 +1655,7 @@ module EideticPDF
         while piece = line.shift
           @font = piece.font
           font_color piece.color
-          # self.underline = piece.underline
+          underline piece.underline
           print(piece.text)
         end
         @word_spacing = @char_spacing = 0.0 if options[:align] == :justify
@@ -1648,6 +1673,12 @@ module EideticPDF
     def v_text_align(vta=nil)
       return @v_text_align if vta.nil?
       @v_text_align = vta
+    end
+
+    def underline(underline=nil)
+      return @underline if underline.nil?
+      prev_underline, @underline = @underline, underline
+      prev_underline
     end
 
     # font methods
@@ -1691,6 +1722,10 @@ module EideticPDF
       end
       font.widths, font.ascent, font.descent = metrics.widths, metrics.ascent, metrics.descent
       font.height = font.ascent + font.descent.abs
+      font.underline_position = metrics.underline_position * -0.001 * font.size
+      font.underline_thickness = metrics.underline_thickness * 0.001 * font.size
+      # $stdout.puts "position: #{metrics.underline_position} -> #{font.underline_position}"
+      # $stdout.puts "thickness: #{metrics.underline_thickness} -> #{font.underline_thickness}"
       page_font = @doc.fonts[font_key]
       unless page_font
         widths = nil
