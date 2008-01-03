@@ -147,7 +147,7 @@ def print_angled_text(w)
     angle = 0
     while angle < 360
       p.move_to(4.25, 5.5)
-      p.print("     Text at #{angle} degrees", :angle => angle, :underline => (angle == 45))
+      p.print("     Text at #{angle} degrees", :angle => angle, :underline => true)
       angle += 45
     end
   end

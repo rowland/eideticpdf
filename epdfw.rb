@@ -810,7 +810,7 @@ module EideticPDF
       line_to(x, y)
     end
 
-    def draw_underline(pos1, pos2, position, thickness)
+    def draw_underline(pos1, pos2, position, thickness, angle)
       # $stdout.puts "draw_underline: #{pos1.inspect}, #{pos2.inspect}, #{position}, #{thickness}"
       # position and thickness are in points
       if @units != :pt
@@ -818,8 +818,9 @@ module EideticPDF
       end
       save_units = units(:pt)
       save_line_width = line_width(thickness)
-      move_to(pos1.x, pos1.y + position - @v_text_align_pts)
-      line_to(pos2.x, pos2.y + position - @v_text_align_pts)
+      off_x, off_y = rotate_xy_coordinate(0, position - @v_text_align_pts, angle)
+      move_to(pos1.x - off_x, pos1.y + off_y)
+      line_to(pos2.x - off_x, pos2.y + off_y)
       line_width(save_line_width)
       units(save_units)
     end
@@ -1540,7 +1541,7 @@ module EideticPDF
         new_loc.y += Math::sin(rad_angle) * ds
         new_loc.x += Math::cos(rad_angle) * ds
       end
-      draw_underline(translate_p(@last_loc), translate_p(new_loc), @font.underline_position, @font.underline_thickness) if @underline
+      draw_underline(translate_p(@last_loc), translate_p(new_loc), @font.underline_position, @font.underline_thickness, angle) if @underline
       underline(prev_underline) unless options[:underline].nil?
       @loc = new_loc
       if clip
