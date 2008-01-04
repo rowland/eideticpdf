@@ -480,6 +480,16 @@ class DocumentWriterTestCases < Test::Unit::TestCase
     assert_equal(10, @doc.pen_pos.x)
     assert_equal(20, @doc.pen_pos.y)
   end
+  
+  def test_move_by
+    @doc.move_to(5, 6)
+    @doc.move_by(5, 4)
+    assert_close([10, 10], @doc.pen_pos.to_a)
+    @doc.move_by(-3, 0)
+    assert_close([7, 10], @doc.pen_pos.to_a)
+    @doc.move_by(0, -7)
+    assert_close([7, 3], @doc.pen_pos.to_a)
+  end
 
   def test_margins
     assert_equal([0, 0, 0, 0], @doc.margins)

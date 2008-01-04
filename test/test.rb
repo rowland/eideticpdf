@@ -141,12 +141,44 @@ def print_text(w)
   w.close_page
 end
 
-def print_angled_text(w)
+def print_angled_text_etc(w)
   w.page(:units => :in) do |p|
     p.font("Helvetica", 12)
+    p.print_xy(0.5, 0.5, "Tabs and Angled Text", :underline => true)
+    p.move_to(0, 1)
+    p.tabs [1, 4.25, 7.5]
+    p.tab; p.print "|<--", :align => :left
+    p.tab; p.print "-|-", :align => :center
+    p.tab; p.print "-->|", :align => :right
+    p.tab; p.print "Align: Left", :align => :left
+    p.tab; p.print "Align: Center", :align => :center
+    p.tab; p.print "Align: Right", :align => :right
+
+    grid(p, 6, 3, 1, 2)
+    p.v_text_align :middle
+    p.move_to(0, 2)
+    p.tabs [1, 2, 3, 4, 5, 6]
+    ["Words", "of", "varying", "lengths", "aligned", "left."].each do |word|
+      p.tab
+      p.print "  #{word}", :align => :left, :angle => 315
+    end
+    p.move_to(0, 3.5)
+    p.tabs [1.5, 2.5, 3.5, 4.5, 5.5, 6.5]
+    ["Words", "of", "varying", "lengths", "aligned", "center."].each do |word|
+      p.tab
+      p.print word, :align => :center, :angle => 45
+    end
+
+    p.move_to(0, 5)
+    p.tabs [2, 3, 4, 5, 6, 7]
+    ["Words", "of", "varying", "lengths", "aligned", "right."].each do |word|
+      p.tab
+      p.print "#{word}  ", :align => :right, :angle => 315
+    end
+    
     angle = 0
     while angle < 360
-      p.move_to(4.25, 5.5)
+      p.move_to(4.25, 7.5)
       p.print("     Text at #{angle} degrees", :angle => angle, :underline => true)
       angle += 45
     end
@@ -560,7 +592,7 @@ docw.doc(:font => { :name => 'Courier', :size => 10 }, :built_in_fonts => BuiltI
   filled_rectangles(w)
   line_widths_and_patterns(w)
   print_text(w)
-  print_angled_text(w)
+  print_angled_text_etc(w)
   arcs(w)
   pt_units(w)
   cm_grid(w)

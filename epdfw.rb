@@ -20,6 +20,23 @@ module EideticPDF
   LINE_PATTERNS = { :solid => [], :dotted => [1, 2], :dashed => [4, 2] }
   IDENTITY_MATRIX = [1, 0, 0, 1, 0, 0].freeze
 
+  class PropertyStack
+    def initialize(obj, prop, &block)
+      @obj, @prop, @condition = obj, prop, block
+      @stack = []
+    end
+
+    def push(value)
+      @stack.push @obj.send(@prop)
+      @obj.send(@prop, value) if @condition.call(value)
+    end
+
+    def pop
+      value = @stack.pop
+      @obj.send(@prop, value) if @condition.call(value)
+    end
+  end
+
   class ColorStack
     def initialize(obj, prop)
       @obj, @prop = obj, prop
@@ -369,7 +386,7 @@ module EideticPDF
     def translate(x, y)
       Location.new(x, page_height - y)
     end
-    
+
     def translate_p(p)
       Location.new(p.x, page_height - p.y)
     end
@@ -419,6 +436,11 @@ module EideticPDF
   		x, y = rotate_xy_coordinate(loc.x, loc.y, angle)
   		make_loc(x, y)
   	end
+
+    def add_vector(point, angle, distance)
+      theta = radians_from_degrees(angle)
+      Location.new(point.x + Math::cos(theta) * distance, point.y + Math::sin(theta) * distance)
+    end
 
   	def rotate_points(mid, points, angle)
       theta = radians_from_degrees(angle)
@@ -811,7 +833,6 @@ module EideticPDF
     end
 
     def draw_underline(pos1, pos2, position, thickness, angle)
-      # $stdout.puts "draw_underline: #{pos1.inspect}, #{pos2.inspect}, #{position}, #{thickness}"
       # position and thickness are in points
       if @units != :pt
         pos1, pos2 = convert_units(pos1, @units, :pt), convert_units(pos2, @units, :pt)
@@ -1012,6 +1033,11 @@ module EideticPDF
     def pen_pos(x=nil, y=nil)
       return translate(@loc.x, @loc.y) if x.nil?
       move_to(x, y)
+    end
+
+    def move_by(dx, dy)
+      p = pen_pos
+      move_to(p.x + dx, p.y + dy)
     end
 
     # graphics methods
@@ -1509,6 +1535,7 @@ module EideticPDF
     # text methods
     def print(text, options={})
       return if text.empty?
+      align = options[:align]
       angle = options[:angle] || 0.0
       @scale = options[:scale] || 1.0
       prev_underline = underline(options[:underline]) unless options[:underline].nil?
@@ -1518,13 +1545,21 @@ module EideticPDF
         text_clipping_mode(options)
       end
       start_text unless @in_text
+      check_set(:font, :font_color, :line_color, :v_text_align, :spacing, :scale, :text_rendering_mode)
+      ds = width(text)
+      if align
+        prev_loc = @loc.clone
+        @loc = case align
+        when :left then @loc
+        when :center then add_vector(@loc, angle + 180, ds.quo(2))
+        when :right then add_vector(@loc, angle + 180, ds)
+        end
+      end
       if (@text_angle != angle) or (angle != 0.0)
         set_text_angle(angle, @loc.x, @loc.y)
       elsif @loc != @last_loc
         tw.move_by(to_points(@units, @loc.x - @last_loc.x), to_points(@units, @loc.y - @last_loc.y))
       end
-      check_set(:font, :font_color, :line_color, :v_text_align, :spacing, :scale, :text_rendering_mode)
-
       if @ic.nil?
         tw.show(text)
       else
@@ -1532,18 +1567,10 @@ module EideticPDF
         tw.show_wide(text)
       end
       @last_loc = @loc.clone
-      new_loc = @loc.clone
-      if angle == 0.0
-        new_loc.x += width(text)
-      else
-        ds = width(text)
-        rad_angle = radians_from_degrees(angle)
-        new_loc.y += Math::sin(rad_angle) * ds
-        new_loc.x += Math::cos(rad_angle) * ds
-      end
+      new_loc = (angle == 0.0) ? Location.new(@loc.x + ds, @loc.y) : add_vector(@loc, angle, ds)
       draw_underline(translate_p(@last_loc), translate_p(new_loc), @font.underline_position, @font.underline_thickness, angle) if @underline
       underline(prev_underline) unless options[:underline].nil?
-      @loc = new_loc
+      @loc = align ? prev_loc : new_loc
       if clip
         yield
         gw.restore_graphics_state
@@ -2023,6 +2050,10 @@ module EideticPDF
 
     def pen_pos(x=nil, y=nil)
       cur_page.pen_pos(x, y)
+    end
+
+    def move_by(dx, dy)
+      cur_page.move_by(dx, dy)
     end
 
     # graphics methods
