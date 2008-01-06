@@ -611,4 +611,4 @@ File.open("test.pdf","w") { |f| f.write(docw) }
 
 elapsed = Time.now - start
 puts "Elapsed: #{(elapsed * 1000).round} ms"
-`open test.pdf`
+`open test.pdf` if RUBY_PLATFORM =~ /darwin/ and ($0 !~ /rake_test_loader/ and $0 !~ /rcov/)
