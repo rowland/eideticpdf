@@ -9,11 +9,11 @@ module EideticPDF
   module PdfObjects
     class Header
       VERSIONS = {
-        1.0 => "%PDF-1.0\n",
-        1.1 => "%PDF-1.1\n",
-        1.2 => "%PDF-1.2\n",
-        1.3 => "%PDF-1.3\n",
-        1.4 => "%PDF-1.4\n"
+        1.0 => "%PDF-1.0\n".freeze,
+        1.1 => "%PDF-1.1\n".freeze,
+        1.2 => "%PDF-1.2\n".freeze,
+        1.3 => "%PDF-1.3\n".freeze,
+        1.4 => "%PDF-1.4\n".freeze
       }
 
       def initialize(version=1.3)
@@ -21,7 +21,7 @@ module EideticPDF
       end
 
       def to_s
-        VERSIONS[@version]
+        VERSIONS[@version].dup
       end
     end
 
