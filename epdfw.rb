@@ -367,10 +367,6 @@ module EideticPDF
       n % 2 != 0
     end
 
-    def radians_from_degrees(degrees)
-      degrees * Math::PI / 180.0
-    end
-
     def to_points(units, measurement)
       UNIT_CONVERSION[units] * measurement
     end
@@ -424,7 +420,7 @@ module EideticPDF
     end
 
     def rotate_xy_coordinate(x, y, angle)
-      theta = radians_from_degrees(angle)
+      theta = angle.degrees
       r_cos = Math::cos(theta)
       r_sin = Math::sin(theta)
       x_rot = (r_cos * x) - (r_sin * y)
@@ -438,12 +434,12 @@ module EideticPDF
   	end
 
     def add_vector(point, angle, distance)
-      theta = radians_from_degrees(angle)
+      theta = angle.degrees
       Location.new(point.x + Math::cos(theta) * distance, point.y + Math::sin(theta) * distance)
     end
 
   	def rotate_points(mid, points, angle)
-      theta = radians_from_degrees(angle)
+      theta = angle.degrees
       r_cos = Math::cos(theta)
       r_sin = Math::sin(theta)
   	  points.map do |p|
@@ -455,7 +451,7 @@ module EideticPDF
     end
 
     def calc_arc_small(r, mid_theta, half_angle, ccwcw)
-      half_theta = radians_from_degrees(half_angle.abs)
+      half_theta = half_angle.abs.degrees
       v_cos = Math::cos(half_theta)
       v_sin = Math::sin(half_theta)
 
@@ -488,7 +484,7 @@ module EideticPDF
     end
 
     def set_text_angle(angle, x, y)
-      theta = radians_from_degrees(angle)
+      theta = angle.degrees
       v_cos = Math::cos(theta)
       v_sin = Math::sin(theta)
       @tw.set_matrix(v_cos, v_sin, -v_sin, v_cos, to_points(@units, x), to_points(@units, y))
@@ -2329,6 +2325,14 @@ module EideticPDF
       else
         nil
       end
+    end
+  end
+end
+
+unless 1.respond_to?(:degrees)
+  class Numeric
+    def degrees
+      self * Math::PI / 180
     end
   end
 end
