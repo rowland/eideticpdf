@@ -5,6 +5,7 @@
 
 require 'epdfk'
 require 'epdfo'
+require 'epdfs'
 
 module EideticPDF
   module AFM
@@ -302,7 +303,7 @@ module EideticPDF
       widths = afm.widths(encoding)
       cwidths = widths.compact.extend(Statistics)
       fm = PdfK::FontMetrics.new(needs_descriptor, widths, afm.ascender, afm.descender, afm.flags, afm.font_b_box, afm.missing_width,
-        afm.std_v_w, afm.std_h_w, afm.italic_angle, afm.cap_height, afm.x_height, afm.leading, cwidths.max, cwidths.avg,
+        afm.std_v_w, afm.std_h_w, afm.italic_angle, afm.cap_height, afm.x_height, afm.leading, cwidths.max, cwidths.mean.round,
         afm.underline_position, afm.underline_thickness, differences)
       fm
     end
@@ -313,16 +314,6 @@ module EideticPDF
 
     def font_names(reload=false)
       AdobeFontMetrics.afm_cache(reload).map { |afm| afm.font_name }
-    end
-
-    module Statistics
-      def sum
-        self.inject(0) { |total, obj| total + obj }
-      end
-
-      def avg
-        self.sum / self.size
-      end
     end
   end
 end

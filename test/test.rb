@@ -79,7 +79,6 @@ def type1_font_names(w)
   w.page(:units => :cm, :margins => [1,2]) do |p|
     p.type1_font_names.sort.each_with_index do |font_name, index|
       p.move_to(p.canvas_width / 2, 0) if index == 40
-      # p.indent(p.canvas_width / 2) if index == 40
       encoding = ['Symbol','ZapfDingbats'].include?(font_name) ? 'StandardEncoding' : 'WinAnsiEncoding'
       p.font(font_name, 12, :encoding => encoding)
       p.puts(font_name, :indent => true)

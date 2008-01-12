@@ -8,6 +8,7 @@ require 'epdfk'
 require 'epdft'
 require 'epdfafm'
 require 'epdftt'
+require 'epdfs'
 
 module EideticPDF
   Font = Struct.new(:name, :size, :style, :color, :encoding, :sub_type, :widths, :ascent, :descent, :height,
@@ -1072,7 +1073,9 @@ module EideticPDF
 
     def pen_pos(x=nil, y=nil)
       return translate(@loc.x, @loc.y) if x.nil?
+      prev_loc = translate(@loc.x, @loc.y)
       move_to(x, y)
+      prev_loc
     end
 
     def move_by(dx, dy)
@@ -2325,14 +2328,6 @@ module EideticPDF
       else
         nil
       end
-    end
-  end
-end
-
-unless 1.respond_to?(:degrees)
-  class Numeric
-    def degrees
-      self * Math::PI / 180
     end
   end
 end
