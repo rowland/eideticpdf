@@ -4,15 +4,9 @@
 #  Copyright (c) 2007, Eidetic Software. All rights reserved.
 
 module EideticPDF
-  module PdfK
-    FontMetrics = Struct.new(:needs_descriptor, :widths, :ascent, :descent, :flags, :b_box, :missing_width,
-      :stem_v, :stem_h, :italic_angle, :cap_height, :x_height, :leading, :max_width, :avg_width, 
-      :underline_position, :underline_thickness, :differences)
-    NUM_BASE_FONTS = 39
-    NUM_ASIAN_FONTS = 7
-    NUM_FONTS = NUM_BASE_FONTS + NUM_ASIAN_FONTS
-    NUM_CHARS = 256
+  VERSION = '1.0.0'
 
+  module PdfK
     FONT_WIDTHS = [
       [ # 0 Helvetica
         278,    0,    0,    0,    0,    0,    0,    0,    0,    0, #   0
@@ -3118,6 +3112,10 @@ module EideticPDF
     #     end
     #   end
     # end
+
+    FontMetrics = Struct.new(:needs_descriptor, :widths, :ascent, :descent, :flags, :b_box, :missing_width,
+      :stem_v, :stem_h, :italic_angle, :cap_height, :x_height, :leading, :max_width, :avg_width, 
+      :underline_position, :underline_thickness, :differences)
   module_function
     def font_index(font_name)
       FONT_NAMES.index(font_name)
