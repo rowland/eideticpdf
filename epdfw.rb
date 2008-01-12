@@ -1543,6 +1543,7 @@ module EideticPDF
     end
 
     def print(text, options={})
+      text = text.to_s
       return if text.empty?
       align = options[:align]
       angle = options[:angle] || 0.0

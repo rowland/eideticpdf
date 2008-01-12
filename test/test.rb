@@ -566,13 +566,25 @@ def text_encodings(w)
   fonts.each do |name, encoding|
     w.page(:units => :in, :margins => 0.5) do |p|
       p.print "#{name} - #{encoding}", :underline => true
-      p.font name, 16, :encoding => encoding
+      p.font 'Courier', 10
       p.move_to 0, 0.5
       stops = (1..16).map { |stop| stop.quo(2.3) }
       p.tabs stops
+      16.times do |offset|
+        p.tab { 1 / 2.3 }
+        p.print offset.to_s(16).upcase
+      end
+      p.font name, 16, :encoding => encoding
       32.upto(255) do |i|
         p.tab { 1 / 2.3 }
         p.print i.chr
+      end
+      p.vtabs stops.map { |stop| stop + 0.5 }
+      p.move_to 0, 0
+      p.font 'Courier', 10
+      2.upto(15) do |offset|
+        p.vtab
+        p.print offset.to_s(16).upcase, :align => :left
       end
     end
   end
