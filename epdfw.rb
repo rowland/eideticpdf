@@ -1028,6 +1028,7 @@ module EideticPDF
 
     def move_to(x, y)
       @loc = translate(x, y)
+      nil
     end
 
     def pen_pos(x=nil, y=nil)
@@ -1054,6 +1055,7 @@ module EideticPDF
       gw.line_to(to_points(@units, @loc.x), to_points(@units, @loc.y))
       @in_path = true
       @last_loc = @loc.clone
+      nil
     end
 
     def rectangle(x, y, width, height, options={})
@@ -1085,6 +1087,7 @@ module EideticPDF
       line_colors.pop
       fill_colors.pop
       move_to(x + width, y)
+      nil
     end
 
     def curve(x0, y0, x1, y1, x2, y2, x3, y3)
@@ -1168,6 +1171,7 @@ module EideticPDF
       gw.restore_graphics_state if clip
       line_colors.pop
       fill_colors.pop
+      nil
     end
 
     def points_for_ellipse(x, y, rx, ry)
@@ -1197,6 +1201,7 @@ module EideticPDF
       gw.restore_graphics_state if clip
       line_colors.pop
       fill_colors.pop
+      nil
     end
 
     def points_for_arc(x, y, r, start_angle, end_angle)
@@ -1273,6 +1278,7 @@ module EideticPDF
       gw.restore_graphics_state if clip
       line_colors.pop
       fill_colors.pop
+      nil
     end
 
     def arch(x, y, r1, r2, start_angle, end_angle, options={})
@@ -1304,6 +1310,7 @@ module EideticPDF
       gw.restore_graphics_state if clip
       line_colors.pop
       fill_colors.pop
+      nil
     end
 
     def points_for_polygon(x, y, r, sides, options={})
@@ -1347,6 +1354,7 @@ module EideticPDF
       gw.restore_graphics_state if clip
       line_colors.pop
       fill_colors.pop
+      nil
     end
 
     def star(x, y, r, points, options={})
@@ -1378,6 +1386,7 @@ module EideticPDF
       gw.restore_graphics_state if clip
       line_colors.pop
       fill_colors.pop
+      nil
     end
 
     def path(options={})
@@ -1441,9 +1450,6 @@ module EideticPDF
     end
 
     def clip(options={})
-      # raise Exception.new("Not in graph") unless @in_graph
-      # raise Exception.new("Not in path") unless @in_path
-
       gw.save_graphics_state
       if @in_path
         gw.clip
@@ -1469,12 +1475,14 @@ module EideticPDF
 
     def line_dash_pattern(pattern=nil)
       return @line_dash_pattern if pattern.nil?
-      @line_dash_pattern = pattern
+      prev_line_dash_pattern, @line_dash_pattern = @line_dash_pattern, pattern
+      prev_line_dash_pattern
     end
 
     def line_width(width=nil, units=nil)
       return from_points(@units, @line_width || 0) if width.nil?
       return from_points(width, @line_width || 0) if width.is_a?(Symbol)
+      prev_line_width = @line_width || 0
       if !units.nil?
         u, width = units.to_sym, width.to_f
       elsif width.respond_to?(:to_str) and width =~ /\D+/
@@ -1482,13 +1490,14 @@ module EideticPDF
       else
         u = @units
       end
-      prev_line_width, @line_width = @line_width, to_points(u, width)
-      prev_line_width
+      @line_width = to_points(u, width)
+      from_points(@units, prev_line_width)
     end
 
     def line_height(height=nil)
       return @line_height if height.nil?
-      @line_height = height
+      prev_line_height, @line_height = @line_height, height
+      prev_line_height
     end
 
     # color methods
@@ -1532,7 +1541,6 @@ module EideticPDF
       prev_font_color
     end
 
-    # text methods
     def print(text, options={})
       return if text.empty?
       align = options[:align]
@@ -1575,6 +1583,7 @@ module EideticPDF
         yield
         gw.restore_graphics_state
       end
+      nil
     end
 
     def print_xy(x, y, text, options={}, &block)
@@ -1591,11 +1600,17 @@ module EideticPDF
         print(text, &block)
         @loc = Location.new(save_loc.x, save_loc.y - height)
       end
+      nil
     end
 
     def puts_xy(x, y, text, &block)
       move_to(x, y)
       puts(text, &block)
+    end
+
+    def new_line(count=1)
+      @loc = Location.new(@loc.x, @loc.y - height * count)
+      nil
     end
 
     def width(text)
@@ -1730,11 +1745,7 @@ module EideticPDF
       full_name << punc << font.style unless font.style.empty?
       font_key = "#{full_name}/#{font.encoding}-#{font.sub_type}"
       if font.sub_type == 'Type1'
-        if @options[:built_in_fonts]
-          metrics = PdfK::font_metrics(full_name)
-        else
-          metrics = AFM::font_metrics(full_name, :encoding => font.encoding)
-        end
+        metrics = @options[:built_in_fonts] ? PdfK::font_metrics(full_name) : AFM::font_metrics(full_name, :encoding => font.encoding)
       elsif font.sub_type == 'TrueType'
         if @options[:built_in_fonts]
           metrics = PdfTT::font_metrics(full_name)
@@ -1752,8 +1763,6 @@ module EideticPDF
       font.height = font.ascent + font.descent.abs
       font.underline_position = metrics.underline_position * -0.001 * font.size
       font.underline_thickness = metrics.underline_thickness * 0.001 * font.size
-      # $stdout.puts "position: #{metrics.underline_position} -> #{font.underline_position}"
-      # $stdout.puts "thickness: #{metrics.underline_thickness} -> #{font.underline_thickness}"
       page_font = @doc.fonts[font_key]
       unless page_font
         widths = nil
@@ -1802,13 +1811,17 @@ module EideticPDF
     def font_style(style=nil)
       set_default_font if @font.nil?
       return @font.style if style.nil?
+      prev_style = @font.style
       font(@font.name, @font.size, :style => style, :color => @font.color, :encoding => @font.encoding, :sub_type => @font.sub_type)
+      prev_style
     end
 
     def font_size(size=nil)
       set_default_font if @font.nil?
       return @font.size if size.nil?
+      prev_size = @font.size
       font(@font.name, size, :style => @font.style, :color => @font.color, :encoding => @font.encoding, :sub_type => @font.sub_type)
+      prev_size
     end
 
     # image methods
@@ -2181,6 +2194,10 @@ module EideticPDF
 
     def puts_xy(x, y, text, &block)
       cur_page.puts_xy(x, y, text, &block)
+    end
+
+    def new_line(count=1)
+      cur_page.new_line(count)
     end
 
     def width(text)

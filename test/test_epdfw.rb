@@ -531,9 +531,9 @@ class DocumentWriterTestCases < Test::Unit::TestCase
     # default style
     assert_equal('', @doc.font_style)
     # changed
-    @doc.font_style 'Bold'
+    prev_font_style = @doc.font_style 'Bold'
+    assert_equal('', prev_font_style)
     assert_equal('Bold', @doc.font_style)
-    assert_equal('Bold', @doc.font.style)
     # AFM font metrics backend ignores bogus styles.
     # invalid style
     # assert_raise(Exception) { @doc.font_style 'Bogus' }
@@ -545,7 +545,8 @@ class DocumentWriterTestCases < Test::Unit::TestCase
     # default size
     assert_equal(10, @doc.font_size)
     # changed
-    @doc.font_size 12
+    prev_font_size = @doc.font_size 12
+    assert_equal(10, prev_font_size)
     assert_equal(12, @doc.font_size)
     # changed to float
     @doc.font_size 14.5
@@ -556,7 +557,8 @@ class DocumentWriterTestCases < Test::Unit::TestCase
     # default color
     assert_equal(0, @doc.font_color)
     # changed
-    @doc.font_color 'Blue'
+    prev_font_color = @doc.font_color 'Blue'
+    assert_equal(0, prev_font_color)
     assert_equal('Blue', @doc.font_color)
     # rgb
     @doc.font_color [0xFF,0,0]
@@ -567,7 +569,8 @@ class DocumentWriterTestCases < Test::Unit::TestCase
     # default color
     assert_equal(0, @doc.fill_color)
     # changed
-    @doc.fill_color 'Blue'
+    prev_fill_color = @doc.fill_color 'Blue'
+    assert_equal(0, prev_fill_color)
     assert_equal('Blue', @doc.fill_color)
     # rgb
     @doc.fill_color [0xFF,0,0]
@@ -578,7 +581,8 @@ class DocumentWriterTestCases < Test::Unit::TestCase
     # default color
     assert_equal(0, @doc.line_color)
     # changed
-    @doc.line_color 'Blue'
+    prev_line_color = @doc.line_color 'Blue'
+    assert_equal(0, prev_line_color)
     assert_equal('Blue', @doc.line_color)
     # rgb
     @doc.line_color [0xFF,0,0]
@@ -589,7 +593,8 @@ class DocumentWriterTestCases < Test::Unit::TestCase
     # default width
     assert_equal(1.0, @doc.line_width(:pt))
     # changed
-    @doc.line_width 1
+    prev_line_width = @doc.line_width 1
+    assert_equal(1/UNIT_CONVERSION[:cm], prev_line_width)
     assert_equal(1, @doc.line_width)
     # alternate units
     assert_equal(28.35, @doc.line_width(:pt))
@@ -617,7 +622,7 @@ class DocumentWriterTestCases < Test::Unit::TestCase
     @doc.tabs false
     assert_nil @doc.tabs
   end
-  
+
   def test_tab
     @doc.tabs [1.5, 3, 4.5, 6]
     assert_close([0, 0], @doc.pen_pos.to_a)
