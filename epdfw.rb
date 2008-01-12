@@ -890,6 +890,7 @@ module EideticPDF
       start_misc
       sub_page(*options[:sub_page] + Array(options[:unscaled])) if options[:sub_page]
       margins(options[:margins] || 0)
+      @indent = 0
     end
 
     def close
@@ -919,7 +920,6 @@ module EideticPDF
       @stream.nil?
     end
 
-    # coordinate methods
     def units(units=nil)
       return @units if units.nil?
       @loc = convert_units(@loc, @units, units)
@@ -987,7 +987,50 @@ module EideticPDF
       from_points(@units, @canvas_height)
     end
 
-    # sub-page methods
+    def tabs(tabs=nil)
+      return @tabs if tabs.nil?
+      return @tabs = nil if tabs == false or tabs.empty?
+      tabs = tabs.split(',') if tabs.respond_to?(:to_str)
+      @tabs = tabs.map { |stop| stop.to_f }.select { |stop| stop > 0 }.sort
+    end
+
+    def tab
+      return if @tabs.nil?
+      p = pen_pos
+      x = @tabs.detect { |stop| stop > p.x }
+      if x.nil?
+        dy = block_given? ? yield : height
+        move_to(@tabs.first, p.y + dy)
+      else
+        move_to(x, p.y)
+      end
+    end
+
+    def vtabs(tabs=nil)
+      return @vtabs if tabs.nil?
+      return @vtabs = nil if tabs == false or tabs.empty?
+      tabs = tabs.split(',') if tabs.respond_to?(:to_str)
+      @vtabs = tabs.map { |stop| stop.to_f }.select { |stop| stop > 0 }.sort
+    end
+
+    def vtab
+      return if @vtabs.nil?
+      p = pen_pos
+      y = @vtabs.detect { |stop| stop > p.y }
+      if y.nil?
+        move_to(p.x + yield, @vtabs.first) if block_given?
+      else
+        move_to(p.x, y)
+      end
+    end
+
+    def indent(value=nil, absolute=false)
+      return @indent if value.nil?
+      @indent = absolute ? value : @indent + value
+      @loc.x = @indent
+      @indent
+    end
+
     def sub_page(x, pages_across, y, pages_down, unscaled=false)
       unless @matrix.nil?
         gw.restore_graphics_state
@@ -1041,7 +1084,6 @@ module EideticPDF
       move_to(p.x + dx, p.y + dy)
     end
 
-    # graphics methods
     def line_to(x, y)
       unless @last_loc == @loc
         gw.stroke if @in_path and @auto_path
@@ -1596,9 +1638,9 @@ module EideticPDF
       unless text.respond_to?(:to_str)
         text.each { |t| puts(t, options) }
       else
-        save_loc = @loc.clone
+        prev_loc = @loc.clone
         print(text, options, &block)
-        @loc = Location.new(save_loc.x, save_loc.y - height)
+        @loc = options[:indent] ? Location.new(prev_loc.x, prev_loc.y - height) : Location.new(@indent, prev_loc.y - height)
       end
       nil
     end
@@ -1609,7 +1651,7 @@ module EideticPDF
     end
 
     def new_line(count=1)
-      @loc = Location.new(@loc.x, @loc.y - height * count)
+      @loc = Location.new(@indent, @loc.y - height * count)
       nil
     end
 
@@ -1890,43 +1932,6 @@ module EideticPDF
 
     def print_link(s, uri)
     end
-
-    def tabs(tabs=nil)
-      return @tabs if tabs.nil?
-      return @tabs = nil if tabs == false or tabs.empty?
-      tabs = tabs.split(',') if tabs.respond_to?(:to_str)
-      @tabs = tabs.map { |stop| stop.to_f }.select { |stop| stop > 0 }.sort
-    end
-
-    def tab
-      return if @tabs.nil?
-      p = pen_pos
-      x = @tabs.detect { |stop| stop > p.x }
-      if x.nil?
-        dy = block_given? ? yield : height
-        move_to(@tabs.first, p.y + dy)
-      else
-        move_to(x, p.y)
-      end
-    end
-
-    def vtabs(tabs=nil)
-      return @vtabs if tabs.nil?
-      return @vtabs = nil if tabs == false or tabs.empty?
-      tabs = tabs.split(',') if tabs.respond_to?(:to_str)
-      @vtabs = tabs.map { |stop| stop.to_f }.select { |stop| stop > 0 }.sort
-    end
-
-    def vtab
-      return if @vtabs.nil?
-      p = pen_pos
-      y = @vtabs.detect { |stop| stop > p.y }
-      if y.nil?
-        move_to(p.x + yield, @vtabs.first) if block_given?
-      else
-        move_to(p.x, y)
-      end
-    end
   end
 
   class DocumentWriter
@@ -2043,6 +2048,26 @@ module EideticPDF
 
     def canvas_height
       cur_page.canvas_height
+    end
+
+    def tabs(tabs=nil)
+      cur_page.tabs(tabs)
+    end
+
+    def tab(&block)
+      cur_page.tab(&block)
+    end
+
+    def vtabs(tabs=nil)
+      cur_page.vtabs(tabs)
+    end
+
+    def vtab(&block)
+      cur_page.vtab(&block)
+    end
+
+    def indent(value=nil, absolute=false)
+      cur_page.indent(value, absolute)
     end
 
     def page_width
@@ -2276,22 +2301,6 @@ module EideticPDF
 
     def print_link(s, uri)
       cur_page.print_link(s, uri)
-    end
-
-    def tabs(tabs=nil)
-      cur_page.tabs(tabs)
-    end
-
-    def tab(&block)
-      cur_page.tab(&block)
-    end
-
-    def vtabs(tabs=nil)
-      cur_page.vtabs(tabs)
-    end
-
-    def vtab(&block)
-      cur_page.vtab(&block)
     end
 
   protected

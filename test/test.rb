@@ -79,9 +79,10 @@ def type1_font_names(w)
   w.page(:units => :cm, :margins => [1,2]) do |p|
     p.type1_font_names.sort.each_with_index do |font_name, index|
       p.move_to(p.canvas_width / 2, 0) if index == 40
+      # p.indent(p.canvas_width / 2) if index == 40
       encoding = ['Symbol','ZapfDingbats'].include?(font_name) ? 'StandardEncoding' : 'WinAnsiEncoding'
       p.font(font_name, 12, :encoding => encoding)
-      p.puts(font_name)
+      p.puts(font_name, :indent => true)
     end
   end
 end
@@ -309,7 +310,7 @@ def filled_rectangles(w)
     page.each_with_index do |list, list_index|
       list.each_with_index do |name, name_index|
         w.move_to(left + list_index * col_width, top + name_index * row_height)
-        w.puts(name.scan(/[A-Z][a-z]*/))
+        w.puts(name.scan(/[A-Z][a-z]*/), :indent => true)
         w.fill_color name
         w.rectangle(left + list_index * col_width + label_width, top + name_index * row_height, 0.5, 0.4, :fill => true)
       end
@@ -584,6 +585,8 @@ docw = EideticPDF::DocumentWriter.new
 # docw.doc(:font => { :name => 'Courier', :size => 10 }, :orientation => :landscape, :pages_up => [3, 2]) do |w|
 docw.doc(:font => { :name => 'Courier', :size => 10 }, :built_in_fonts => BuiltInFonts) do |w|
   print_text(w)
+  type1_font_names(w)
+  truetype_font_names(w) if BuiltInFonts
   stars(w)
   polygons(w)
   pies(w)
@@ -599,8 +602,6 @@ docw.doc(:font => { :name => 'Courier', :size => 10 }, :built_in_fonts => BuiltI
   cm_grid(w)
   inch_grid(w)
   dp_grid(w)
-  type1_font_names(w)
-  truetype_font_names(w) if BuiltInFonts
   images(w)
   clipping(w)
   text_clipping(w)

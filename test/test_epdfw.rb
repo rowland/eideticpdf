@@ -664,6 +664,22 @@ class DocumentWriterTestCases < Test::Unit::TestCase
     @doc.vtab { 2.5 }
     assert_close([2.5, 1.5], @doc.pen_pos.to_a)
   end
+
+  def test_indent
+    assert_close([0, 0], @doc.pen_pos.to_a) # starting location
+    @doc.indent 2
+    assert_equal(2, @doc.pen_pos.x, "indent should set pen_pos.x")
+    @doc.indent 2
+    assert_equal(4, @doc.pen_pos.x, "normal indents are additive")
+    @doc.indent -1
+    assert_equal(3, @doc.pen_pos.x, "the other side of additive")
+    @doc.indent 5, true
+    assert_equal(5, @doc.pen_pos.x, "absolute indent")
+    @doc.print "here we are: "
+    @doc.puts "testing indent"
+    assert_equal(5, @doc.pen_pos.x, "normal puts should return pen_pos.x to indent")
+    assert_close(@doc.height, @doc.pen_pos.y)
+  end
 end
 
 def assert_array_in_delta(expected_floats, actual_floats, delta)
@@ -674,6 +690,6 @@ def assert_close(expected, actual)
   if expected.respond_to?(:each_with_index) and actual.respond_to?(:[])
     expected.each_with_index { |e, i| assert_in_delta(e, actual[i], 2 ** -20) }
   else
-    assert_in_delta(e, actual, 2 ** -20)
+    assert_in_delta(expected, actual, 2 ** -20)
   end
 end
