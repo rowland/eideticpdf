@@ -4,7 +4,7 @@
 #  Copyright (c) 2007, Eidetic Software. All rights reserved.
 
 $: << File.dirname(__FILE__) + '/../'
-require 'epdfw'
+require 'epdfdw'
 
 TestImg = File.join(File.dirname(__FILE__), 'testimg.jpg')
 BuiltInFonts = false
