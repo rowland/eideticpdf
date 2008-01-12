@@ -1591,21 +1591,21 @@ module EideticPDF
       print(text, options, &block)
     end
 
-    def puts(text='', &block)
+    def puts(text='', options={}, &block)
       # if it's not a real string, assume it's an enumeration of strings
       unless text.respond_to?(:to_str)
-        text.each { |t| puts(t) }
+        text.each { |t| puts(t, options) }
       else
         save_loc = @loc.clone
-        print(text, &block)
+        print(text, options, &block)
         @loc = Location.new(save_loc.x, save_loc.y - height)
       end
       nil
     end
 
-    def puts_xy(x, y, text, &block)
+    def puts_xy(x, y, text, options={}, &block)
       move_to(x, y)
-      puts(text, &block)
+      puts(text, options, &block)
     end
 
     def new_line(count=1)
@@ -2188,12 +2188,12 @@ module EideticPDF
       cur_page.print_xy(x, y, text, options, &block)
     end
 
-    def puts(text='', &block)
-      cur_page.puts(text, &block)
+    def puts(text='', options={}, &block)
+      cur_page.puts(text, options, &block)
     end
 
-    def puts_xy(x, y, text, &block)
-      cur_page.puts_xy(x, y, text, &block)
+    def puts_xy(x, y, text, options={}, &block)
+      cur_page.puts_xy(x, y, text, options={}, &block)
     end
 
     def new_line(count=1)

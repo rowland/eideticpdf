@@ -99,8 +99,9 @@ end
 def print_text(w)
   w.open_page(:units => :cm, :margins => 1)
   w.font("Helvetica", 12)
-  w.print("Print Text", :underline => true)
-
+  w.puts("Print Text", :underline => true)
+  w.new_line
+  w.puts("Version: #{EideticPDF::VERSION}")
   # test vertical text alignment
   w.move_to(0, 3); w.line_to(w.canvas_width, 3)
   w.move_to(0, 3)
@@ -582,6 +583,7 @@ docw = EideticPDF::DocumentWriter.new
 
 # docw.doc(:font => { :name => 'Courier', :size => 10 }, :orientation => :landscape, :pages_up => [3, 2]) do |w|
 docw.doc(:font => { :name => 'Courier', :size => 10 }, :built_in_fonts => BuiltInFonts) do |w|
+  print_text(w)
   stars(w)
   polygons(w)
   pies(w)
@@ -591,7 +593,6 @@ docw.doc(:font => { :name => 'Courier', :size => 10 }, :built_in_fonts => BuiltI
   ellipses(w)
   filled_rectangles(w)
   line_widths_and_patterns(w)
-  print_text(w)
   print_angled_text_etc(w)
   arcs(w)
   pt_units(w)
