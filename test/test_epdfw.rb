@@ -407,16 +407,6 @@ class PageWriterTestCases < Test::Unit::TestCase
     @doc.close
   end
 
-  def test_jpeg?
-    image = IO.read(File.join(File.dirname(__FILE__), "testimg.jpg"))
-    assert @page.jpeg?(image)
-  end
-
-  def test_jpeg_dimensions
-    image = IO.read(File.join(File.dirname(__FILE__), "testimg.jpg"))
-    assert_equal([227, 149, 3, 8], @page.jpeg_dimensions(image))
-  end
-
   def test_units
     [:pt, :cm, :in].each do |units|
       @page.units(units)

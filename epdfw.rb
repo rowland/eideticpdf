@@ -21,40 +21,6 @@ module EideticPDF
   LINE_PATTERNS = { :solid => [], :dotted => [1, 2], :dashed => [4, 2] }
   IDENTITY_MATRIX = [1, 0, 0, 1, 0, 0].freeze
 
-  class PropertyStack
-    def initialize(obj, prop, &block)
-      @obj, @prop, @condition = obj, prop, block
-      @stack = []
-    end
-
-    def push(value)
-      @stack.push @obj.send(@prop)
-      @obj.send(@prop, value) if @condition.call(value)
-    end
-
-    def pop
-      value = @stack.pop
-      @obj.send(@prop, value) if @condition.call(value)
-    end
-  end
-
-  class ColorStack
-    def initialize(obj, prop)
-      @obj, @prop = obj, prop
-      @stack = []
-    end
-
-    def push(color)
-      @stack.push @obj.send(@prop)
-      @obj.send(@prop, color) if color.respond_to?(:to_int) or color.respond_to?(:to_str)
-    end
-
-    def pop
-      color = @stack.pop
-      @obj.send(@prop, color) if color.respond_to?(:to_int) or color.respond_to?(:to_str)
-    end
-  end
-
   class PageStyle
     attr_reader :page_size, :crop_size, :orientation, :landscape, :rotate
 
@@ -345,6 +311,8 @@ module EideticPDF
   end
 
   class PageWriter
+    include JpegInfo
+
   private
     def iconv_encoding(encoding)
       case encoding
@@ -358,14 +326,6 @@ module EideticPDF
       when 'CP1252': 'WinAnsiEncoding'
       else encoding
       end
-    end
-
-    def even?(n)
-      n % 2 == 0
-    end
-
-    def odd?(n)
-      n % 2 != 0
     end
 
     def to_points(units, measurement)
@@ -398,7 +358,7 @@ module EideticPDF
       ry = rx if ry.nil?
       a = 4.0 / 3.0 * (Math.sqrt(2) - 1.0)
       bp = []
-      if odd?(quadrant) # quadrant is odd
+      if quadrant.odd? # quadrant is odd
         # (1,0)
         bp << make_loc(x + (rx * SIGNS[quadrant - 1].x), y)
         # (1,a)
@@ -1765,7 +1725,6 @@ module EideticPDF
       prev_underline
     end
 
-    # font methods
     def type1_font_names
       @doc.type1_font_names
     end
@@ -1863,28 +1822,6 @@ module EideticPDF
       prev_size = @font.size
       font(@font.name, size, :style => @font.style, :color => @font.color, :encoding => @font.encoding, :sub_type => @font.sub_type)
       prev_size
-    end
-
-    # image methods
-    def jpeg?(image)
-      image[0, 2] == "\xFF\xD8"
-    end
-
-    def jpeg_dimensions(image)
-      raise "Not a JPEG" unless jpeg?(image)
-      image = image.dup
-      image.slice!(0, 2) # delete jpeg marker
-      while marker = image.slice!(0, 4)
-        m, c, l = marker.unpack('aan')
-        raise "Bad JPEG" unless m == "\xFF"
-        if ["\xC0", "\xC1", "\xC2", "\xC3", "\xC5", "\xC6", "\xC7", "\xC9", "\xCA", "\xCB", "\xCD", "\xCE", "\xCF"].include?(c)
-          dims = image.slice(0, 6)
-          bits_per_component, height, width, components = dims.unpack('CnnC')
-          break
-        end
-        image.slice!(0, l - 2)
-      end
-      [width, height, components, bits_per_component]
     end
 
     def load_image(image_file_name, stream=nil)
