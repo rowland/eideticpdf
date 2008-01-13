@@ -18,7 +18,7 @@ module EideticPDF
 
     attr_reader :pages
     attr_reader :catalog, :file, :resources
-    attr_reader :fonts, :images, :encodings
+    attr_reader :fonts, :images, :encodings, :bullets
     attr_reader :in_page
 
     # instantiation
@@ -26,6 +26,7 @@ module EideticPDF
       @fonts = {}
       @images = {}
       @encodings = {}
+      @bullets = {}
     end
 
     def to_s
@@ -310,6 +311,10 @@ module EideticPDF
       cur_page.wrap(text, length)
     end
 
+    def text_height(units=nil)
+      cur_page.text_height(units)
+    end
+
     def height(text='', units=nil) # may not include external leading?
       cur_page.height(text, units)
     end
@@ -378,6 +383,10 @@ module EideticPDF
 
     def print_link(s, uri)
       cur_page.print_link(s, uri)
+    end
+
+    def bullet(name, options={}, &block)
+      cur_page.bullet(name, options, &block)
     end
 
   protected

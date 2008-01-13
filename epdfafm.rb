@@ -98,9 +98,9 @@ module EideticPDF
             load_line(line)
           end
         end
-        # symbolic fonts don't specify ascender and descender, so borrow them from FontBBox
-        @ascender ||= font_b_box[3]
-        @descender ||= font_b_box[1]
+        # symbolic fonts don't specify ascender and descender, so default to reasonable numbers.
+        @ascender ||= 750
+        @descender ||= -188
         @missing_width = 0 # for CJK charsets only?
         @leading = 0 # for CJK charsets only?
         self

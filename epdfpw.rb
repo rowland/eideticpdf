@@ -16,6 +16,7 @@ module EideticPDF
     :underline_position, :underline_thickness)
   Location = Struct.new(:x, :y)
   Signs = Struct.new(:x, :y)
+  Bullet = Struct.new(:name, :width, :proc)
 
   SIGNS = [ Signs.new(1, -1), Signs.new(-1, -1), Signs.new(-1, 1), Signs.new(1, 1) ]
   UNIT_CONVERSION = { :pt => 1, :in => 72, :cm => 28.35 }
@@ -66,7 +67,8 @@ module EideticPDF
       end
     end
 
-    def pdf_encoding(encoding)
+    def pdf_encoding(encoding, font_name)
+      return 'StandardEncoding' if ['Symbol','ZapfDingbats'].include?(font_name)
       case encoding.upcase
       when 'CP1252': 'WinAnsiEncoding'
       else encoding
@@ -332,13 +334,6 @@ module EideticPDF
         @last_scale = @scale
       end
     end
-
-    # def check_set_scale
-    #   unless @scale == @last_scale
-    #     tw.set_horiz_scaling(@scale)
-    #     @last_scale = @scale
-    #   end
-    # end
 
     def text_rendering_mode(options)
       if options[:fill] and options[:stroke]
@@ -1393,19 +1388,31 @@ module EideticPDF
       end
     end
 
+    def text_height(units=nil)
+      units ||= @units
+      set_default_font if @font.nil?
+      0.001 * @font.height * @font.size.quo(UNIT_CONVERSION[units])
+    end
+
     def height(text='', units=nil) # may not include external leading?
       units ||= @units
       set_default_font if @font.nil?
       if text.respond_to?(:to_str)
-        0.001 * @font.height * @font.size.quo(UNIT_CONVERSION[units]) * @line_height
+        text_height(units) * @line_height
       else
         text.inject(0) { |total, line| total + height(line, units) }
       end
     end
 
     def paragraph(text, options={})
-      width = options[:width] || page_width - pen_pos.x
-      height = options[:height] || page_height - pen_pos.y
+      width = options[:width] || canvas_width - pen_pos.x
+      height = options[:height] || canvas_height - pen_pos.y
+      if bul = bullet(options[:bullet])
+        save_loc = pen_pos
+        bul.proc.call(self)
+        move_to(save_loc.x + from_points(units, bul.width), save_loc.y)
+        width -= from_points(units, bul.width)
+      end
       unless text.is_a?(PdfText::RichText)
         text = PdfText::RichText.new(text, @font,
           :color => @font_color, :char_spacing => @char_spacing, :word_spacing => @word_spacing, :underline => @underline)
@@ -1441,6 +1448,7 @@ module EideticPDF
         dy += line_dy
         move_to(save_loc.x, save_loc.y + line_dy)
       end
+      move_by(-from_points(units, bul.width), 0) unless bul.nil?
       return text.empty? ? nil : text
     end
 
@@ -1451,7 +1459,8 @@ module EideticPDF
 
     def v_text_align(vta=nil)
       return @v_text_align if vta.nil?
-      @v_text_align = vta
+      prev_vta, @v_text_align = @v_text_align, vta
+      prev_vta
     end
 
     def underline(underline=nil)
@@ -1473,7 +1482,7 @@ module EideticPDF
         @ic.close
         @ic = nil
       end
-      font = Font.new(name, size, options[:style] || '', options[:color], pdf_encoding(options[:encoding] || 'WinAnsiEncoding'))
+      font = Font.new(name, size, options[:style] || '', options[:color], pdf_encoding(options[:encoding] || 'WinAnsiEncoding', name))
       font.sub_type = options[:sub_type] || 'Type1'
       punc = (font.sub_type == 'TrueType') ? ',' : '-'
       full_name = name.gsub(' ','')
@@ -1620,6 +1629,15 @@ module EideticPDF
     end
 
     def print_link(s, uri)
+    end
+
+    def bullet(name, options={}, &block)
+      return @doc.bullets[name.to_sym] unless block_given?
+      if width = options[:width]
+        units = options[:units] || self.units
+        width = to_points(units, width)
+      end          
+      @doc.bullets[name.to_sym] = Bullet.new(name.to_s, width || 36, block)
     end
   end
 end

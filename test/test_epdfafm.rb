@@ -136,10 +136,14 @@ class AdobeFontMetricsTestCases < Test::Unit::TestCase
     symbol = font_metrics('Symbol')
     assert_not_nil(symbol)
     assert_equal(189, symbol.widths.select { |w| w != 0 }.size) # apple symbol not mapped by default
+    assert_equal(750, symbol.ascent, "ascent")
+    assert_equal(-188, symbol.descent, "descent")
 
     zapf = font_metrics('ZapfDingbats')
     assert_not_nil(zapf)
     assert_equal(202, zapf.widths.select { |w| w != 0 }.size)
+    assert_equal(750, zapf.ascent, "ascent")
+    assert_equal(-188, zapf.descent, "descent")
   end
 
   def test_font_metrics3

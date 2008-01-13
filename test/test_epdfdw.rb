@@ -29,6 +29,11 @@ class DocumentWriterTestCases < Test::Unit::TestCase
     @doc.close
   end
 
+  def test_text_height
+    assert_equal(1.7, @doc.line_height)
+    assert_equal(7.86, @doc.text_height(:pt))
+  end
+
   def test_height
     h1 = @doc.height("Hello", :pt)
     assert_in_delta(13.3, h1, 0.1)
@@ -277,6 +282,39 @@ class DocumentWriterTestCases < Test::Unit::TestCase
     @doc.puts "testing indent"
     assert_equal(5, @doc.pen_pos.x, "normal puts should return pen_pos.x to indent")
     assert_close(@doc.height, @doc.pen_pos.y)
+  end
+
+  def test_bullet
+    @doc.bullet(:star, :width => 1) do |w|
+      prev_font = w.font('ZapfDingbats', 12)
+      w.print(0x4E.chr)
+      w.font(prev_font)
+    end
+
+    star = @doc.bullets[:star]
+    assert_not_nil(star)
+    assert_equal('star', star.name)
+    assert_equal(UNIT_CONVERSION[:cm], star.width)
+
+    @doc.bullet('diamond') do |w|
+      prev_font = w.font('Symbol', 12)
+      w.print(0xA8.chr)
+      w.font(prev_font)
+    end
+
+    diamond = @doc.bullet(:diamond)
+    assert_not_nil(diamond)
+    assert_equal('diamond', diamond.name)
+    assert_equal(36, diamond.width)
+
+    @doc.bullet(:dagger, :width => 1, :units => :in) do |w|
+      w.print(0x86.chr)
+    end
+
+    dagger = @doc.bullet(:dagger)
+    assert_not_nil(dagger)
+    assert_equal('dagger', dagger.name)
+    assert_equal(72, dagger.width)
   end
 end
 

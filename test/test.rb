@@ -8,6 +8,7 @@ require 'epdfdw'
 
 TestImg = File.join(File.dirname(__FILE__), 'testimg.jpg')
 BuiltInFonts = false
+LOREM = "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
 
 def grid(w, width, height, xoff, yoff, step=1)
   w.path(:stroke => true) do
@@ -127,18 +128,17 @@ def print_text(w)
   end
 
   w.font_color 'Black'
-  lorem = "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
   w.move_to(0, 7); w.line_to(0, 9); w.move_to(w.canvas_width, 7); w.line_to(w.canvas_width, 9) 
-  lorem2 = w.paragraph_xy(0.5, 7, lorem, :width => 18, :height => 2)
+  lorem2 = w.paragraph_xy(0.5, 7, LOREM, :width => 18, :height => 2)
   w.puts
   w.paragraph(lorem2, :width => 18) unless lorem2.nil?
   w.puts
-  w.paragraph(lorem, :width => 18, :align => :justify)
+  w.paragraph(LOREM, :width => 18, :align => :justify)
   w.puts
-  w.paragraph(lorem, :width => 18, :align => :right)
+  w.paragraph(LOREM, :width => 18, :align => :right)
   w.puts
   w.move_to((w.canvas_width - 10) / 2.0, w.pen_pos.y)
-  w.paragraph(lorem, :width => 10, :align => :center)
+  w.paragraph(LOREM, :width => 10, :align => :center)
   w.close_page
 end
 
@@ -498,7 +498,6 @@ def images(w)
 end
 
 def clipping(w)
-  lorem = "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
   w.page(:units => :in, :margins => 1) do |p|
     p.print_xy(-0.5, -0.5, "Clipping", :underline => true)
     # grid(p, 6.5, 9, 0, 0)
@@ -509,7 +508,7 @@ def clipping(w)
       p.print_image_file(TestImg, 3, 0, 3)
     end
     p.ellipse(1.5, 4, 1.5, 1, :clip => true) do
-      p.paragraph_xy(0, 3, lorem, :width => 3, :height => 2)
+      p.paragraph_xy(0, 3, LOREM, :width => 3, :height => 2)
     end
     p.path
     p.rectangle(0, 6, 4.5, 3, :corners => [1])
@@ -590,34 +589,65 @@ def text_encodings(w)
   end
 end
 
+def bullets(w)
+  w.page(:units => :in, :margins => 0.5) do |p|
+    p.puts("Bullets", :underline => true)
+    p.new_line
+    p.font('Helvetica', 12)
+    p.v_text_align :top
+
+    lines = LOREM.split('.').map { |sentence| sentence << '.' }
+    p.bullet(:star, :width => 0.25) do |w|
+      prev_font = w.font('ZapfDingbats', 12)
+      w.print(0x4E.chr)
+      w.font(prev_font)
+    end
+    p.bullet('diamond', :width => 0.635, :units => :cm) do |w|
+      prev_font = w.font('Symbol', 12)
+      w.print(0xA8.chr)
+      w.font(prev_font)
+    end
+    r = p.text_height.quo(3)
+    p.bullet(:triangle, :width => 0.25) do |w|
+      pos = w.pen_pos
+      w.circle(pos.x + r, pos.y + r, r)
+    end
+
+    lines.each { |para| p.paragraph(para, :bullet => :star) }
+    lines.each { |para| p.paragraph(para, :bullet => :diamond, :align => :justify) }
+    lines.each { |para| p.paragraph(para, :bullet => :triangle) }
+  end
+end
+
 start = Time.now
 docw = EideticPDF::DocumentWriter.new
 
 # docw.doc(:font => { :name => 'Courier', :size => 10 }, :orientation => :landscape, :pages_up => [3, 2]) do |w|
 docw.doc(:font => { :name => 'Courier', :size => 10 }, :built_in_fonts => BuiltInFonts) do |w|
-  print_text(w)
-  type1_font_names(w)
-  truetype_font_names(w) if BuiltInFonts
-  stars(w)
-  polygons(w)
-  pies(w)
-  compound_paths(w)
-  filled_shapes(w)
-  circles_and_rectangles(w)
-  ellipses(w)
-  filled_rectangles(w)
-  line_widths_and_patterns(w)
-  print_angled_text_etc(w)
-  arcs(w)
-  pt_units(w)
-  cm_grid(w)
-  inch_grid(w)
-  dp_grid(w)
-  images(w)
-  clipping(w)
-  text_clipping(w)
-  text_encodings(w) unless BuiltInFonts
-  landscape_orientation(w)
+  bullets(w)
+  # print_text(w)
+  # type1_font_names(w)
+  # truetype_font_names(w) if BuiltInFonts
+  # stars(w)
+  # polygons(w)
+  # pies(w)
+  # compound_paths(w)
+  # filled_shapes(w)
+  # circles_and_rectangles(w)
+  # ellipses(w)
+  # filled_rectangles(w)
+  # line_widths_and_patterns(w)
+  # print_angled_text_etc(w)
+  # arcs(w)
+  # pt_units(w)
+  # cm_grid(w)
+  # inch_grid(w)
+  # dp_grid(w)
+  # images(w)
+  # clipping(w)
+  # text_clipping(w)
+  # text_encodings(w) unless BuiltInFonts
+  # landscape_orientation(w)
 end
 
 File.open("test.pdf","w") { |f| f.write(docw) }
