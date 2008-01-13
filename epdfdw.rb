@@ -3,7 +3,7 @@
 #  Created by Brent Rowland on 2007-07-13.
 #  Copyright (c) 2007, 2008 Eidetic Software. All rights reserved.
 
-require 'epdfw'
+require 'epdfpw'
 require 'epdfo'
 require 'epdfk'
 require 'epdfafm'

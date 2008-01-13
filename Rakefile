@@ -18,7 +18,7 @@ spec = Gem::Specification.new do |s|
   s.has_rdoc = false
   # s.extra_rdoc_files = ['README']
   # s.rdoc_options << '--title' << 'Eidetic PDF' << '--main' << 'README' << '-x' << 'test'
-  s.files = ['epdfafm.rb', 'epdfdw.rb', 'epdfk.rb', 'epdfo.rb', 'epdfs.rb', 'epdfsw.rb', 'epdft.rb', 'epdftt.rb', 'epdfw.rb'] + 
+  s.files = ['epdfafm.rb', 'epdfdw.rb', 'epdfk.rb', 'epdfo.rb', 'epdfs.rb', 'epdfsw.rb', 'epdft.rb', 'epdftt.rb', 'epdfpw.rb'] + 
     FileList["test/test*.rb"] + ['test/testimg.jpg'] + 
     FileList["fonts/*.afm"] + FileList["fonts/*.inf"]
   s.platform = Gem::Platform::RUBY
