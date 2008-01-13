@@ -288,6 +288,7 @@ module EideticPDF
     # font methods
     def set_default_font
       font(@default_font[:name], @default_font[:size], @default_font)
+      @font
     end
 
     def check_set_font
@@ -1246,7 +1247,6 @@ module EideticPDF
       prev_line_height
     end
 
-    # color methods
     def named_colors
       @doc.named_colors
     end
@@ -1274,17 +1274,6 @@ module EideticPDF
         prev_fill_color, @fill_color = @fill_color, color
       end
       prev_fill_color
-    end
-
-    def font_color(color=nil)
-      return @font_color if color.nil?
-      if color.is_a?(Array)
-        r, g, b = color
-        prev_font_color, @font_color = @font_color, color_from_rgb(r, g, b)
-      else
-        prev_font_color, @font_color = @font_color, color
-      end
-      prev_font_color
     end
 
     def print(text, options={})
@@ -1549,9 +1538,15 @@ module EideticPDF
 
     def font(name=nil, size=nil, options={})
       return @font || set_default_font if name.nil?
+      prev_font = @font
+      if name.is_a?(Font)
+        @font = name
+        name, size = @font.name, @font.size
+        options.update(:style => @font.style, :color => @font.color, :encoding => @font.encoding, :sub_type => @font.sub_type)
+      end
       size ||= @font.nil? ? @default_font[:size] : @font.size
       @font, @page_font = select_font(name, size, options)
-      @font
+      prev_font
     end
 
     def font_style(style=nil)
@@ -1568,6 +1563,18 @@ module EideticPDF
       prev_size = @font.size
       font(@font.name, size, :style => @font.style, :color => @font.color, :encoding => @font.encoding, :sub_type => @font.sub_type)
       prev_size
+    end
+
+    def font_color(color=nil)
+      return @font_color if color.nil?
+      if color.is_a?(Array)
+        r, g, b = color
+        prev_font_color, @font_color = @font_color, color_from_rgb(r, g, b)
+      else
+        prev_font_color, @font_color = @font_color, color
+      end
+      @font.color = @font_color unless @font.nil?
+      prev_font_color
     end
 
     def load_image(image_file_name, stream=nil)
