@@ -1414,7 +1414,7 @@ module EideticPDF
         width -= from_points(units, bul.width)
       end
       unless text.is_a?(PdfText::RichText)
-        text = PdfText::RichText.new(text, @font,
+        text = PdfText::RichText.new(text, font,
           :color => @font_color, :char_spacing => @char_spacing, :word_spacing => @word_spacing, :underline => @underline)
       end
       dy = 0

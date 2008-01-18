@@ -284,6 +284,12 @@ class DocumentWriterTestCases < Test::Unit::TestCase
     assert_close(@doc.height, @doc.pen_pos.y)
   end
 
+  def test_paragraph
+    assert_nothing_raised(Exception) do
+      @doc.paragraph("Hello, World!")
+    end
+  end
+
   def test_bullet
     @doc.bullet(:star, :width => 1) do |w|
       prev_font = w.font('ZapfDingbats', 12)
