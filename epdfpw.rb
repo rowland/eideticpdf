@@ -1632,6 +1632,7 @@ module EideticPDF
     end
 
     def bullet(name, options={}, &block)
+      return nil if name.nil?
       return @doc.bullets[name.to_sym] unless block_given?
       if width = options[:width]
         units = options[:units] || self.units
