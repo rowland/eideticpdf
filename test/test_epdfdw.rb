@@ -322,6 +322,14 @@ class DocumentWriterTestCases < Test::Unit::TestCase
     assert_equal('dagger', dagger.name)
     assert_equal(72, dagger.width)
   end
+
+  def test_underline
+    assert(!@doc.underline)
+    @doc.underline(true)
+    assert(@doc.underline)
+    @doc.underline(false)
+    assert(!@doc.underline)
+  end
 end
 
 def assert_array_in_delta(expected_floats, actual_floats, delta)

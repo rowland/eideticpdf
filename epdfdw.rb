@@ -331,6 +331,10 @@ module EideticPDF
       cur_page.v_text_align(vta)
     end
 
+    def underline(underline=nil)
+      cur_page.underline(underline)
+    end
+
     # font methods
     def type1_font_names
       if @options[:built_in_fonts]
