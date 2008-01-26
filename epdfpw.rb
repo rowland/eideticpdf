@@ -1413,9 +1413,11 @@ module EideticPDF
         move_to(save_loc.x + from_points(units, bul.width), save_loc.y)
         width -= from_points(units, bul.width)
       end
+      prev_underline, ul = @underline, options[:underline].nil? ? @underline : options[:underline]
       unless text.is_a?(PdfText::RichText)
-        text = PdfText::RichText.new(text, font,
-          :color => @font_color, :char_spacing => @char_spacing, :word_spacing => @word_spacing, :underline => @underline)
+        text = PdfText::RichText.new(text, font, :color => @font_color, 
+          :char_spacing => @char_spacing, :word_spacing => @word_spacing, 
+          :underline => ul)
       end
       dy = 0
       while dy + from_points(@units, text.height) < height and line = text.next(to_points(@units, width))
@@ -1448,6 +1450,7 @@ module EideticPDF
         dy += line_dy
         move_to(save_loc.x, save_loc.y + line_dy)
       end
+      underline(prev_underline)
       move_by(-from_points(units, bul.width), 0) unless bul.nil?
       return text.empty? ? nil : text
     end
