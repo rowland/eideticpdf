@@ -5,6 +5,7 @@
 
 $: << File.dirname(__FILE__) + '/../'
 require 'test/unit'
+require 'test_helpers'
 require 'epdft'
 require 'epdfk'
 
@@ -44,5 +45,32 @@ class TestTextWrapper < Test::Unit::TestCase
   def test_max_height
     line = @wrapper.next(500)
     assert_in_delta(11.1, line.height, 0.1)
+  end
+
+  def count_lines(rich_text)
+    result = 0
+    result += 1 while rich_text.next(500)
+    result
+  end
+
+  def test_clone
+    word_count = @wrapper.words.size
+    assert_equal(137, word_count)
+    wrapper_clone = @wrapper.clone
+    line_count = count_lines(wrapper_clone)
+    assert_equal(7, line_count)
+    assert_equal(0, wrapper_clone.words.size)
+    assert_equal(word_count, @wrapper.words.size)
+    assert_equal(line_count, count_lines(@wrapper))
+  end
+
+  def test_lines
+    lines = @wrapper.lines(500)
+    assert_equal(7, lines.size)
+  end
+
+  def test_height
+    assert_close(11.1, @wrapper.height)
+    assert_close(77.7, @wrapper.height(500))
   end
 end

@@ -34,6 +34,10 @@ module EideticPDF
         add(text, font, options)
       end
 
+      def initialize_copy(other)
+        @words = @words.map { |word| word.clone }
+      end
+
       def add(text, font, options={})
         fsize = font.size * 0.001
         char_spacing, word_spacing = options[:char_spacing] || 0, options[:word_spacing] || 0
@@ -78,14 +82,27 @@ module EideticPDF
         merge(@words.slice!(0, [i,1].max)).extend(TextLine)
       end
 
+      def lines(width)
+        rich_text = self.clone
+        result = []
+        while line = rich_text.next(width)
+          result << line
+        end
+        result
+      end
+
       def empty?
         @words.empty?
       end
 
-      def height
+      def height(width=nil)
         return 0 if @words.empty?
-        f = @words.first.font
-        0.001 * f.height * f.size
+        if width.nil?
+          f = @words.first.font
+          0.001 * f.height * f.size
+        else
+          lines(width).inject(0) { |total, line| total + line.height }
+        end
       end
     end
   end
