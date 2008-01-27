@@ -7,7 +7,7 @@
 
 $: << File.dirname(__FILE__) + '/../'
 require 'test/unit'
-require 'test_helpers'
+require File.join(File.dirname(__FILE__), 'test_helpers')
 require 'epdfdw'
 
 include EideticPDF

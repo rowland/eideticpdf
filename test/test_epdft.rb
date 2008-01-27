@@ -5,7 +5,7 @@
 
 $: << File.dirname(__FILE__) + '/../'
 require 'test/unit'
-require 'test_helpers'
+require File.join(File.dirname(__FILE__), 'test_helpers')
 require 'epdft'
 require 'epdfk'
 
@@ -56,7 +56,9 @@ class TestTextWrapper < Test::Unit::TestCase
   def test_clone
     word_count = @wrapper.words.size
     assert_equal(137, word_count)
+    first_text = @wrapper.words.first.text
     wrapper_clone = @wrapper.clone
+    assert(!first_text.equal?(wrapper_clone.words.first.text), "text not cloned")
     line_count = count_lines(wrapper_clone)
     assert_equal(7, line_count)
     assert_equal(0, wrapper_clone.words.size)

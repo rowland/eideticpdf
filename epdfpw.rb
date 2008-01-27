@@ -619,7 +619,7 @@ module EideticPDF
     end
 
     def units(units=nil)
-      return @units if units.nil?
+      return @units if units.nil? or units == @units
       @loc = convert_units(@loc, @units, units)
       @last_loc = convert_units(@last_loc, @units, units) unless @last_loc.nil?
       prev_units, @units = @units, units

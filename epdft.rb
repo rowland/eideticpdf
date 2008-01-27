@@ -23,7 +23,18 @@ module EideticPDF
   end
 
   module PdfText
-    TextPiece = Struct.new(:text, :width, :font, :color, :underline, :chars, :tokens)
+    # TextPiece = Struct.new(:text, :width, :font, :color, :underline, :chars, :tokens)
+    class TextPiece
+      attr_accessor :text, :width, :font, :color, :underline, :chars, :tokens
+    
+      def initialize(text, width, font, color, underline, chars, tokens)
+        @text, @width, @font, @color, @underline, @chars, @tokens = text, width, font, color, underline, chars, tokens
+      end
+    
+      def initialize_copy(other)
+        @text = @text.clone
+      end
+    end
 
     class RichText
       TOKEN_RE = /\n|\t|[ ]|[\S]+-+|[\S]+/
