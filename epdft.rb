@@ -66,6 +66,9 @@ module EideticPDF
 
       # merge pieces with identical characteristics
       def merge(text_pieces)
+        while !text_pieces.empty? and text_pieces.last.text == ' '
+          text_pieces.pop
+        end
         text_pieces.inject([]) do |pieces, piece|
           if pieces.empty? or [pieces.last.font, pieces.last.color, pieces.last.underline] != [piece.font, piece.color, piece.underline]
             pieces << piece

@@ -32,12 +32,12 @@ class TestTextWrapper < Test::Unit::TestCase
   end
 
   def test_next
-    assert_equal("Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut ", @wrapper.next(500).first.text)
+    assert_equal("Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut", @wrapper.next(500).first.text)
     assert_equal("labore et dolore magna aliqua.\n", @wrapper.next(500).first.text)
-    assert_equal("Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea ", @wrapper.next(500).first.text)
-    assert_equal("commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum ", @wrapper.next(500).first.text)
+    assert_equal("Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea", @wrapper.next(500).first.text)
+    assert_equal("commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum", @wrapper.next(500).first.text)
     assert_equal("dolore eu fugiat nulla pariatur.\n", @wrapper.next(500).first.text)
-    assert_equal("Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim ", @wrapper.next(500).first.text)
+    assert_equal("Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim", @wrapper.next(500).first.text)
     assert_equal("id est laborum.", @wrapper.next(500).first.text)
     assert_equal(nil, @wrapper.next(500))
   end

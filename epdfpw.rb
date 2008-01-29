@@ -1433,9 +1433,9 @@ module EideticPDF
             if delta_pt / (line.tokens - 1) > 3
               @word_spacing = 3
               delta_pt -= (line.tokens - 1) * @word_spacing
-              @char_spacing = delta_pt / line.chars
+              @char_spacing = delta_pt.quo(line.chars)
             else
-              @word_spacing = delta_pt / (line.tokens - 1) * 2
+              @word_spacing = delta_pt.quo(line.tokens - 1) * 2
               @char_spacing = 0
             end
           end
