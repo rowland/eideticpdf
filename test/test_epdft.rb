@@ -13,7 +13,7 @@ include EideticPDF
 
 Font = Struct.new(:name, :size, :style, :color, :encoding, :sub_type, :widths, :ascent, :descent, :height)
 
-class TestTextWrapper < Test::Unit::TestCase
+class TestRichText < Test::Unit::TestCase
   def setup
     lorem = "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n" <<
             "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute " <<
@@ -74,5 +74,9 @@ class TestTextWrapper < Test::Unit::TestCase
   def test_height
     assert_close(11.1, @wrapper.height)
     assert_close(77.7, @wrapper.height(500))
+  end
+
+  def test_width
+    assert_close(490.86, @wrapper.width(500))
   end
 end

@@ -23,14 +23,13 @@ module EideticPDF
   end
 
   module PdfText
-    # TextPiece = Struct.new(:text, :width, :font, :color, :underline, :chars, :tokens)
     class TextPiece
       attr_accessor :text, :width, :font, :color, :underline, :chars, :tokens
-    
+
       def initialize(text, width, font, color, underline, chars, tokens)
         @text, @width, @font, @color, @underline, @chars, @tokens = text, width, font, color, underline, chars, tokens
       end
-    
+
       def initialize_copy(other)
         @text = @text.clone
       end
@@ -117,6 +116,10 @@ module EideticPDF
         else
           lines(width).inject(0) { |total, line| total + line.height }
         end
+      end
+
+      def width(max_width)
+        lines(max_width).map { |line| line.width }.max
       end
     end
   end
