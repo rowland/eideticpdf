@@ -39,9 +39,9 @@ module EideticPDF
       TOKEN_RE = /\n|\t|[ ]|[\S]+-+|[\S]+/
       attr_reader :words
 
-      def initialize(text, font, options={})
+      def initialize(text=nil, font=nil, options={})
         @words = []
-        add(text, font, options)
+        add(text, font, options) unless text.nil?
       end
 
       def initialize_copy(other)
