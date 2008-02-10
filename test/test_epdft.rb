@@ -13,7 +13,7 @@ include EideticPDF
 
 Font = Struct.new(:name, :size, :style, :color, :encoding, :sub_type, :widths, :ascent, :descent, :height)
 
-class TestRichText < Test::Unit::TestCase
+class RichTextTestCases < Test::Unit::TestCase
   def setup
     lorem = "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n" <<
             "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute " <<
@@ -78,5 +78,92 @@ class TestRichText < Test::Unit::TestCase
 
   def test_width
     assert_close(490.86, @wrapper.width(500))
+  end
+end
+
+class RichTextTestCases2 < Test::Unit::TestCase
+  def setup
+    lorem = "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n" <<
+            "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute " <<
+            "irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.\n" <<
+            "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+    fm = PdfK::font_metrics('Helvetica')
+    fm_b = PdfK::font_metrics('Helvetica-Bold')
+    fm_i = PdfK::font_metrics('Helvetica-Oblique')
+    fm_bi = PdfK::font_metrics('Helvetica-BoldOblique')
+    @helv = Font.new('Helvetica', 12, '', nil, 'WinAnsiEncoding', 'Type1', fm.widths, fm.ascent, fm.descent, fm.ascent + fm.descent.abs)
+    @helv_b = Font.new('Helvetica-Bold', 12, '', nil, 'WinAnsiEncoding', 'Type1', fm_b.widths, fm_b.ascent, fm_b.descent, fm_b.ascent + fm_b.descent.abs)
+    @helv_i = Font.new('Helvetica-Italic', 12, '', nil, 'WinAnsiEncoding', 'Type1', fm_i.widths, fm_i.ascent, fm_i.descent, fm_i.ascent + fm_i.descent.abs)
+    @helv_bi = Font.new('Helvetica-BoldItalic', 12, '', nil, 'WinAnsiEncoding', 'Type1', fm_bi.widths, fm_bi.ascent, fm_bi.descent, fm_bi.ascent + fm_bi.descent.abs)
+  end
+
+  def test_bold
+    rt = PdfText::RichText.new
+    rt.add("Here is some ", @helv)
+    rt.add("Bold", @helv_b)
+    rt.add(" text.", @helv)
+    assert_in_delta(126, rt.width(500), 1)
+    assert_in_delta(11.1, rt.height, 0.1)
+    pieces = rt.next(500)
+    assert_equal(3, pieces.size)
+    assert_equal(@helv, pieces[0].font)
+    assert_equal(@helv_b, pieces[1].font)
+    assert_equal(@helv, pieces[2].font)
+  end
+
+  def test_italic
+    rt = PdfText::RichText.new
+    rt.add("Here is some ", @helv)
+    rt.add("Italic", @helv_i)
+    rt.add(" text.", @helv)
+    assert_in_delta(124, rt.width(500), 1)
+    assert_in_delta(11.1, rt.height, 0.1)
+    pieces = rt.next(500)
+    assert_equal(3, pieces.size)
+    assert_equal(@helv, pieces[0].font)
+    assert_equal(@helv_i, pieces[1].font)
+    assert_equal(@helv, pieces[2].font)
+  end
+
+  def test_bold_italic
+    rt = PdfText::RichText.new
+    rt.add("Here is some ", @helv)
+    rt.add("Bold, Italic", @helv_bi)
+    rt.add(" text.", @helv)
+    assert_in_delta(160, rt.width(500), 1)
+    assert_in_delta(11.1, rt.height, 0.1)
+    pieces = rt.next(500)
+    assert_equal(3, pieces.size)
+    assert_equal(@helv, pieces[0].font)
+    assert_equal(@helv_bi, pieces[1].font)
+    assert_equal(@helv, pieces[2].font)
+  end
+
+  def test_color
+    rt = PdfText::RichText.new
+    rt.add("Here is some ", @helv)
+    rt.add("Red", @helv, :color => 'Red')
+    rt.add(" text.", @helv)
+    assert_in_delta(122, rt.width(500), 1)
+    assert_in_delta(11.1, rt.height, 0.1)
+    pieces = rt.next(500)
+    assert_equal(3, pieces.size)
+    assert_equal(@helv, pieces[0].font)
+    assert_equal('Red', pieces[1].color)
+    assert_equal(@helv, pieces[2].font)
+  end
+
+  def test_underline
+    rt = PdfText::RichText.new
+    rt.add("Here is some ", @helv)
+    rt.add("Underlined", @helv, :underline => true)
+    rt.add(" text.", @helv)
+    assert_in_delta(158, rt.width(500), 1)
+    assert_in_delta(11.1, rt.height, 0.1)
+    pieces = rt.next(500)
+    assert_equal(3, pieces.size)
+    assert_equal(@helv, pieces[0].font)
+    assert(pieces[1].underline)
+    assert_equal(@helv, pieces[2].font)
   end
 end

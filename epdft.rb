@@ -51,7 +51,7 @@ module EideticPDF
       def add(text, font, options={})
         fsize = font.size * 0.001
         char_spacing, word_spacing = options[:char_spacing] || 0, options[:word_spacing] || 0
-        color, underlined = options[:color] || 0, options[:underline]
+        color, underlined = options[:color] || 0, options[:underline] || false
         words = text.scan(TOKEN_RE).map do |token|
           width = 0.0
           token.each_byte do |b|

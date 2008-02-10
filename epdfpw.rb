@@ -1257,9 +1257,6 @@ module EideticPDF
       prev_line_color
     end
 
-    # def set_fill_color_rgb(red, green, blue)
-    # end
-
     def fill_color(color=nil)
       return @fill_color if color.nil?
       if color.is_a?(Array)
@@ -1441,7 +1438,7 @@ module EideticPDF
           end
         end
         while piece = line.shift
-          @font = piece.font
+          font(piece.font)
           font_color piece.color
           underline piece.underline
           print(piece.text)

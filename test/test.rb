@@ -619,35 +619,102 @@ def bullets(w)
   end
 end
 
+def rich_text(w)
+  w.page(:units => :in, :margins => 0.5) do |p|
+    p.puts("Rich Text", :underline => true)
+    p.new_line
+
+    rt = EideticPDF::PdfText::RichText.new
+    p.font('Helvetica', 12)
+    rt.add("Here is some ", p.font)
+    p.font('Helvetica-Bold', 12)
+    rt.add("Bold", p.font)
+    p.font('Helvetica', 12)
+    rt.add(" text.", p.font)
+    p.paragraph(rt)
+
+    rt = EideticPDF::PdfText::RichText.new
+    p.font('Helvetica', 12)
+    rt.add("Here is some ", p.font)
+    p.font('Helvetica-Oblique', 12)
+    rt.add("Italic", p.font)
+    p.font('Helvetica', 12)
+    rt.add(" text.", p.font)
+    p.paragraph(rt)
+
+    rt = EideticPDF::PdfText::RichText.new
+    p.font('Helvetica', 12)
+    rt.add("Here is some ", p.font)
+    p.font('Helvetica-BoldOblique', 12)
+    rt.add("Bold, Italic", p.font)
+    p.font('Helvetica', 12)
+    rt.add(" text.", p.font)
+    p.paragraph(rt)
+
+    rt = EideticPDF::PdfText::RichText.new
+    p.font('Helvetica', 12)
+    rt.add("Here is some ", p.font)
+    rt.add("Red", p.font, :color => 'Red')
+    rt.add(" text.", p.font)
+    p.paragraph(rt)
+
+    rt = EideticPDF::PdfText::RichText.new
+    p.font('Helvetica', 12)
+    rt.add("Here is some ", p.font)
+    rt.add("Underlined", p.font, :underline => true)
+    rt.add(" text.", p.font)
+    p.paragraph(rt)
+
+    rt = EideticPDF::PdfText::RichText.new
+    p.font('Helvetica', 12)
+    rt.add("This text is ", p.font)
+    p.font('Helvetica-Bold', 12)
+    rt.add("Bold.  ", p.font)
+
+    p.font('Helvetica', 12)
+    rt.add("This text is ", p.font)
+    rt.add("Underlined", p.font, :underline => true)
+    rt.add(".  ", p.font)
+
+    rt.add("This text is ", p.font)
+    rt.add("Red.  ", p.font, :color => 'Red')
+
+    rt.add("This text is normal.", p.font)
+
+    p.paragraph(rt)
+  end
+end
+
 start = Time.now
 docw = EideticPDF::DocumentWriter.new
 
 # docw.doc(:font => { :name => 'Courier', :size => 10 }, :orientation => :landscape, :pages_up => [3, 2]) do |w|
 docw.doc(:font => { :name => 'Courier', :size => 10 }, :built_in_fonts => BuiltInFonts) do |w|
-  bullets(w)
-  print_text(w)
-  type1_font_names(w)
-  truetype_font_names(w) if BuiltInFonts
-  stars(w)
-  polygons(w)
-  pies(w)
-  compound_paths(w)
-  filled_shapes(w)
-  circles_and_rectangles(w)
-  ellipses(w)
-  filled_rectangles(w)
-  line_widths_and_patterns(w)
-  print_angled_text_etc(w)
-  arcs(w)
-  pt_units(w)
-  cm_grid(w)
-  inch_grid(w)
-  dp_grid(w)
-  images(w)
-  clipping(w)
-  text_clipping(w)
-  text_encodings(w) unless BuiltInFonts
-  landscape_orientation(w)
+  rich_text(w)
+  # bullets(w)
+  # print_text(w)
+  # type1_font_names(w)
+  # truetype_font_names(w) if BuiltInFonts
+  # stars(w)
+  # polygons(w)
+  # pies(w)
+  # compound_paths(w)
+  # filled_shapes(w)
+  # circles_and_rectangles(w)
+  # ellipses(w)
+  # filled_rectangles(w)
+  # line_widths_and_patterns(w)
+  # print_angled_text_etc(w)
+  # arcs(w)
+  # pt_units(w)
+  # cm_grid(w)
+  # inch_grid(w)
+  # dp_grid(w)
+  # images(w)
+  # clipping(w)
+  # text_clipping(w)
+  # text_encodings(w) unless BuiltInFonts
+  # landscape_orientation(w)
 end
 
 File.open("test.pdf","w") { |f| f.write(docw) }
