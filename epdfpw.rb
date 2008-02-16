@@ -1059,7 +1059,7 @@ module EideticPDF
       step = 360.0 / sides
       angle = step / 2 + 90
       points = (0..sides).collect do
-        px, py = rotate_xy_coordinate(r, 0, angle)
+        px, py = rotate_xy_coordinate(1, 0, angle)
         angle += step
         make_loc(x + px * r, y + py * r)
       end
@@ -1110,7 +1110,7 @@ module EideticPDF
       end
 
       rotation = options[:rotation] || 0
-      r2 = (points - 2).quo(points)
+      r2 = (points - 2).quo(points * 1.5)
       vertices1 = points_for_polygon(x, y, r, points, options)
       vertices2 = points_for_polygon(x, y, r2, points, options.merge(:rotation => rotation + (360.0 / points / 2)))
       line_colors.push(border)
@@ -1629,6 +1629,7 @@ module EideticPDF
     end
 
     def print_link(s, uri)
+      # TODO
     end
 
     def bullet(name, options={}, &block)
