@@ -812,7 +812,7 @@ module EideticPDF
 
       if options[:corners]
         draw_rounded_rectangle(x, y, width, height, options)
-      elsif options[:path]
+      elsif options[:path] or options[:reverse]
         draw_rectangle_path(x, y, width, height, options)
       else
         gw.rectangle(
