@@ -800,6 +800,12 @@ module EideticPDF
       nil
     end
 
+    def line(x, y, angle, length)
+      lx, ly = rotate_xy_coordinate(1, 0, angle)
+      move_to(x, y)
+      line_to(x + lx * length, y + ly * length)
+    end
+
     def rectangle(x, y, width, height, options={})
       border = options[:border].nil? ? true : options[:border]
       fill = options[:fill].nil? ? false : options[:fill]

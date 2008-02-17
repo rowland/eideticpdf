@@ -177,6 +177,10 @@ module EideticPDF
       cur_page.line_to(x, y)
     end
 
+    def line(x, y, angle, length)
+      cur_page.line(x, y, angle, length)
+    end
+
     def rectangle(x, y, width, height, options={})
       cur_page.rectangle(x, y, width, height, options)
     end

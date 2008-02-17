@@ -389,8 +389,8 @@ def compound_paths(w)
 
     p.path(:fill => true, :stroke => true) do
       p.rectangle(1, 3, 3, 3, :path => true)
-      p.rectangle(1.5, 3.5, 1, 1, :path => true, :reverse => true)
-      p.rectangle(2.75, 4.75, 1, 1, :path => true, :reverse => true)
+      p.rectangle(1.5, 3.5, 1, 1, :reverse => true)
+      p.rectangle(2.75, 4.75, 1, 1, :reverse => true)
     end
 
     p.path(:fill => true, :stroke => true) do
@@ -685,11 +685,23 @@ def rich_text(w)
   end
 end
 
+def angled_lines(w)
+  w.page(:units => :in, :margins => 0.5) do |p|
+    p.puts("Angled Lines", :underline => true)
+    p.new_line
+    x, y = 3.75, 5
+    60.times do |step|
+      p.line(x, y, step * 6, x)
+    end
+  end
+end
+
 start = Time.now
 docw = EideticPDF::DocumentWriter.new
 
 # docw.doc(:font => { :name => 'Courier', :size => 10 }, :orientation => :landscape, :pages_up => [3, 2]) do |w|
 docw.doc(:font => { :name => 'Courier', :size => 10 }, :built_in_fonts => BuiltInFonts) do |w|
+  angled_lines(w)
   rich_text(w)
   bullets(w)
   print_text(w)
