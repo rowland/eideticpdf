@@ -692,7 +692,7 @@ module EideticPDF
       @tabs = tabs.map { |stop| stop.to_f }.select { |stop| stop > 0 }.sort
     end
 
-    def tab
+    def tab(&block)
       return if @tabs.nil?
       p = pen_pos
       x = @tabs.detect { |stop| stop > p.x }
@@ -711,7 +711,7 @@ module EideticPDF
       @vtabs = tabs.map { |stop| stop.to_f }.select { |stop| stop > 0 }.sort
     end
 
-    def vtab
+    def vtab(&block)
       return if @vtabs.nil?
       p = pen_pos
       y = @vtabs.detect { |stop| stop > p.y }
@@ -806,10 +806,10 @@ module EideticPDF
       line_to(x + lx * length, y + ly * length)
     end
 
-    def rectangle(x, y, width, height, options={})
+    def rectangle(x, y, width, height, options={}, &block)
       border = options[:border].nil? ? true : options[:border]
       fill = options[:fill].nil? ? false : options[:fill]
-      clip = options[:clip].nil? ? false : block_given?
+      clip = options[:clip].nil? ? false : options[:clip] && block_given?
       gw.stroke if @in_path and @auto_path
 
       line_colors.push(border)
@@ -900,10 +900,10 @@ module EideticPDF
       points
     end
 
-    def circle(x, y, r, options={})
+    def circle(x, y, r, options={}, &block)
       border = options[:border].nil? ? true : options[:border]
       fill = options[:fill].nil? ? false : options[:fill]
-      clip = options[:clip].nil? ? false : block_given?
+      clip = options[:clip].nil? ? false : options[:clip] && block_given?
 
       line_colors.push(border)
       fill_colors.push(fill)
@@ -928,11 +928,11 @@ module EideticPDF
       points
     end
 
-    def ellipse(x, y, rx, ry, options={})
+    def ellipse(x, y, rx, ry, options={}, &block)
       rotation = options[:rotation] || 0
       border = options[:border].nil? ? true : options[:border]
       fill = options[:fill].nil? ? false : options[:fill]
-      clip = options[:clip].nil? ? false : block_given?
+      clip = options[:clip].nil? ? false : options[:clip] && block_given?
 
       line_colors.push(border)
       fill_colors.push(fill)
@@ -1002,7 +1002,7 @@ module EideticPDF
     def pie(x, y, r, start_angle, end_angle, options={})
       border = options[:border].nil? ? true : options[:border]
       fill = options[:fill].nil? ? false : options[:fill]
-      clip = options[:clip].nil? ? false : block_given?
+      clip = options[:clip].nil? ? false : options[:clip] && block_given?
       unless @last_loc == @loc
         gw.stroke if @in_path and @auto_path
         @in_path = false
@@ -1029,12 +1029,12 @@ module EideticPDF
       nil
     end
 
-    def arch(x, y, r1, r2, start_angle, end_angle, options={})
+    def arch(x, y, r1, r2, start_angle, end_angle, options={}, &block)
       return if start_angle == end_angle
       start_angle, end_angle = end_angle, start_angle if options[:reverse]
       border = options[:border].nil? ? true : options[:border]
       fill = options[:fill].nil? ? false : options[:fill]
-      clip = options[:clip].nil? ? false : block_given?
+      clip = options[:clip].nil? ? false : options[:clip] && block_given?
       unless @last_loc == @loc
         gw.stroke if @in_path and @auto_path
         @in_path = false
@@ -1075,10 +1075,10 @@ module EideticPDF
       points
     end
 
-    def polygon(x, y, r, sides, options={})
+    def polygon(x, y, r, sides, options={}, &block)
       border = options[:border].nil? ? true : options[:border]
       fill = options[:fill].nil? ? false : options[:fill]
-      clip = options[:clip].nil? ? false : block_given?
+      clip = options[:clip].nil? ? false : options[:clip] && block_given?
       unless @last_loc == @loc
         gw.stroke if @in_path and @auto_path
         @in_path = false
@@ -1105,11 +1105,11 @@ module EideticPDF
       nil
     end
 
-    def star(x, y, r, points, options={})
+    def star(x, y, r, points, options={}, &block)
       return if points < 5
       border = options[:border].nil? ? true : options[:border]
       fill = options[:fill].nil? ? false : options[:fill]
-      clip = options[:clip].nil? ? false : block_given?
+      clip = options[:clip].nil? ? false : options[:clip] && block_given?
       unless @last_loc == @loc
         gw.stroke if @in_path and @auto_path
         @in_path = false
@@ -1137,7 +1137,7 @@ module EideticPDF
       nil
     end
 
-    def path(options={})
+    def path(options={}, &block)
       stroke = options[:stroke].nil? ? false : options[:stroke]
       fill = options[:fill].nil? ? false : options[:fill]
       line_colors.push(stroke)
@@ -1197,7 +1197,7 @@ module EideticPDF
       @auto_path = true
     end
 
-    def clip(options={})
+    def clip(options={}, &block)
       gw.save_graphics_state
       if @in_path
         gw.clip
@@ -1274,14 +1274,14 @@ module EideticPDF
       prev_fill_color
     end
 
-    def print(text, options={})
+    def print(text, options={}, &block)
       text = text.to_s
       return if text.empty?
       align = options[:align]
       angle = options[:angle] || 0.0
       @scale = options[:scale] || 1.0
       prev_underline = underline(options[:underline]) unless options[:underline].nil?
-      clip = options[:clip] and block_given?
+      clip = options[:clip] && block_given?
       if clip
         gw.save_graphics_state
         text_clipping_mode(options)
