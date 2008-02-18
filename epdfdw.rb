@@ -117,10 +117,12 @@ module EideticPDF
       cur_page.margin_left
     end
 
+    # +page_height+ excluding top and bottom margins.
     def canvas_width
       cur_page.canvas_width
     end
 
+    # +page_width+ excluding left and right margins.
     def canvas_height
       cur_page.canvas_height
     end
@@ -193,8 +195,16 @@ module EideticPDF
       cur_page.points_for_circle(x, y, r)
     end
 
-    def circle(x, y, r, options={})
-      cur_page.circle(x, y, r, options)
+    # Draw a circle with origin <tt>x, y</tt> and radius +r+.
+    # Direction is counterclockwise (anticlockwise), unless :+reverse+ option is specified.
+    #
+    # The following +options+ apply:
+    # [:+border+] If true or a color, a border is drawn with the current or specified +line_color+, respectively. Defaults to +true+.
+    # [:+fill+] If true or a color, the area is filled with the current or specified +fill_color+, respectively. Defaults to +false+.
+    # [:+clip+] The shape acts as a clipping boundary for anything drawn within the supplied block.
+    # [:+reverse+] Draw circle clockwise.  Useful for drawing hollow shapes.
+    def circle(x, y, r, options={}, &block)
+      cur_page.circle(x, y, r, options, &block)
     end
 
     def points_for_ellipse(x, y, rx, ry)
@@ -228,7 +238,7 @@ module EideticPDF
     # Draw an arch with origin <tt>x, y</tt> from +start_angle+ to _end_angle_ degrees.
     # The result is a bounded area between radii <tt>r1</tt> and <tt>r2</tt>.
     #
-    # The following +options+ are applicable:
+    # The following +options+ apply:
     # [:+border+] If true or a color, a border is drawn with the current or specified +line_color+, respectively. Defaults to +true+.
     # [:+fill+] If true or a color, the area is filled with the current or specified +fill_color+, respectively. Defaults to +false+.
     # [:+clip+] The shape acts as a clipping boundary for anything drawn within the supplied block. Defaults to +true+ if a block is given, otherwise +false+.
@@ -265,8 +275,13 @@ module EideticPDF
       cur_page.fill_and_stroke
     end
 
-    def clip(options={})
-      cur_page.clip(options)
+    # Use current path as a clipping boundary for anything drawn within the supplied block.
+    #
+    # The following +options+ apply:
+    # [:+stroke+] If true, the current path is stroked with the current +line_color+.  Defaults to +false+.
+    # [:+fill+] If true, the area bounded by the current path is filled with the current +fill_color+.  Defaults to +false+.
+    def clip(options={}, &block)
+      cur_page.clip(options, &block)
     end
 
     def line_dash_pattern(pattern=nil)
@@ -399,7 +414,7 @@ module EideticPDF
 
     # Given a block, defines a named bullet.  Otherwise the named Bullet struct is returned.
     #
-    # The following +options+ are applicable:
+    # The following +options+ apply:
     # [:+units+] The units that :+width+ is expressed in.  Defaults to the current units setting.
     # [:+width+] The width of the area reserved for the bullet.
     #
