@@ -397,6 +397,14 @@ module EideticPDF
       cur_page.print_link(s, uri)
     end
 
+    # Given a block, defines a named bullet.  Otherwise the named Bullet struct is returned.
+    #
+    # The following +options+ are applicable:
+    # [:+units+] The units that :+width+ is expressed in.  Defaults to the current units setting.
+    # [:+width+] The width of the area reserved for the bullet.
+    #
+    # If a block is given, the block should expect a +writer+ parameter to be used for printing or drawing the bullet.
+    # Within the block, all altered settings, other than the location, should be restored.
     def bullet(name, options={}, &block)
       cur_page.bullet(name, options, &block)
     end
