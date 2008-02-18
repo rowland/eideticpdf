@@ -12,16 +12,16 @@ require 'epdftt'
 module EideticPDF
 
   class DocumentWriter
-    def next_seq
+    def next_seq # :nodoc:
       @next_seq += 1
     end
 
-    attr_reader :pages
-    attr_reader :catalog, :file, :resources
-    attr_reader :fonts, :images, :encodings, :bullets
+    attr_reader :pages # :nodoc:
+    attr_reader :catalog, :file, :resources # :nodoc:
+    attr_reader :fonts, :images, :encodings, :bullets # :nodoc:
     attr_reader :in_page
 
-    # instantiation
+    # Instantiate a new DocumentWriter object.  Document is NOT open for writing at this point.
     def initialize
       @fonts = {}
       @images = {}
@@ -33,7 +33,6 @@ module EideticPDF
       @file.to_s
     end
 
-    # document methods
     def open(options={})
       raise Exception.new("Already in document") if @in_doc
       @in_doc = true
@@ -63,7 +62,6 @@ module EideticPDF
       close
     end
 
-    # page methods
     def open_page(options={})
       raise Exception.new("Already in page") if @in_page
       options.update(:_page => pdf_page(@pages.size), :sub_page => sub_page(@pages.size))
@@ -91,11 +89,10 @@ module EideticPDF
       open_page(options)
     end
 
-    def cur_page
+    def cur_page # :nodoc:
       @cur_page || open_page
     end
 
-    # coordinate methods
     def units(units=nil)
       cur_page.units(units)
     end
@@ -172,7 +169,6 @@ module EideticPDF
       cur_page.move_by(dx, dy)
     end
 
-    # graphics methods
     def line_to(x, y)
       cur_page.line_to(x, y)
     end
@@ -192,10 +188,6 @@ module EideticPDF
     def curve_points(points)
       cur_page.curve_points(points)
     end
-
-    # def curve_to(points)
-    #   cur_page.curve_to(points)
-    # end
 
     def points_for_circle(x, y, r)
       cur_page.points_for_circle(x, y, r)
@@ -217,6 +209,14 @@ module EideticPDF
       cur_page.points_for_arc(x, y, r, start_angle, end_angle)
     end
 
+    # Draw an arc with origin <tt>x, y</tt> and radius +r+ from +start_angle+ to +end_angle+ degrees.
+    # Direction is counterclockwise (anticlockwise), unless +end_angle+ < +start_angle+.
+    # Angles are allowed to exceed 360 degrees.
+    #
+    # By default, arc extends the current path to the point where the arc begins.
+    # If <tt>move_to0</tt> is true (or there is no current path) a move is performed to where the arc begins.
+    #
+    # This method returns immediately if <tt>start_angle == end_angle</tt>.
     def arc(x, y, r, start_angle, end_angle, move_to0=false)
       cur_page.arc(x, y, r, start_angle, end_angle, move_to0)
     end
@@ -225,8 +225,16 @@ module EideticPDF
       cur_page.pie(x, y, r, start_angle, end_angle, options)
     end
 
-    def arch(x, y, r1, r2, start_angle, end_angle, options={})
-      cur_page.arch(x, y, r1, r2, start_angle, end_angle, options)
+    # Draw an arch with origin <tt>x, y</tt> from +start_angle+ to _end_angle_ degrees.
+    # The result is a bounded area between radii <tt>r1</tt> and <tt>r2</tt>.
+    #
+    # The following +options+ are applicable:
+    # [:+border+] If true or a color, a border is drawn with the current or specified +line_color+, respectively. Defaults to +true+.
+    # [:+fill+] If true or a color, the area is filled with the current or specified +fill_color+, respectively. Defaults to +false+.
+    # [:+clip+] The shape acts as a clipping boundary for anything drawn within the supplied block. Defaults to +true+ if a block is given, otherwise +false+.
+    # [:+reverse+] By default, the bounding path is drawn from <tt>(r1, start_angle)</tt> to <tt>(r1, end_angle)</tt>, <tt>(r2, end_angle)</tt>, <tt>(r2, start_angle)</tt> and back to <tt>(r1, start_angle)</tt>.  This order is reversed if <tt>reverse => true</tt>.  This is useful for drawing hollow shapes.
+    def arch(x, y, r1, r2, start_angle, end_angle, options={}, &block)
+      cur_page.arch(x, y, r1, r2, start_angle, end_angle, options, &block)
     end
 
     def points_for_polygon(x, y, r, sides, options={})
@@ -269,7 +277,6 @@ module EideticPDF
       cur_page.line_width(width, units)
     end
 
-    # color methods
     def named_colors
       @named_colors ||= PdfK::NAMED_COLORS
     end
@@ -286,7 +293,6 @@ module EideticPDF
       cur_page.font_color(color)
     end
 
-    # text methods
     def print(text, options={}, &block)
       cur_page.print(text, options, &block)
     end
@@ -339,7 +345,6 @@ module EideticPDF
       cur_page.underline(underline)
     end
 
-    # font methods
     def type1_font_names
       if @options[:built_in_fonts]
         PdfK::FONT_NAMES
@@ -348,7 +353,7 @@ module EideticPDF
       end
     end
 
-    def truetype_font_names
+    def truetype_font_names # :nodoc:
       if @options[:built_in_fonts]
         PdfTT::FONT_NAMES
       else
@@ -368,7 +373,6 @@ module EideticPDF
       cur_page.font_size(size)
     end
 
-    # image methods
     def jpeg?(image)
       cur_page.jpeg?(image)
     end
@@ -398,16 +402,13 @@ module EideticPDF
     end
 
   protected
-    def define_resources
+    def define_resources # :nodoc:
       @resources = PdfObjects::PdfResources.new(next_seq, 0)
       @resources.proc_set = PdfObjects::PdfName.ary ['PDF','Text','ImageB','ImageC']
       @file.body << @resources
     end
 
-    def make_font_descriptor(font_name)
-    end
-
-    def sub_page(page_no)
+    def sub_page(page_no) # :nodoc:
       if @pages_up == 1
         nil
       elsif @options[:pages_up_layout] == :down
@@ -417,7 +418,7 @@ module EideticPDF
       end
     end
 
-    def pdf_page(page_no)
+    def pdf_page(page_no) # :nodoc:
       if page = @pages[page_no / @pages_up * @pages_up]
         page.page
       else
