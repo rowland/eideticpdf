@@ -33,6 +33,13 @@ module EideticPDF
       @file.to_s
     end
 
+    # Open the document for writing.
+    #
+    # The following document options apply:
+    # [:+pages_up+] A tuple of the form [+pages_across+, +pages_down+] specifying the layout of virtual pages.  Defaults to [1, 1] (no virtual pages).
+    # [:+pages_up_layout+] When :+across+, virtual pages proceed from left to right before top to bottom.  When :+down+, virtual pages proceed from top to bottom before left to right.
+    #
+    # In addition, any of the options for +open_page+ may be supplied and will apply to each page, unless explicitly overridden.
     def open(options={})
       raise Exception.new("Already in document") if @in_doc
       @in_doc = true
@@ -50,18 +57,33 @@ module EideticPDF
       @pages_up = @pages_across * @pages_down
     end
 
+    # Close any open pages, preparing the document for rendering to PDF.
     def close
       open_page if @pages.empty? # empty document needs at least one page
       close_page if @in_page
       @pages.each { |page| page.close unless page.closed? }
     end
 
-    def doc(options={})
+    # Open the document for writing and yield to the block given before calling +close+.
+    def doc(options={}, &block)
       open(options)
       yield(self)
       close
     end
 
+    # Open a page for writing.  Raises Exception if a page is already open.
+    #
+    # The following page options apply:
+    # [:+compress+] Compress page streams using zlib deflate.
+    # [:+units+] A symbol from EideticPDF::UNIT_CONVERSION hash, specifying ratio of units to points.  Defaults to :+pt+.  Other choices are :+in+ for inches and :+cm+ for centimeters.  Custom units may be added.
+    # [:+v_text_align+] Initial vertical text alignment for page.  See +v_text_align+ method.
+    # [:+font+] Initial font for page.  Defaults to <tt>{ :name => 'Helvetica', :size => 12 }</tt>.
+    # [:+fill_color+] Initial fill color.  Defaults to 0 (black).  See +fill_color+ method.
+    # [:+line_color+] Initial line color.  Defaults to 0 (black).  See +line_color+ method.
+    # [:+line_height+] Initial line height.  Defaults to 1.7.  See +line_height+ method.
+    # [:+line_width+] Initial line width.  Defaults to 1.0.  See +line_width+ method.
+    # [:+margins+] Page margins.  Defaults to 0.  See +margins+ method.
+    # [:+unscaled+] If true, virtual pages are not scaled down.  Defaults to +false+.
     def open_page(options={})
       raise Exception.new("Already in page") if @in_page
       options.update(:_page => pdf_page(@pages.size), :sub_page => sub_page(@pages.size))
@@ -71,6 +93,7 @@ module EideticPDF
       return @cur_page
     end
 
+    # Close the current open page.  Raises Exception if no page is currently open.
     def close_page
       raise Exception.new("Not in page") unless @in_page
       @cur_page.close
@@ -78,7 +101,10 @@ module EideticPDF
       @in_page = false
     end
 
-    def page(options={})
+    # Open a page for writing and yield to the block given before calling +close_page+.
+    #
+    # +options+ is passed through to +open_page+.
+    def page(options={}, &block)
       cur_page = open_page(options)
       yield(cur_page)
       close_page
@@ -183,10 +209,18 @@ module EideticPDF
       cur_page.rectangle(x, y, width, height, options)
     end
 
+    # Draw a cubic Bezier curve from <tt>(x0, y0)</tt> to <tt>(x3, y3)</tt> with control points <tt><x1, y1></tt> and <tt>(x2, y2)</tt>.
+    # If the first point does not coincide with the current position, any current path is stroked and a new path is begun.
+    # Otherwise, the curve is appended to the current path.
     def curve(x0, y0, x1, y1, x2, y2, x3, y3)
       cur_page.curve(x0, y0, x1, y1, x2, y2, x3, y3)
     end
 
+    # Draw a series of cubic Bezier curves.  After moving to the first point, a curve to the 4th point is appended to the current path
+    # with the 2nd and 3rd points acting as control points.  A curve is appended to the current path for each additional group
+    # of 3 points, with the 1st and 2nd point in each group acting as control points.
+    #
+    # [+points+] array of Location structs
     def curve_points(points)
       cur_page.curve_points(points)
     end
