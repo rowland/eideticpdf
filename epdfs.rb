@@ -76,7 +76,7 @@ module EideticPDF
     end
 
     def jpeg_dimensions(image)
-      raise "Not a JPEG" unless jpeg?(image)
+      raise ArgumentError, "Not a JPEG" unless jpeg?(image)
       image = image.dup
       image.slice!(0, 2) # delete jpeg marker
       while marker = image.slice!(0, 4)
