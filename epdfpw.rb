@@ -422,7 +422,7 @@ module EideticPDF
           dashes = (LINE_PATTERNS[@line_dash_pattern] || []).map { |p| p * @line_width.round }
           pattern = gw.make_line_dash_pattern(dashes, 0)
         else
-          @line_dash_pattern.to_s
+          pattern = @line_dash_pattern.to_s
         end
 
         gw.set_line_dash_pattern(pattern)
@@ -1227,18 +1227,18 @@ module EideticPDF
       prev_line_dash_pattern
     end
 
-    def line_width(width=nil, units=nil)
-      return from_points(@units, @line_width || 0) if width.nil?
-      return from_points(width, @line_width || 0) if width.is_a?(Symbol)
+    def line_width(value=nil, units=nil)
+      return from_points(@units, @line_width || 0) if value.nil?
+      return from_points(value, @line_width || 0) if value.is_a?(Symbol)
       prev_line_width = @line_width || 0
       if !units.nil?
-        u, width = units.to_sym, width.to_f
-      elsif width.respond_to?(:to_str) and width =~ /\D+/
-        u, width = $&.to_sym, width.to_f
+        u, value = units.to_sym, value.to_f
+      elsif value.respond_to?(:to_str) and value =~ /\D+/
+        u, value = $&.to_sym, value.to_f
       else
         u = @units
       end
-      @line_width = to_points(u, width)
+      @line_width = to_points(u, value)
       from_points(@units, prev_line_width)
     end
 
@@ -1595,7 +1595,7 @@ module EideticPDF
     def load_image(image_file_name, stream=nil)
       image, name = @doc.images[image_file_name]
       return [image, name] unless image.nil?
-      stream ||= IO.read(image_file_name)
+      stream ||= open(image_file_name) { |io| io.read }
       image = PdfObjects::PdfImage.new(@doc.next_seq, 0, stream)
       image.width, image.height, components, image.bits_per_component = jpeg_dimensions(stream)
       image.color_space = { 1 => 'DeviceGray', 3 => 'DeviceRGB', 4 => 'DeviceCMYK' }[components]
