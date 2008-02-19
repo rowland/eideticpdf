@@ -173,10 +173,12 @@ module EideticPDF
       cur_page.indent(value, absolute)
     end
 
+    # Returns page width in current units.
     def page_width
       cur_page.page_width
     end
 
+    # Returns page height in current units.
     def page_height
       cur_page.page_height
     end
@@ -293,6 +295,17 @@ module EideticPDF
       cur_page.star(x, y, r, points, options)
     end
 
+    # Returns current status of auto_path.  Defaults to +true+.  False while in a block given to +path+ method.
+    # When +true+, paths are automatically stroked before a new, non-contiguous segment is appended or a closed shape is drawn.
+    def auto_path
+      cur_page.auto_path
+    end
+
+    # Turn off auto_path and fill and/or stroke anything drawn within the supplied block according to the +options+ supplied.
+    # The path may be non-contiguous and shapes may be hollow when inner paths are drawn in the opposite direction as outer paths.
+    #
+    # [:+stroke+] If true, the path will be stroked with the current +line_color+.  Defaults to +false+.
+    # [:+fill+] If true, the area bounded by the path will be filled with the current +fill_color+.  Defaults to +false+.
     def path(options={}, &block)
       cur_page.path(options, &block)
     end
@@ -378,10 +391,15 @@ module EideticPDF
       cur_page.height(text, units)
     end
 
+    # Wrap +text+ and render with the following +options+.
+    # [:+width+] Maximum width to wrap text within.  Defaults to the canvas width minus the current horizontal position.
+    # [:+height+] Maximum height allowed.  Any text not rendered will be returned by the method call.  Defaults to the canvas height minus the current vertical position.
+    # [:+bullet+] Render paragraph as a bullet, using the named bullet as defined using the +bullet+ method.  The bullet width is subtracted from the :+width+ specified.
     def paragraph(text, options={})
       cur_page.paragraph(text, options)
     end
 
+    # Move to <tt>(x, y)</tt> and render paragraph.
     def paragraph_xy(x, y, text, options={})
       cur_page.paragraph_xy(x, y, text, options)
     end
