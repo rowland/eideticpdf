@@ -110,6 +110,8 @@ module EideticPDF
       close_page
     end
 
+    # Close the current page and begin a new page with the specified options.
+    # [+options+] See +open_page+ method.
     def new_page(options={})
       close_page
       open_page(options)
@@ -123,22 +125,29 @@ module EideticPDF
       cur_page.units(units)
     end
 
+    # Set top, right, bottom and left margins.  If 1, 2 or 4 values are not specified, returns current margins as a tuple (array)
+    # of values in the form [top, right, bottom, left].
+    # [+margins+] When 4 values are given, [top, right, bottom, left].  When 2 values are given, [top and bottom, right and left].  When 1 value is specified, it is used for all 4 settings.
     def margins(*margins)
       cur_page.margins(*margins)
     end
 
+    # Returns top margin as set by +margins+ method.
     def margin_top
       cur_page.margin_top
     end
 
+    # Returns right margin as set by +margins+ method.
     def margin_right
       cur_page.margin_right
     end
 
+    # Returns bottom margin as set by +margins+ method.
     def margin_bottom
       cur_page.margin_bottom
     end
 
+    # Returns left margin as set by +margins+ method.
     def margin_left
       cur_page.margin_left
     end
@@ -187,22 +196,32 @@ module EideticPDF
       cur_page.page_height
     end
 
+    # Set line height as used by methods like +paragraph+ that display multiple lines of text.
+    # If no value is specified, returns current +line_height+.
+    # [+height+] Ratio of +font_size+ to effective line height.
     def line_height(height=nil)
       cur_page.line_height(height)
     end
 
+    # Move pen to point <tt>(x, y)</tt>.
     def move_to(x, y)
       cur_page.move_to(x, y)
     end
 
+    # Move pen to point <tt>(x, y)</tt> like +move_to+, returning previous location.  If x is not specified, returns current location.
     def pen_pos(x=nil, y=nil)
       cur_page.pen_pos(x, y)
     end
 
+    # Move the pen to a new location relative to the current location.
+    # [+dx+] Horizontal distance to move pen.  Positive values move right.  Negative values move left.
+    # [+dy+] Vertical distance to move pen.  Positive values move down.  Negative values move up.
     def move_by(dx, dy)
       cur_page.move_by(dx, dy)
     end
 
+    # Draw a line from the current location to point <tt>(x, y)</tt>.
+    # If +auto_path+ is off, a new segment is appended to the current path.
     def line_to(x, y)
       cur_page.line_to(x, y)
     end
@@ -352,21 +371,29 @@ module EideticPDF
       cur_page.clip(options, &block)
     end
 
+    # Set the pattern of dashes and gaps used to draw lines.  If no pattern is specified, returns current pattern.
+    # [+pattern+] A string of the form '[dash gap] phase' or one of the symbols :+solid+, :+dotted+ or :+dashed+.
+    # When a symbol is specified, dash and gap lengths are multiplied by +line_width+ for proportion.
     def line_dash_pattern(pattern=nil)
       cur_page.line_dash_pattern(pattern)
     end
 
-    def line_width(width=nil, units=nil)
-      cur_page.line_width(width, units)
+    # Set line width used when stroking paths.  If no width is specified, returns current +line_width+.
+    # [+value+] If +value+ is a number, the new +line_width+ setting. If +value+ is a symbol (such as :pt, :cm or :in), the units to return the current +line_width+ in.  If +value+ is a string, it may include the units as a suffix, e.g. "5.5in" for 5.5 inches.
+    # [+units+] Units value is expressed in.  Defaults to current units setting.
+    def line_width(value=nil, units=nil)
+      cur_page.line_width(value, units)
     end
 
+    # Returns hash of named colors consisting of (name, color) pairs.
+    # Initial value comes from EideticPDF::PdfK::NAMED_COLORS, but may be augmented or replaced.
     def named_colors
-      @named_colors ||= PdfK::NAMED_COLORS
+      @named_colors ||= PdfK::NAMED_COLORS.dup
     end
 
     # Set line color, returning previous line color.  If no color is specified, returns current font color.
-    # [+color+] Tuple (array) containing [red, green, blue] components of new color (where components range from 0..255) or integer encoded from rgb bytes where blue is in the least-significant byte.
-    # Return values are always in integer form.
+    # [+color+] Tuple (array) containing [red, green, blue] components of new color (where components range from 0..255), string key into +named_colors+ or integer encoded from rgb bytes where blue is in the least-significant byte.
+    # Return values are always in string or integer form.
     def line_color(color=nil)
       cur_page.line_color(color)
     end
@@ -401,6 +428,8 @@ module EideticPDF
       cur_page.puts_xy(x, y, text, options={}, &block)
     end
 
+    # Move pen down one or more lines and back to current indent.
+    # [+count+] Number of lines to move down.
     def new_line(count=1)
       cur_page.new_line(count)
     end
@@ -497,14 +526,26 @@ module EideticPDF
       cur_page.jpeg_dimensions(image)
     end
 
-    def load_image(image_file_name, stream=nil)
+    def load_image(image_file_name, stream=nil) # :nodoc:
       cur_page.load_image(image_file_name, stream)
     end
 
+    # Load graphic file (currently only JPEG is supported) from disk (or network, if open-uri library is loaded) and display at the specified location.
+    # [+image_file_name+] Path or URL to image.
+    # [+x+] Left edge of image is placed at this offset.  Defaults to <tt>pen_pos.x</tt>.
+    # [+y+] Top edge of image is placed at this offset.  Defaults to <tt>pen_pos.y</tt>.
+    # [+width+] Width to make image.  Defaults to natural image width or a width proportionate to +height+ if +height+ is specified.
+    # [+height+] Height to make image.  Defaults to natural image height or a height proportionate to +width+ if +width+ is specified.
     def print_image_file(image_file_name, x=nil, y=nil, width=nil, height=nil)
       cur_page.print_image_file(image_file_name, x, y, width, height)
     end
 
+    # Display graphic (currently only JPEG is supported) from disk (or network, if open-uri library is loaded) and display at the specified location.
+    # [+data+] Buffer containing image.
+    # [+x+] Left edge of image is placed at this offset.  Defaults to <tt>pen_pos.x</tt>.
+    # [+y+] Top edge of image is placed at this offset.  Defaults to <tt>pen_pos.y</tt>.
+    # [+width+] Width to make image.  Defaults to natural image width or a width proportionate to +height+ if +height+ is specified.
+    # [+height+] Height to make image.  Defaults to natural image height or a height proportionate to +width+ if +width+ is specified.
     def print_image(data, x=nil, y=nil, width=nil, height=nil)
       cur_page.print_image(data, x, y, width, height)
     end
