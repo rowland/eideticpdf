@@ -1397,7 +1397,7 @@ module EideticPDF
       0.001 * @font.height * @font.size.quo(UNIT_CONVERSION[units])
     end
 
-    def height(text='', units=nil) # may not include external leading?
+    def height(text='', units=nil)
       units ||= @units
       set_default_font if @font.nil?
       if text.respond_to?(:to_str)
