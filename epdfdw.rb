@@ -36,7 +36,7 @@ module EideticPDF
     # Open the document for writing.
     #
     # The following document options apply:
-    # [:+pages_up+] A tuple of the form [+pages_across+, +pages_down+] specifying the layout of virtual pages.  Defaults to [1, 1] (no virtual pages).
+    # [:+pages_up+] A tuple (array) of the form [+pages_across+, +pages_down+] specifying the layout of virtual pages.  Defaults to [1, 1] (no virtual pages).
     # [:+pages_up_layout+] When :+across+, virtual pages proceed from left to right before top to bottom.  When :+down+, virtual pages proceed from top to bottom before left to right.
     #
     # In addition, any of the options for +open_page+ may be supplied and will apply to each page, unless explicitly overridden.
@@ -169,6 +169,10 @@ module EideticPDF
       cur_page.vtab(&block)
     end
 
+    # Set horizontal indentation.  If no value is specified, returns current indentation setting.
+    # [+value+] The new indentation.
+    # [+absolute+] If +true+, the new value is relative only to the left margin.  If +false+, value is relative to previous indentation.
+    # The indent setting is used by the +puts+ and +new_line+ methods.
     def indent(value=nil, absolute=false)
       cur_page.indent(value, absolute)
     end
@@ -203,6 +207,7 @@ module EideticPDF
       cur_page.line_to(x, y)
     end
 
+    # Draw a line from point <tt>(x, y)</tt> to a point +length+ units distant at +angle+ degrees.
     def line(x, y, angle, length)
       cur_page.line(x, y, angle, length)
     end
@@ -231,7 +236,7 @@ module EideticPDF
       cur_page.points_for_circle(x, y, r)
     end
 
-    # Draw a circle with origin <tt>x, y</tt> and radius +r+.
+    # Draw a circle with center <tt>x, y</tt> and radius +r+.
     # Direction is counterclockwise (anticlockwise), unless :+reverse+ option is specified.
     #
     # The following +options+ apply:
@@ -247,6 +252,14 @@ module EideticPDF
       cur_page.points_for_ellipse(x, y, rx, ry)
     end
 
+    # Draw an ellipse with foci (<tt>x, y</tt>) and (<tt>x, y</tt>) and radius +r+.
+    # Direction is counterclockwise (anticlockwise), unless :+reverse+ option is specified.
+    #
+    # The following +options+ apply:
+    # [:+border+] If true or a color, a border is drawn with the current or specified +line_color+, respectively. Defaults to +true+.
+    # [:+fill+] If true or a color, the area is filled with the current or specified +fill_color+, respectively. Defaults to +false+.
+    # [:+clip+] The shape acts as a clipping boundary for anything drawn within the supplied block.
+    # [:+reverse+] Draw ellipse clockwise.  Useful for drawing hollow shapes.
     def ellipse(x, y, rx, ry, options={})
       cur_page.ellipse(x, y, rx, ry, options)
     end
@@ -301,23 +314,31 @@ module EideticPDF
       cur_page.auto_path
     end
 
-    # Turn off auto_path and fill and/or stroke anything drawn within the supplied block according to the +options+ supplied.
-    # The path may be non-contiguous and shapes may be hollow when inner paths are drawn in the opposite direction as outer paths.
+    # Turn off auto_path.  If a block is given, yields to it before filling and/or stroking anything drawn within it according to
+    # the +options+ supplied.  The path may be non-contiguous and shapes may be hollow when inner paths are drawn in the opposite
+    # direction as outer paths.
     #
-    # [:+stroke+] If true, the path will be stroked with the current +line_color+.  Defaults to +false+.
-    # [:+fill+] If true, the area bounded by the path will be filled with the current +fill_color+.  Defaults to +false+.
+    # The following options apply:
+    # [:+stroke+] If true or a color, the path will be stroked with the current or specified +line_color+, respectively.  Defaults to +false+.
+    # [:+fill+] If true or a color, the area bounded by the path will be filled with the current or specified +fill_color+, respectively.  Defaults to +false+.
     def path(options={}, &block)
       cur_page.path(options, &block)
     end
 
+    # Fill current path (begun by +path+ method) and resume +auto_path+.  The +line_color+ and +fill_color+ in effect before +path+
+    # was begun are restored.  Raises Exception if no current path exists.
     def fill
       cur_page.fill
     end
 
+    # Stroke current path (begun by +path+ method) and resume +auto_path+.  The +line_color+ and +fill_color+ in effect before +path+
+    # was begun are restored.  Raises Exception if no current path exists.
     def stroke
       cur_page.stroke
     end
 
+    # Fill and stroke current path (begun by +pat+ method) and resume +auto_path+.  The +line_color+ and +fill_color+ in effect
+    # before +path+ was begun are restored.  Raises Exception if no current path exists.
     def fill_and_stroke
       cur_page.fill_and_stroke
     end
@@ -343,14 +364,23 @@ module EideticPDF
       @named_colors ||= PdfK::NAMED_COLORS
     end
 
+    # Set line color, returning previous line color.  If no color is specified, returns current font color.
+    # [+color+] Tuple (array) containing [red, green, blue] components of new color (where components range from 0..255) or integer encoded from rgb bytes where blue is in the least-significant byte.
+    # Return values are always in integer form.
     def line_color(color=nil)
       cur_page.line_color(color)
     end
 
+    # Set fill color, returning previous fill color.  If no color is specified, returns current fill color.
+    # [+color+] Tuple (array) containing [red, green, blue] components of new color (where components range from 0..255) or integer encoded from rgb bytes where blue is in the least-significant byte.
+    # Return values are always in integer form.
     def fill_color(color=nil)
       cur_page.fill_color(color)
     end
 
+    # Set font color, returning previous font color.  If no color is specified, returns current font color.
+    # [+color+] Tuple (array) containing [red, green, blue] components of new color (where components range from 0..255) or integer encoded from rgb bytes where blue is in the least-significant byte.
+    # Return values are always in integer form.
     def font_color(color=nil)
       cur_page.font_color(color)
     end
@@ -387,6 +417,9 @@ module EideticPDF
       cur_page.text_height(units)
     end
 
+    # Returns height of a line or array of lines, including external leading as determined by +line_height+.
+    # [+text+] Line or array of lines to be measured.  Height is determined only by current font and number of lines.
+    # [+units+] Units result should be expressed in.  Defaults to current +units+.
     def height(text='', units=nil) # may not include external leading?
       cur_page.height(text, units)
     end
@@ -428,22 +461,38 @@ module EideticPDF
       end
     end
 
+    # Set font, returning previous font.  If no font is specified, returns current font.
+    # [+name+] Base name of a Type1 font with metrics file in fonts directory.
+    # [+size+] Size of font in points.  See also +font_size+ method.
+    # The following +options+ apply:
+    # [:+style+] Bold, Italic, Oblique or a combination of weight and style such as BoldItalic or BoldOblique.  See +font_style+ method.
+    # [:+color+] Font color as given to +font_color+ method.  Color is unchanged if not specified.
+    # [:+encoding+] Currently-supported encodings include StandardEncoding, WinAnsiEncoding/CP1250, CP1250, CP1254, ISO-8859-1, ISO-8859-2, ISO-8859-3, ISO-8859-4, ISO-8859-7, ISO-8859-9, ISO-8859-10, ISO-8859-13, ISO-8859-14, ISO-8859-15, ISO-8859-16, MacTurkish or Macintosh.  Defaults to WinAnsiEncoding.
+    # [:+sub_type+] Currently only Type1 fonts are supported.  Defaults to Type1.
     def font(name=nil, size=nil, options={})
       cur_page.font(name, size, options)
     end
 
+    # Set font style, returning previous font style.  If no style is specified, returns current font style.
+    # [+style+] Bold (or other weight), Italic, Oblique or combination such as BoldItalic or BoldOblique.
+    # Exact weights and combinations available depend on the font specification files in the (local) fonts directory.
     def font_style(style=nil)
       cur_page.font_style(style)
     end
 
+    # Set font size, returning previous font size.  If no size is specified, returns current font size.
+    # [+size+] Size of font in points.
     def font_size(size=nil)
       cur_page.font_size(size)
     end
 
+    # Returns +true+ if image is a buffer beginning with a JPEG signature.
     def jpeg?(image)
       cur_page.jpeg?(image)
     end
 
+    # Returns a tuple (array) of image dimensions of the form [width, height, components, bits_per_component].
+    # Raises ArgumentError if +image+ is not a JPEG.
     def jpeg_dimensions(image)
       cur_page.jpeg_dimensions(image)
     end
