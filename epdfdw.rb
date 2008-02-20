@@ -231,6 +231,15 @@ module EideticPDF
       cur_page.line(x, y, angle, length)
     end
 
+    # Draw a rectangle with the specified +width+ and +height+ and its top, left corner at <tt>(x, y)</tt>.
+    #
+    # The following +options+ apply:
+    # [:+border+] If true or a color, a border is drawn with the current or specified +line_color+, respectively. Defaults to +true+.
+    # [:+fill+] If true or a color, the area is filled with the current or specified +fill_color+, respectively. Defaults to +false+.
+    # [:+clip+] If true and a block is given, the shape acts as a clipping boundary for anything drawn within the supplied block.
+    # [:+reverse+] Draw polygon clockwise.  This is useful for drawing hollow shapes.
+    #
+    # These current settings also apply: +line_color+, +line_width+, +line_dash_pattern+ and +fill_color+.
     def rectangle(x, y, width, height, options={})
       cur_page.rectangle(x, y, width, height, options)
     end
@@ -246,11 +255,12 @@ module EideticPDF
     # with the 2nd and 3rd points acting as control points.  A curve is appended to the current path for each additional group
     # of 3 points, with the 1st and 2nd point in each group acting as control points.
     #
-    # [+points+] array of Location structs
+    # [+points+] array of +Location+ structs
     def curve_points(points)
       cur_page.curve_points(points)
     end
 
+    # Returns array of +Location+ structs for circle, suitable for feeding to +curve_points+ method.  See +circle+ method.
     def points_for_circle(x, y, r)
       cur_page.points_for_circle(x, y, r)
     end
@@ -263,10 +273,13 @@ module EideticPDF
     # [:+fill+] If true or a color, the area is filled with the current or specified +fill_color+, respectively. Defaults to +false+.
     # [:+clip+] The shape acts as a clipping boundary for anything drawn within the supplied block.
     # [:+reverse+] Draw circle clockwise.  Useful for drawing hollow shapes.
+    #
+    # These current settings also apply: +line_color+, +line_width+, +line_dash_pattern+ and +fill_color+.
     def circle(x, y, r, options={}, &block)
       cur_page.circle(x, y, r, options, &block)
     end
 
+    # Returns array of +Location+ structs for ellipse, suitable for feeding to +curve_points+ method.  See +ellipse+ method.
     def points_for_ellipse(x, y, rx, ry)
       cur_page.points_for_ellipse(x, y, rx, ry)
     end
@@ -279,10 +292,13 @@ module EideticPDF
     # [:+fill+] If true or a color, the area is filled with the current or specified +fill_color+, respectively. Defaults to +false+.
     # [:+clip+] The shape acts as a clipping boundary for anything drawn within the supplied block.
     # [:+reverse+] Draw ellipse clockwise.  Useful for drawing hollow shapes.
+    #
+    # These current settings also apply: +line_color+, +line_width+, +line_dash_pattern+ and +fill_color+.
     def ellipse(x, y, rx, ry, options={})
       cur_page.ellipse(x, y, rx, ry, options)
     end
 
+    # Returns array of +Location+ structs for arc, suitable for feeding to +curve_points+ method.  See +arc+ method.
     def points_for_arc(x, y, r, start_angle, end_angle)
       cur_page.points_for_arc(x, y, r, start_angle, end_angle)
     end
@@ -299,6 +315,13 @@ module EideticPDF
       cur_page.arc(x, y, r, start_angle, end_angle, move_to0)
     end
 
+    # Draw a pie-shaped wedge with origin <tt>x, y</tt> and radius +r+ from +start_angle+ to +end_angle+ degrees.
+    # [:+border+] If true or a color, a border is drawn with the current or specified +line_color+, respectively. Defaults to +true+.
+    # [:+fill+] If true or a color, the area is filled with the current or specified +fill_color+, respectively. Defaults to +false+.
+    # [:+clip+] If true and a block is given, the shape acts as a clipping boundary for anything drawn within the supplied block.
+    # [:+reverse+] By default, the bounding path is drawn from <tt>(x, y)</tt> to <tt>(r, start_angle)</tt> through <tt>(r, end_angle)</tt> and back to <tt>(x, y)</tt>.  This order is reversed if <tt>:reverse => true</tt>.  This is useful for drawing hollow shapes.
+    #
+    # These current settings also apply: +line_color+, +line_width+, +line_dash_pattern+ and +fill_color+.
     def pie(x, y, r, start_angle, end_angle, options={})
       cur_page.pie(x, y, r, start_angle, end_angle, options)
     end
@@ -309,22 +332,43 @@ module EideticPDF
     # The following +options+ apply:
     # [:+border+] If true or a color, a border is drawn with the current or specified +line_color+, respectively. Defaults to +true+.
     # [:+fill+] If true or a color, the area is filled with the current or specified +fill_color+, respectively. Defaults to +false+.
-    # [:+clip+] The shape acts as a clipping boundary for anything drawn within the supplied block. Defaults to +true+ if a block is given, otherwise +false+.
+    # [:+clip+] If true and a block is given, the shape acts as a clipping boundary for anything drawn within the supplied block.
     # [:+reverse+] By default, the bounding path is drawn from <tt>(r1, start_angle)</tt> to <tt>(r1, end_angle)</tt>, <tt>(r2, end_angle)</tt>, <tt>(r2, start_angle)</tt> and back to <tt>(r1, start_angle)</tt>.  This order is reversed if <tt>reverse => true</tt>.  This is useful for drawing hollow shapes.
+    #
+    # These current settings also apply: +line_color+, +line_width+, +line_dash_pattern+ and +fill_color+.
     def arch(x, y, r1, r2, start_angle, end_angle, options={}, &block)
       cur_page.arch(x, y, r1, r2, start_angle, end_angle, options, &block)
     end
 
+    # Returns array of +Location+ structs representing the vertices of a polygon.  See +polygon+ method.
     def points_for_polygon(x, y, r, sides, options={})
       cur_page.points_for_polygon(x, y, r, sides, options)
     end
 
+    # Draw a polygon with origin <tt>(x, y)</tt>, radius +r+ and the specified number of +sides+.
+    #
+    # The following +options+ apply:
+    # [:+border+] If true or a color, a border is drawn with the current or specified +line_color+, respectively. Defaults to +true+.
+    # [:+fill+] If true or a color, the area is filled with the current or specified +fill_color+, respectively. Defaults to +false+.
+    # [:+clip+] If true and a block is given, the shape acts as a clipping boundary for anything drawn within the supplied block.
+    # [:+reverse+] Draw polygon clockwise.  This is useful for drawing hollow shapes.
+    #
+    # These current settings also apply: +line_color+, +line_width+, +line_dash_pattern+ and +fill_color+.
     def polygon(x, y, r, sides, options={})
       cur_page.polygon(x, y, r, sides, options)
     end
 
-    def star(x, y, r, points, options={})
-      cur_page.star(x, y, r, points, options)
+    # Draw a star with origin <tt>(x, y)</tt>, outer radius +r1+, inner radius +r2+ and the specified number of +sides+.
+    #
+    # The following +options+ apply:
+    # [:+border+] If true or a color, a border is drawn with the current or specified +line_color+, respectively. Defaults to +true+.
+    # [:+fill+] If true or a color, the area is filled with the current or specified +fill_color+, respectively. Defaults to +false+.
+    # [:+clip+] If true and a block is given, the shape acts as a clipping boundary for anything drawn within the supplied block.
+    # [:+reverse+] Draw polygon clockwise.  This is useful for drawing hollow shapes.
+    #
+    # These current settings also apply: +line_color+, +line_width+, +line_dash_pattern+ and +fill_color+.
+    def star(x, y, r1, r2, points, options={})
+      cur_page.star(x, y, r1, r2, points, options)
     end
 
     # Returns current status of auto_path.  Defaults to +true+.  False while in a block given to +path+ method.
@@ -334,7 +378,7 @@ module EideticPDF
     end
 
     # Turn off auto_path.  If a block is given, yields to it before filling and/or stroking anything drawn within it according to
-    # the +options+ supplied.  The path may be non-contiguous and shapes may be hollow when inner paths are drawn in the opposite
+    # the +options+ supplied.  The path may be non-contiguous.  Shapes may be hollow when inner paths are drawn in the opposite
     # direction as outer paths.
     #
     # The following options apply:
@@ -412,18 +456,33 @@ module EideticPDF
       cur_page.font_color(color)
     end
 
+    # Print text, starting from the current position.
+    #
+    # The following options apply:
+    # [:+align+] When :+left+, left edge of text is aligned to current position.  When :+center+, text is centered at current position.  When :+right+, right edge of text is aligned to current position.  When any alignment is specified, the pen is restored to its original location.
+    # [:+angle+] Print text at the specified +angle+ in degrees.  Defaults to 0.
+    # [:+scale+] Horizontal scaling of text, specified as ratio to normal width.  Defaults to 1.0.  Cannot be combined with :+clip+.
+    # [:+underline+] Override +underline+ setting for this piece of text.
+    # [:+clip+] If true and a block is given, the edges of the text act as a clipping boundary for anything drawn within the supplied block.  Cannot be combined with :+scale+.
+    # [:+fill+] (Only applicable with :+clip+) Fill text and add to path for clipping.
+    # [:+stroke+] (Only applicable with :+clip+) Stroke text with current +line_color+ and add to path for clipping.
+    #
+    # These current settings also apply: +font+, +font_color+, +line_color+ (when outlines are stroked) and vertical text alignment (+v_text_align+).
     def print(text, options={}, &block)
       cur_page.print(text, options, &block)
     end
 
+    # Move to <tt>(x, y)</tt> and print text.  See +print+ method.
     def print_xy(x, y, text, options={}, &block)
       cur_page.print_xy(x, y, text, options, &block)
     end
 
+    # Print one or more lines of text before moving to the next line, as specified by +indent+.
     def puts(text='', options={}, &block)
       cur_page.puts(text, options, &block)
     end
 
+    # Move to <tt>(x, y)</tt> and print one or more lines of text.  See +puts+ method.
     def puts_xy(x, y, text, options={}, &block)
       cur_page.puts_xy(x, y, text, options={}, &block)
     end
@@ -498,6 +557,8 @@ module EideticPDF
     # [:+color+] Font color as given to +font_color+ method.  Color is unchanged if not specified.
     # [:+encoding+] Currently-supported encodings include StandardEncoding, WinAnsiEncoding/CP1250, CP1250, CP1254, ISO-8859-1, ISO-8859-2, ISO-8859-3, ISO-8859-4, ISO-8859-7, ISO-8859-9, ISO-8859-10, ISO-8859-13, ISO-8859-14, ISO-8859-15, ISO-8859-16, MacTurkish or Macintosh.  Defaults to WinAnsiEncoding.
     # [:+sub_type+] Currently only Type1 fonts are supported.  Defaults to Type1.
+    # [:+fill+] Fill text with current +font_color+.  Defaults to +true+.
+    # [:+stroke+] Stroke text with current +line_color+.  Defaults to +false+.
     def font(name=nil, size=nil, options={})
       cur_page.font(name, size, options)
     end
@@ -550,7 +611,7 @@ module EideticPDF
       cur_page.print_image(data, x, y, width, height)
     end
 
-    def print_link(s, uri)
+    def print_link(s, uri) # :nodoc:
       cur_page.print_link(s, uri)
     end
 
