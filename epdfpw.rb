@@ -1042,7 +1042,7 @@ module EideticPDF
 
       line_colors.push(border)
       fill_colors.push(fill)
-      check_set(:fill_color)
+      check_set(:line_color, :line_width, :line_dash_pattern, :fill_color)
       arc1 = points_for_arc(x, y, r1, start_angle, end_angle)
       arc2 = points_for_arc(x, y, r2, end_angle, start_angle)
       move_to(arc1.first.x, arc1.first.y)
@@ -1105,7 +1105,7 @@ module EideticPDF
       nil
     end
 
-    def star(x, y, r, points, options={}, &block)
+    def star(x, y, r1, r2, points, options={}, &block)
       return if points < 5
       border = options[:border].nil? ? true : options[:border]
       fill = options[:fill].nil? ? false : options[:fill]
@@ -1116,8 +1116,8 @@ module EideticPDF
       end
 
       rotation = options[:rotation] || 0
-      r2 = (points - 2).quo(points * 1.5)
-      vertices1 = points_for_polygon(x, y, r, points, options)
+      r2 ||= (points - 2).quo(points * 1.5)
+      vertices1 = points_for_polygon(x, y, r1, points, options)
       vertices2 = points_for_polygon(x, y, r2, points, options.merge(:rotation => rotation + (360.0 / points / 2)))
       line_colors.push(border)
       fill_colors.push(fill)

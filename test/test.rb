@@ -468,19 +468,19 @@ def stars(w)
     y1, y2, y3, y4 = 2, 4.5, 7, 9.5
     r = 1
 
-    p.star(x1, y1, r, 5, :fill => true)
-    p.star(x2, y1, r, 6, :fill => true, :border => 'Blue')
-    p.star(x3, y1, r, 7, :fill => true, :border => 'ForestGreen')
-    p.star(x1, y2, r, 8, :fill => true, :border => 'Crimson')
-    p.star(x2, y2, r, 9, :fill => true, :border => 'Gray')
-    p.star(x3, y2, r, 10, :fill => true)
+    p.star(x1, y1, r, nil, 5, :fill => true)
+    p.star(x2, y1, r, nil, 6, :fill => true, :border => 'Blue')
+    p.star(x3, y1, r, nil, 7, :fill => true, :border => 'ForestGreen')
+    p.star(x1, y2, r, nil, 8, :fill => true, :border => 'Crimson')
+    p.star(x2, y2, r, nil, 9, :fill => true, :border => 'Gray')
+    p.star(x3, y2, r, nil, 10, :fill => true)
 
-    w.star(x1, y3, r, 5, :fill => 'DarkSlateGray', :rotation => 360.0 / 10)
-    w.star(x2, y3, r, 6, :fill => 'DarkTurquoise', :rotation => 360.0 / 12)
-    w.star(x3, y3, r, 7, :fill => 'DeepSkyBlue', :rotation => 360.0 / 14)
-    w.star(x1, y4, r, 8, :fill => 'ForestGreen', :rotation => 360.0 / 16)
-    w.star(x2, y4, r, 9, :fill => 'DarkSlateBlue', :rotation => 360.0 / 18)
-    w.star(x3, y4, r, 10, :fill => true, :rotation => 360.0 / 20)
+    w.star(x1, y3, r, nil, 5, :fill => 'DarkSlateGray', :rotation => 360.0 / 10)
+    w.star(x2, y3, r, nil, 6, :fill => 'DarkTurquoise', :rotation => 360.0 / 12)
+    w.star(x3, y3, r, nil, 7, :fill => 'DeepSkyBlue', :rotation => 360.0 / 14)
+    w.star(x1, y4, r, nil, 8, :fill => 'ForestGreen', :rotation => 360.0 / 16)
+    w.star(x2, y4, r, nil, 9, :fill => 'DarkSlateBlue', :rotation => 360.0 / 18)
+    w.star(x3, y4, r, nil, 10, :fill => true, :rotation => 360.0 / 20)
   end
 end
 
@@ -501,7 +501,7 @@ def clipping(w)
   w.page(:units => :in, :margins => 1) do |p|
     p.print_xy(-0.5, -0.5, "Clipping", :underline => true)
     # grid(p, 6.5, 9, 0, 0)
-    p.star(1, 1, 1, 5, :border => false, :clip => true) do
+    p.star(1, 1, 1, nil, 5, :border => false, :clip => true) do
       p.print_image_file(TestImg, 0, 0, nil, 2)
     end
     p.circle(4.5, 1, 1, :clip => true) do
