@@ -29,6 +29,7 @@ module EideticPDF
       @bullets = {}
     end
 
+    # Render document to PDF and return as a binary string.
     def to_s
       @file.to_s
     end
@@ -121,6 +122,10 @@ module EideticPDF
       @cur_page || open_page
     end
 
+    # Set units measurements are to be specified in.  If no units are specified, returns current units setting.
+    # Valid units include :+pt+ (points), :+in+ (inches) and :+cm+ (centimeters) by default.
+    #
+    # Custom units can be specified by updating the EideticPDF::UNIT_CONVERSION hash with a new symbol and conversion ratio.
     def units(units=nil)
       cur_page.units(units)
     end
@@ -162,18 +167,26 @@ module EideticPDF
       cur_page.canvas_height
     end
 
+    # Set horizontal tabs using an array of numbers or a comma-delimited string.  If no tabs are specified, returns current tabs.
+    # Use false to clear current tab stops.
     def tabs(tabs=nil)
       cur_page.tabs(tabs)
     end
 
+    # Move right to next horizontal tab.  If no more tab stops exist, then moves to first tab stop on the following line.
+    # If a block is given, the value returned is used instead as the vertical distance to move down.
     def tab(&block)
       cur_page.tab(&block)
     end
 
+    # Set vertical tabs using an array of numbers or a comma-delimited string.  If no tabs are specified, returns current tabs.
+    # Use false to clear current tab stops.
     def vtabs(tabs=nil)
       cur_page.vtabs(tabs)
     end
 
+    # Move down to next vertical tab.  If no more tab stops exist and a block is given, moves up to the first vertical tab stop
+    # and right the value returned by the block.
     def vtab(&block)
       cur_page.vtab(&block)
     end
@@ -493,14 +506,19 @@ module EideticPDF
       cur_page.new_line(count)
     end
 
+    # Returns width of a string as rendered using the current font.
     def width(text)
       cur_page.width(text)
     end
 
+    # Breaks text into tokens and reassembles into array of strings, each one not exceeding +length+.
+    # Newlines are respected and all other white space is preserved.
     def wrap(text, length)
       cur_page.wrap(text, length)
     end
 
+    # Returns text height, based on the current font, excluding external leading.
+    # [+units+] Units the value is returned in.
     def text_height(units=nil)
       cur_page.text_height(units)
     end
@@ -525,14 +543,24 @@ module EideticPDF
       cur_page.paragraph_xy(x, y, text, options)
     end
 
+    # Set vertical text alignment.  This is the part of the text that would coincide with a line if one were drawn at the same
+    # coordinates as the text.
+    # [:+above+] At the top of the text, plus an amount equal to the height of descenders.
+    # [:+top+] At the top of the text--text is rendered below the line.
+    # [:+middle+] Through the middle of the text, like a strikeout.
+    # [:+base+] At the base of the text--text is rendered above the line, except for descenders.
+    # [:+below+] Below the text--text is rendered above the line, including descenders.
+    # Default is :+top+.
     def v_text_align(vta=nil)
       cur_page.v_text_align(vta)
     end
 
+    # Set new underline status, returning previous status.  If new status is not specified, returns current underline status.
     def underline(underline=nil)
       cur_page.underline(underline)
     end
 
+    # Returns an array of font names, including weight and style, from the (local) fonts directory.
     def type1_font_names
       if @options[:built_in_fonts]
         PdfK::FONT_NAMES
