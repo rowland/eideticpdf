@@ -803,7 +803,7 @@ module EideticPDF
     def line(x, y, angle, length)
       lx, ly = rotate_xy_coordinate(1, 0, angle)
       move_to(x, y)
-      line_to(x + lx * length, y + ly * length)
+      line_to(x + lx * length, y - ly * length)
     end
 
     def rectangle(x, y, width, height, options={}, &block)

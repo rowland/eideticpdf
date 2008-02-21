@@ -690,7 +690,20 @@ def angled_lines(w)
     p.puts("Angled Lines", :underline => true)
     p.new_line
     x, y = 3.75, 5
-    60.times do |step|
+    p.line_color 'Black'
+    0.upto(14) do |step|
+      p.line(x, y, step * 6, x)
+    end
+    p.line_color 'Red'
+    15.upto(29) do |step|
+      p.line(x, y, step * 6, x)
+    end
+    p.line_color 'Green'
+    30.upto(44) do |step|
+      p.line(x, y, step * 6, x)
+    end
+    p.line_color 'Blue'
+    45.upto(59) do |step|
       p.line(x, y, step * 6, x)
     end
   end
