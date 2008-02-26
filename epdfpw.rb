@@ -1648,7 +1648,7 @@ module EideticPDF
       @doc.bullets[name.to_sym] = Bullet.new(name.to_s, width || 36, block)
     end
 
-    def rotate(angle, x, y)
+    def rotate(angle, x, y, &block)
       return unless block_given?
       end_path if @in_path
       check_set(:line_color, :line_width, :line_dash_pattern, :fill_color)

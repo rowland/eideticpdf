@@ -655,6 +655,11 @@ module EideticPDF
       cur_page.bullet(name, options, &block)
     end
 
+    # Rotate anything drawn within the supplied block +angle+ degrees around origin <tt>(x, y)</tt>.
+    def rotate(angle, x, y, &block)
+      cur_page.rotate(angle, x, y, &block)
+    end
+
   protected
     def define_resources # :nodoc:
       @resources = PdfObjects::PdfResources.new(next_seq, 0)
