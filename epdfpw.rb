@@ -1647,5 +1647,24 @@ module EideticPDF
       end          
       @doc.bullets[name.to_sym] = Bullet.new(name.to_s, width || 36, block)
     end
+
+    def rotate(angle, x, y)
+      return unless block_given?
+      end_path if @in_path
+      check_set(:line_color, :line_width, :line_dash_pattern, :fill_color)
+
+      theta = angle.degrees
+      v_cos = Math::cos(theta)
+      v_sin = Math::sin(theta)
+
+      xx, xy = to_points(@units, x), @page_height - to_points(@units, y)
+      # $stdout.puts "xx: #{xx}, xy: #{xy}"
+      rot_x, rot_y = rotate_xy_coordinate(xx, xy, angle)
+      # $stdout.puts "off_x: #{off_x}, off_y: #{off_y}"
+      gw.save_graphics_state
+      gw.concat_matrix(v_cos, v_sin, -v_sin, v_cos, xx - rot_x, xy - rot_y)
+      yield
+      gw.restore_graphics_state
+    end
   end
 end

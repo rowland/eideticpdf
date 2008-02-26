@@ -709,11 +709,38 @@ def angled_lines(w)
   end
 end
 
+def rotations(w)
+  w.page(:units => :in, :margins => 0.5) do |p|
+    p.puts("Rotate", :underline => true)
+    p.line_dash_pattern :dashed
+    p.move_to(0, 2); p.line_to(p.canvas_width, 2)
+    p.move_to(p.canvas_width.quo(2), 0); p.line_to(p.canvas_width.quo(2), 4)
+    p.line_dash_pattern :dotted
+    0.step(90, 30) do |angle|
+      p.rotate(angle, p.canvas_width.quo(2), 2) do
+        p.rectangle(p.canvas_width.quo(2), 2, 2, 1)
+        p.print_xy(p.canvas_width.quo(2) + 0.25, 2.25, "Hello")
+      end
+    end
+    p.line_dash_pattern :dashed
+    p.font("Helvetica", 12)
+    x, y = p.canvas_width.quo(2), p.canvas_height - 2
+    p.move_to(0, y); p.line_to(p.canvas_width, y)
+    p.move_to(x, y - 2); p.line_to(x, y + 2)
+    p.line_dash_pattern :dotted
+    p.rotate(30, x, y) do
+      p.rectangle(x - 2, y - 1.25, 4, 2.5)
+      p.paragraph_xy(x - 2, y - 1.25, LOREM, :width => 4, :height => 2.5)
+    end
+  end
+end
+
 start = Time.now
 docw = EideticPDF::DocumentWriter.new
 
 # docw.doc(:font => { :name => 'Courier', :size => 10 }, :orientation => :landscape, :pages_up => [3, 2]) do |w|
 docw.doc(:font => { :name => 'Courier', :size => 10 }, :built_in_fonts => BuiltInFonts) do |w|
+  rotations(w)
   angled_lines(w)
   rich_text(w)
   bullets(w)
