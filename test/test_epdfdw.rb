@@ -171,10 +171,10 @@ class DocumentWriterTestCases < Test::Unit::TestCase
 
   def test_fill_color
     # default color
-    assert_equal(0, @doc.fill_color)
+    assert_equal(0xFFFFFF, @doc.fill_color)
     # changed
     prev_fill_color = @doc.fill_color 'Blue'
-    assert_equal(0, prev_fill_color)
+    assert_equal(0xFFFFFF, prev_fill_color)
     assert_equal('Blue', @doc.fill_color)
     # rgb
     @doc.fill_color [0xFF,0,0]

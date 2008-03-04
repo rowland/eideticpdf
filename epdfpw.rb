@@ -578,7 +578,7 @@ module EideticPDF
       @last_text_rendering_mode = @text_rendering_mode = 0
       @default_font = options[:font] || DEFAULT_FONT
       @font_color = @default_font[:color] || 0
-      @fill_color = options[:fill_color] || 0
+      @fill_color = options[:fill_color] || 0xFFFFFF
       @line_color = options[:line_color] || 0
       @line_height = options[:line_height] || 1.7
       line_width(options[:line_width] || 1.0, :pt)
