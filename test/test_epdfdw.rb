@@ -273,10 +273,12 @@ class DocumentWriterTestCases < Test::Unit::TestCase
     assert_close([0, 0], @doc.pen_pos.to_a) # starting location
     @doc.indent 2
     assert_equal(2, @doc.pen_pos.x, "indent should set pen_pos.x")
-    @doc.indent 2
+    prev_indent = @doc.indent 2
     assert_equal(4, @doc.pen_pos.x, "normal indents are additive")
-    @doc.indent -1
+    assert_equal(2, prev_indent)
+    prev_indent = @doc.indent -1
     assert_equal(3, @doc.pen_pos.x, "the other side of additive")
+    assert_equal(4, prev_indent)
     @doc.indent 5, true
     assert_equal(5, @doc.pen_pos.x, "absolute indent")
     @doc.print "here we are: "

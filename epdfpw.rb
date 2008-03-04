@@ -724,9 +724,9 @@ module EideticPDF
 
     def indent(value=nil, absolute=false)
       return @indent if value.nil?
-      @indent = absolute ? value : @indent + value
+      prev_indent, @indent = @indent, absolute ? value : @indent + value
       @loc.x = @indent
-      @indent
+      prev_indent
     end
 
     def sub_page(x, pages_across, y, pages_down, unscaled=false)
@@ -1339,7 +1339,10 @@ module EideticPDF
 
     def puts_xy(x, y, text, options={}, &block)
       move_to(x, y)
+      prev_indent = indent(x, true)
       puts(text, options, &block)
+      indent(prev_indent, true)
+      nil
     end
 
     def new_line(count=1)
