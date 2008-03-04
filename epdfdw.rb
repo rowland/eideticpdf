@@ -495,7 +495,7 @@ module EideticPDF
       cur_page.puts(text, options, &block)
     end
 
-    # Move to <tt>(x, y)</tt> and print one or more lines of text.  See +puts+ method.
+    # Move to <tt>(x, y)</tt> and print one or more lines of text indented to +x+.  See +puts+ method.
     def puts_xy(x, y, text, options={}, &block)
       cur_page.puts_xy(x, y, text, options={}, &block)
     end
