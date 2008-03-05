@@ -115,17 +115,61 @@ class AdobeFontMetricsTestCases < Test::Unit::TestCase
     assert_equal(722, widths[65])
   end
 
+  def test_find_font2
+    afm = find_font('Courier')
+    assert_equal('Courier', afm.font_name)
+    afm = find_font('courier', 'bold')
+    assert_equal('Courier-Bold', afm.font_name)
+    afm = find_font('courier', 'bold', 'italic')
+    assert_equal('Courier-BoldOblique', afm.font_name)
+    afm = find_font('courier', 'bold', 'oblique')
+    assert_equal('Courier-BoldOblique', afm.font_name)
+    afm = find_font('courier', nil, 'italic')
+    assert_equal('Courier-Oblique', afm.font_name)
+    afm = find_font('courier', nil, 'oblique')
+    assert_equal('Courier-Oblique', afm.font_name)
+
+    afm = find_font('helvetica')
+    assert_equal('Helvetica', afm.font_name)
+    afm = find_font('helvetica', 'bold')
+    assert_equal('Helvetica-Bold', afm.font_name)
+    afm = find_font('helvetica', 'bold', 'italic')
+    assert_equal('Helvetica-BoldOblique', afm.font_name)
+    afm = find_font('helvetica', 'bold', 'oblique')
+    assert_equal('Helvetica-BoldOblique', afm.font_name)
+    afm = find_font('helvetica', nil, 'italic')
+    assert_equal('Helvetica-Oblique', afm.font_name)
+    afm = find_font('helvetica', nil, 'oblique')
+    assert_equal('Helvetica-Oblique', afm.font_name)
+
+    afm = find_font('times')
+    assert_equal('Times-Roman', afm.font_name)
+    afm = find_font('times', 'bold')
+    assert_equal('Times-Bold', afm.font_name)
+    afm = find_font('times', 'bold', 'italic')
+    assert_equal('Times-BoldItalic', afm.font_name)
+    afm = find_font('times', 'bold', 'oblique')
+    assert_equal('Times-BoldItalic', afm.font_name)
+    afm = find_font('times', nil, 'italic')
+    assert_equal('Times-Italic', afm.font_name)
+    afm = find_font('times', nil, 'oblique')
+    assert_equal('Times-Italic', afm.font_name)
+
+    afm = find_font('helvetica-condensed', 'bold', 'italic')
+    assert_equal('Helvetica-Condensed-BoldObl', afm.font_name)
+  end
+
   def test_font_metrics1
     families = ['Courier', 'Helvetica', 'Times']
-    weights = [false, 'Bold']
-    italics = [false, true]
+    weights = ['', 'Bold']
+    styles = ['', 'Italic']
     families.each do |family|
       weights.each do |weight|
-        italics.each do |italic|
-          fm = font_metrics(family, :weight => weight, :italic => italic)
+        styles.each do |italic|
+          fm = font_metrics(family, :weight => weight, :style => italic)
           assert_not_nil(fm, "Should never return nil.")
           assert_equal(AdobeFontMetrics::NonSymbolic, fm.flags & AdobeFontMetrics::NonSymbolic, "#{family}: NonSymbolic")
-          assert_equal(italic ? AdobeFontMetrics::Italic : 0, fm.flags & AdobeFontMetrics::Italic, "#{family}: Italic test")
+          assert_equal(italic == 'Italic' ? AdobeFontMetrics::Italic : 0, fm.flags & AdobeFontMetrics::Italic, "#{family}: Italic test")
           assert_equal(family == 'Courier' ? AdobeFontMetrics::FixedPitch : 0, fm.flags & AdobeFontMetrics::FixedPitch, "#{family}: Fixed Pitch test")
         end
       end

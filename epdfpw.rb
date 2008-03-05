@@ -1491,31 +1491,40 @@ module EideticPDF
         @ic.close
         @ic = nil
       end
-      font = Font.new(name, size, options[:style] || '', options[:color], pdf_encoding(options[:encoding] || 'WinAnsiEncoding', name))
+      weight = options[:weight] || ''
+      style = weight + (options[:style] || '')
+      font = Font.new(name, size, style, options[:color], pdf_encoding(options[:encoding] || 'WinAnsiEncoding', name))
       font.sub_type = options[:sub_type] || 'Type1'
       punc = (font.sub_type == 'TrueType') ? ',' : '-'
       full_name = name.gsub(' ','')
       full_name << punc << font.style unless font.style.empty?
-      font_key = "#{full_name}/#{font.encoding}-#{font.sub_type}"
-      if font.sub_type == 'Type1'
-        metrics = @options[:built_in_fonts] ? PdfK::font_metrics(full_name) : AFM::font_metrics(full_name, :encoding => font.encoding)
-      elsif font.sub_type == 'TrueType'
-        if @options[:built_in_fonts]
+      if @options[:built_in_fonts]
+        if font.sub_type == 'Type1'
+          metrics = PdfK::font_metrics(full_name)
+        elsif font.sub_type == 'TrueType'
           metrics = PdfTT::font_metrics(full_name)
-        else
-          raise Exception.new("Non-built-in TrueType fonts not supported yet.")
         end
-      elsif font.sub_type == 'Type0'
-        metrics = AFM::font_metrics(full_name, :encoding => :unicode)
-        require 'iconv'
-        @ic = Iconv.new('UCS-2BE', iconv_encoding(font.encoding))
       else
-        raise Exception.new("Unsupported subtype #{font.sub_type}.")
+        if font.sub_type == 'Type1'
+          weight = 'Bold' if weight.empty? and /Bold/i =~ style
+          afm = AFM::find_font(name, weight, style)
+          full_name = afm.font_name unless afm.nil?
+          metrics = AFM::font_metrics(full_name, :encoding => font.encoding)
+        elsif font.sub_type == 'TrueType'
+          raise Exception.new("Non-built-in TrueType fonts not supported yet.")
+        elsif font.sub_type == 'Type0'
+          metrics = AFM::font_metrics(full_name, :encoding => :unicode)
+          require 'iconv'
+          @ic = Iconv.new('UCS-2BE', iconv_encoding(font.encoding))
+        else
+          raise Exception.new("Unsupported subtype #{font.sub_type}.")
+        end
       end
       font.widths, font.ascent, font.descent = metrics.widths, metrics.ascent, metrics.descent
       font.height = font.ascent + font.descent.abs
       font.underline_position = metrics.underline_position * -0.001 * font.size
       font.underline_thickness = metrics.underline_thickness * 0.001 * font.size
+      font_key = "#{full_name}/#{font.encoding}-#{font.sub_type}"
       page_font = @doc.fonts[font_key]
       unless page_font
         widths = nil

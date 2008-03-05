@@ -188,7 +188,7 @@ end
 
 def landscape_orientation(w)
   w.page(:units => :in, :orientation => :landscape) do |p|
-    p.font("Times-Roman", 12)
+    p.font("Times", 12)
     p.print_xy(0.5, 0.5, "Landscape Orientation", :underline => true)
     p.rectangle(1, 1, p.page_width - 2, p.page_height - 2)
   end
@@ -531,7 +531,7 @@ def text_clipping(w)
   w.page(:units => :in, :margins => 1) do |p|
     p.print_xy(-0.5, -0.5, "Text Clipping", :underline => true)
     # grid(p, 6.5, 9, 0, 0)
-    p.font('Helvetica', 144, :style => 'Bold')
+    p.font('Helvetica', 144, :weight => 'Bold')
     p.print_xy(0.25, 0.5, "ROSE", :clip => true, :stroke => true) do
       p.print_image_file(TestImg, 0, 0, 6.5)
     end
@@ -627,7 +627,7 @@ def rich_text(w)
     rt = EideticPDF::PdfText::RichText.new
     p.font('Helvetica', 12)
     rt.add("Here is some ", p.font)
-    p.font('Helvetica-Bold', 12)
+    p.font('Helvetica', 12, :weight => 'Bold')
     rt.add("Bold", p.font)
     p.font('Helvetica', 12)
     rt.add(" text.", p.font)
@@ -636,7 +636,7 @@ def rich_text(w)
     rt = EideticPDF::PdfText::RichText.new
     p.font('Helvetica', 12)
     rt.add("Here is some ", p.font)
-    p.font('Helvetica-Oblique', 12)
+    p.font('Helvetica', 12, :style => 'Italic')
     rt.add("Italic", p.font)
     p.font('Helvetica', 12)
     rt.add(" text.", p.font)
@@ -645,7 +645,7 @@ def rich_text(w)
     rt = EideticPDF::PdfText::RichText.new
     p.font('Helvetica', 12)
     rt.add("Here is some ", p.font)
-    p.font('Helvetica-BoldOblique', 12)
+    p.font('Helvetica', 12, :style => 'BoldItalic')
     rt.add("Bold, Italic", p.font)
     p.font('Helvetica', 12)
     rt.add(" text.", p.font)
@@ -668,7 +668,7 @@ def rich_text(w)
     rt = EideticPDF::PdfText::RichText.new
     p.font('Helvetica', 12)
     rt.add("This text is ", p.font)
-    p.font('Helvetica-Bold', 12)
+    p.font('Helvetica', 12, :weight => 'Bold')
     rt.add("Bold.  ", p.font)
 
     p.font('Helvetica', 12)

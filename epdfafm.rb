@@ -178,7 +178,11 @@ module EideticPDF
       end
 
       def self.find_font(full_name)
-        afm_cache.find { |afm| full_name.casecmp(afm.font_name) == 0 }
+        if full_name.is_a?(Regexp)
+          afm_cache.find { |afm| full_name =~ afm.font_name }
+        else
+          afm_cache.find { |afm| full_name.casecmp(afm.font_name) == 0 }
+        end
       end
 
       def self.find_fonts(options)
@@ -289,13 +293,22 @@ module EideticPDF
     end
 
   module_function
-    def font_metrics(name, options={})
-      unless options[:weight].nil? and options[:italic].nil?
-        weight = options[:weight] || /Medium|Roman/
-        italic = options[:italic] || false
-        afm = AdobeFontMetrics.find_fonts(:family_name => name, :weight => weight, :italic => italic).first
+    def find_font(family, weight='', style='')
+      italic = (style =~ /Italic|Oblique/i) ? '(Italic|Obl(ique)?)' : ''
+      weight_style = "#{weight}#{italic}"
+      re_s = '^' + family
+      if weight_style.empty?
+        re_s << '(-Roman)?'
+      else
+        re_s << '-' << weight_style
       end
-      afm = AdobeFontMetrics.find_font(name) if afm.nil?
+      re_s << '$'
+      re = Regexp.new(re_s, Regexp::IGNORECASE)
+      afm = AdobeFontMetrics.find_font(re)
+    end
+
+    def font_metrics(name, options={})
+      afm = find_font(name, options[:weight], options[:style])
       raise Exception.new("Unknown font %s." % name) if afm.nil?
       encoding = (afm.encoding_scheme == 'FontSpecific') ? nil : options[:encoding] || 'WinAnsiEncoding'
       needs_descriptor = afm.needs_descriptor(encoding)
