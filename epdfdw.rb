@@ -428,6 +428,12 @@ module EideticPDF
       cur_page.clip(options, &block)
     end
 
+    # Set the shape to be used at the ends of lines.  If no style is specified, returns current style.
+    # [+style+] One of the symbols :butt_cap, :round_cap or :projecting_square_cap, or a string 'butt_cap', 'round_cap' or 'projecting_square_cap'.
+    def line_cap_style(style=nil)
+      cur_page.line_cap_style(style)
+    end
+
     # Set the pattern of dashes and gaps used to draw lines.  If no pattern is specified, returns current pattern.
     # [+pattern+] A string of the form '[dash gap] phase' or one of the symbols :+solid+, :+dotted+ or :+dashed+.
     # When a symbol is specified, dash and gap lengths are multiplied by +line_width+ for proportion.

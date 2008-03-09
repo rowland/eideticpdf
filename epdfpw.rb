@@ -21,6 +21,7 @@ module EideticPDF
   SIGNS = [ Signs.new(1, -1), Signs.new(-1, -1), Signs.new(-1, 1), Signs.new(1, 1) ]
   UNIT_CONVERSION = { :pt => 1, :in => 72, :cm => 28.35 }
   LINE_PATTERNS = { :solid => [], :dotted => [1, 2], :dashed => [4, 2] }
+  LINE_CAP_STYLES = [:butt_cap, :round_cap, :projecting_square_cap].freeze
   IDENTITY_MATRIX = [1, 0, 0, 1, 0, 0].freeze
 
   class PageStyle
@@ -412,7 +413,7 @@ module EideticPDF
     end
 
     def check_set_line_dash_pattern
-      unless @line_dash_pattern == @last_line_dash_pattern
+      unless [@line_dash_pattern, @line_cap_style] == [@last_line_dash_pattern, @last_line_cap_style]
         if @in_path and @auto_path
           gw.stroke
           @in_path = false
@@ -427,6 +428,9 @@ module EideticPDF
 
         gw.set_line_dash_pattern(pattern)
         @last_line_dash_pattern = @line_dash_pattern
+
+        gw.set_line_cap_style(LINE_CAP_STYLES.index(@line_cap_style) || 0)
+        @last_line_cap_style = @line_cap_style
       end
     end
 
@@ -1219,6 +1223,12 @@ module EideticPDF
       @text_rendering_mode = save_text_rendering_mode
       @in_path = false
       @auto_path = true
+    end
+
+    def line_cap_style(style=nil)
+      return @line_cap_style || :butt_cap if style.nil?
+      prev_line_cap_style, @line_cap_style = @line_cap_style, style.to_sym if LINE_CAP_STYLES.include?(style.to_sym)
+      prev_line_cap_style
     end
 
     def line_dash_pattern(pattern=nil)

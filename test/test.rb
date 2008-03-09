@@ -210,6 +210,7 @@ def line_widths_and_patterns(w)
       pattern = [:solid,:dotted,:dashed][i % 3]
       p.line_width "#{i}pt"
       p.line_dash_pattern pattern
+      p.line_cap_style :round_cap
       p.move_to(1, 13 + i)
       p.line_to(p.page_width - 5, 13 + i)
       p.print("  #{pattern}")
@@ -217,6 +218,7 @@ def line_widths_and_patterns(w)
 
     p.line_width "3pt"
     p.line_dash_pattern :solid
+    p.line_cap_style :butt_cap
     p.print_xy(1, 22, "Line Colors")
     y = 23.0
 
@@ -415,22 +417,24 @@ def pies(w)
     p.print_xy(0.5, 0.5, "Pies", :underline => true)
     p.line_color 0
 
+    x, y, r = 4, 3, 2
     p.path(:fill => true, :stroke => true) do
       p.fill_color 'Crimson'
-      p.pie(4, 3, 2, 0, 90)
+      p.pie(x, y, r, 0, 90)
       p.circle(4.75, 2.25, 0.5, :reverse => true)
     end
-    p.pie(4, 3, 2, 90, 135, :fill => 'DarkOrange')
-    p.pie(4, 3, 2, 135, 225, :fill => 'Orchid')
-    p.pie(4, 3, 2, 225, 270, :fill => 'Gold')
-    
-    p.pie(4.25, 3.25, 2, 270, 360, :fill => 'MediumSeaGreen')
+    p.pie(x, y, r, 90, 135, :fill => 'DarkOrange')
+    p.pie(x, y, r, 135, 225, :fill => 'Orchid')
+    p.pie(x, y, r, 225, 270, :fill => 'Gold')
 
+    p.pie(x + 0.25, y + 0.25, r, 270, 360, :fill => 'MediumSeaGreen')
+
+    y = 8
     p.print_xy(0.5, 6, "Arches", :underline => true)
-    p.arch(4, 8, 1.5, 2, 0, 90, :fill => 'MediumSeaGreen')
-    p.arch(4, 8, 1, 1.5, 90, 180, :fill => 'Crimson')
-    p.arch(4, 8, 0.5, 1, 0, 90, :fill => 'DarkOrange')
-    p.arch(4, 8, 0, 0.5, 90, 180, :fill => 'Gold')
+    p.arch(x, y, 1.5, 2, 0, 90, :fill => 'MediumSeaGreen')
+    p.arch(x, y, 1, 1.5, 90, 180, :fill => 'Crimson')
+    p.arch(x, y, 0.5, 1, 0, 90, :fill => 'DarkOrange')
+    p.arch(x, y, 0, 0.5, 90, 180, :fill => 'Gold')
   end
 end
 
