@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# encoding: ASCII-8BIT
 #
 #  Created by Brent Rowland on 2008-01-12.
 #  Copyright (c) 2008, Eidetic Software. All rights reserved.
@@ -26,6 +27,8 @@ class Numeric
 end
 
 module EideticPDF
+  ImageReadMode = "".respond_to?(:encoding) ? "rb:binary" : "rb"
+
   module Statistics
     def sum
       self.inject(0) { |total, obj| total + obj }
@@ -72,7 +75,8 @@ module EideticPDF
 
   module JpegInfo
     def jpeg?(image)
-      image[0, 2] == "\xFF\xD8"
+      # image[0, 2] == "\xFF\xD8"
+      image[0, 2].hash == "\xFF\xD8".hash
     end
 
     def jpeg_dimensions(image)

@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# encoding: ASCII-8BIT
 #
 #  Created by Brent Rowland on 2007-07-13.
 #  Copyright (c) 2007, Eidetic Software. All rights reserved.
@@ -375,7 +376,7 @@ module EideticPDF
       end
 
       def to_s
-        "#{self.first.seq} #{self.size}\n" << super
+        "#{self.first.seq} #{self.size}\n" << join
       end
     end
 
@@ -398,6 +399,10 @@ module EideticPDF
           s << indirect_object.to_s
         end
         s
+      end
+
+      def to_s
+        join
       end
     end
 
@@ -666,7 +671,7 @@ module EideticPDF
       end
     end
 
-    class PdfSoundAnnot <  PdfAnnot
+    class PdfSoundAnnot < PdfAnnot
       def initialize(seq, gen, rect, sound)
         # sound: PdfStream
         super(seq, gen, 'Sound', rect)

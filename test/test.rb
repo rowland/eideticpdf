@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# encoding: ASCII-8BIT
 #
 #  Created by Brent Rowland on 2007-09-30.
 #  Copyright (c) 2007, Eidetic Software. All rights reserved.
@@ -494,7 +495,7 @@ def images(w)
     # natural size @ current location
     p.print_image_file(TestImg, 0, 0)
     # from a buffer at a specified position and width with auto-height
-    img = IO.read(TestImg)
+    img = open(TestImg, EideticPDF::ImageReadMode) { |f| f.read }
     p.print_image(img, 1, 3, 4.5)
     # specified height with auto-width
     p.print_image_file(TestImg, 3.25, 7, nil, 2)
@@ -749,7 +750,7 @@ docw.doc(:font => { :name => 'Courier', :size => 10 }, :built_in_fonts => BuiltI
   rich_text(w)
   bullets(w)
   print_text(w)
-  type1_font_names(w)
+  type1_font_names(w) # 1.9
   truetype_font_names(w) if BuiltInFonts
   stars(w)
   polygons(w)
@@ -766,10 +767,10 @@ docw.doc(:font => { :name => 'Courier', :size => 10 }, :built_in_fonts => BuiltI
   cm_grid(w)
   inch_grid(w)
   dp_grid(w)
-  images(w)
-  clipping(w)
-  text_clipping(w)
-  text_encodings(w) unless BuiltInFonts
+  images(w) # 1.9
+  clipping(w) # 1.9
+  text_clipping(w) # 1.9
+  text_encodings(w) unless BuiltInFonts # 1.9
   landscape_orientation(w)
 end
 

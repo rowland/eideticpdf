@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# encoding: ASCII-8BIT
 #
 #  Created by Brent Rowland on 2007-07-13.
 #  Copyright (c) 2007, Eidetic Software. All rights reserved.
@@ -63,7 +64,7 @@ module EideticPDF
   private
     def iconv_encoding(encoding)
       case encoding
-      when 'WinAnsiEncoding': 'CP1252'
+      when 'WinAnsiEncoding' then 'CP1252'
       else encoding
       end
     end
@@ -71,7 +72,7 @@ module EideticPDF
     def pdf_encoding(encoding, font_name)
       return 'StandardEncoding' if ['Symbol','ZapfDingbats'].include?(font_name)
       case encoding.upcase
-      when 'CP1252': 'WinAnsiEncoding'
+      when 'CP1252' then 'WinAnsiEncoding'
       else encoding
       end
     end
@@ -307,10 +308,10 @@ module EideticPDF
     def check_set_v_text_align(force=false)
       if force or @last_v_text_align != @v_text_align
         @v_text_align_pts = case @v_text_align
-        when :above  : -@font.height * 0.001 * @font.size
-        when :top    : -@font.ascent * 0.001 * @font.size
-        when :middle : -@font.ascent * 0.001 * @font.size / 2.0
-        when :below  : -@font.descent * 0.001 * @font.size
+        when :above  then -@font.height * 0.001 * @font.size
+        when :top    then -@font.ascent * 0.001 * @font.size
+        when :middle then -@font.ascent * 0.001 * @font.size / 2.0
+        when :below  then -@font.descent * 0.001 * @font.size
         else 0.0 # :base
         end
         @tw.set_rise(@v_text_align_pts)
@@ -635,9 +636,9 @@ module EideticPDF
       return @margins.map { |m| from_points(@units, m) } unless [4,2,1].include?(margins.size)
       margins = margins.first if margins.first.is_a?(Array)
       @margins = case margins.size
-        when 4: margins
-        when 2: margins * 2
-        when 1: margins * 4
+        when 4 then margins
+        when 2 then margins * 2
+        when 1 then margins * 4
         else @margins
         end.map { |m| to_points(@units, m) }
       @margin_top, @margin_right, @margin_bottom, @margin_left = @margins
@@ -1617,7 +1618,7 @@ module EideticPDF
     def load_image(image_file_name, stream=nil)
       image, name = @doc.images[image_file_name]
       return [image, name] unless image.nil?
-      stream ||= open(image_file_name) { |io| io.read }
+      stream ||= open(image_file_name, ImageReadMode) { |io| io.read }
       image = PdfObjects::PdfImage.new(@doc.next_seq, 0, stream)
       image.width, image.height, components, image.bits_per_component = jpeg_dimensions(stream)
       image.color_space = { 1 => 'DeviceGray', 3 => 'DeviceRGB', 4 => 'DeviceCMYK' }[components]

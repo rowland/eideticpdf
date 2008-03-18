@@ -28,6 +28,10 @@ class PdfKTestCases < Test::Unit::TestCase
     assert_equal(32, PdfK::CODEPOINTS['space'])
     # assert_equal(PdfK::GLYPHS.size, PdfK::CODEPOINTS.size) # 1051 != 1035
   end
+  
+  def test_standard_encodings
+    assert PdfK::STANDARD_ENCODINGS.include?('WinAnsiEncoding')
+  end
 end
 
 class FontMetricsTestCases < Test::Unit::TestCase

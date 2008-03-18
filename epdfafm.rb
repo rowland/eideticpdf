@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# encoding: ASCII-8BIT
 #
 #  Created by Brent Rowland on 2007-12-18.
 #  Copyright (c) 2007, Eidetic Software. All rights reserved.
@@ -275,10 +276,10 @@ module EideticPDF
             line.split(';').map { |kv| kv.strip }.each do |kv|
               k, v = kv.split
               case k
-              when 'C': ch.code = v.to_i
-              when 'CH': ch.code = v[1..-2].to_i(16)
-              when 'WX', 'W0X': ch.width = v.to_i
-              when 'N': ch.name = v
+              when 'C'         then ch.code = v.to_i
+              when 'CH'        then ch.code = v[1..-2].to_i(16)
+              when 'WX', 'W0X' then ch.width = v.to_i
+              when 'N'         then ch.name = v
               end
             end
           end
