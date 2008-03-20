@@ -6,7 +6,7 @@
 
 # Eidetic PDF Support
 
-class Numeric
+class Numeric # :nodoc:
   unless 1.respond_to?(:degrees)
     def degrees
       self * Math::PI / 180
@@ -29,7 +29,7 @@ end
 module EideticPDF
   ImageReadMode = "".respond_to?(:encoding) ? "rb:binary" : "rb"
 
-  module Statistics
+  module Statistics # :nodoc:
     def sum
       self.inject(0) { |total, obj| total + obj }
     end
@@ -39,7 +39,7 @@ module EideticPDF
     end
   end
 
-  class PropertyStack
+  class PropertyStack # :nodoc:
     def initialize(obj, prop, &block)
       @obj, @prop, @condition = obj, prop, block
       @stack = []
@@ -56,7 +56,7 @@ module EideticPDF
     end
   end
 
-  class ColorStack
+  class ColorStack # :nodoc:
     def initialize(obj, prop)
       @obj, @prop = obj, prop
       @stack = []
@@ -73,7 +73,7 @@ module EideticPDF
     end
   end
 
-  module JpegInfo
+  module JpegInfo # :nodoc:
     def jpeg?(image)
       # image[0, 2] == "\xFF\xD8"
       image[0, 2].hash == "\xFF\xD8".hash

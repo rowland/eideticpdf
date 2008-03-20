@@ -7,7 +7,7 @@
 require 'epdfk'
 
 module EideticPDF
-  module PdfObjects
+  module PdfObjects # :nodoc: all
     class Header
       VERSIONS = {
         1.0 => "%PDF-1.0\n".freeze,

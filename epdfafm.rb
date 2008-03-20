@@ -9,7 +9,7 @@ require 'epdfo'
 require 'epdfs'
 
 module EideticPDF
-  module AFM
+  module AFM # :nodoc: all
     # AfmChar = Struct.new(:code, :name, :w0x, :w1x, :w0y, :w1y, :w0, :w1, :vv, :b, :l)
     AfmChar = Struct.new(:code, :name, :width)
     FontPath = [File.join(File.dirname(__FILE__), 'fonts')]

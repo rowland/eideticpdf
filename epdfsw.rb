@@ -9,7 +9,7 @@
 require 'epdfo'
 
 module EideticPDF
-  class BaseWriter
+  class BaseWriter # :nodoc:
     def f(value, prec=2)
       sprintf("%.*f", prec, value).sub(',','.')
     end
@@ -20,7 +20,7 @@ module EideticPDF
     end
   end
 
-  class MiscWriter < BaseWriter
+  class MiscWriter < BaseWriter # :nodoc:
     def initialize(stream)
       @stream = stream
     end
@@ -75,7 +75,7 @@ module EideticPDF
     end
   end
 
-  class GraphWriter < BaseWriter
+  class GraphWriter < BaseWriter # :nodoc:
     def initialize(stream)
       @stream = stream
     end
@@ -187,7 +187,7 @@ module EideticPDF
     end
   end  
 
-  class TextWriter < BaseWriter
+  class TextWriter < BaseWriter # :nodoc:
     def initialize(stream)
       @stream = stream
     end

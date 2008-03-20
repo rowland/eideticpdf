@@ -7,7 +7,7 @@
 require 'epdfk'
 
 module EideticPDF
-  module PdfTT
+  module PdfTT # :nodoc:
     NUM_FONTS = 12
 
     FONT_WIDTHS = [

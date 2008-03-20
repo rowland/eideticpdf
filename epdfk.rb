@@ -7,7 +7,7 @@
 module EideticPDF
   VERSION = '1.0.0'
 
-  module PdfK
+  module PdfK # :nodoc:
     FONT_WIDTHS = [
       [ # 0 Helvetica
         278,    0,    0,    0,    0,    0,    0,    0,    0,    0, #   0

@@ -5,7 +5,7 @@
 #  Copyright (c) 2007, Eidetic Software. All rights reserved.
 
 module EideticPDF
-  module TextLine
+  module TextLine # :nodoc:
     def height
       @height ||= map { |p| 0.001 * p.font.height * p.font.size }.max
     end
@@ -23,7 +23,7 @@ module EideticPDF
     end
   end
 
-  module PdfText
+  module PdfText # :nodoc: all
     class TextPiece
       attr_accessor :text, :width, :font, :color, :underline, :chars, :tokens
 

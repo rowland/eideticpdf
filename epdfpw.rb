@@ -25,7 +25,7 @@ module EideticPDF
   LINE_CAP_STYLES = [:butt_cap, :round_cap, :projecting_square_cap].freeze
   IDENTITY_MATRIX = [1, 0, 0, 1, 0, 0].freeze
 
-  class PageStyle
+  class PageStyle # :nodoc:
     attr_reader :page_size, :crop_size, :orientation, :landscape, :rotate
 
     PORTRAIT = 0
@@ -58,7 +58,7 @@ module EideticPDF
     end
   end
 
-  class PageWriter
+  class PageWriter # :nodoc:
     include JpegInfo
 
   private
