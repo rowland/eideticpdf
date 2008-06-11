@@ -667,6 +667,10 @@ module EideticPDF
       cur_page.rotate(angle, x, y, &block)
     end
 
+    def scale(x, y, scale_x, scale_y, &block)
+      cur_page.scale(x, y, scale_x, scale_y, &block)
+    end
+
   protected
     def define_resources # :nodoc:
       @resources = PdfObjects::PdfResources.new(next_seq, 0)

@@ -740,11 +740,30 @@ def rotations(w)
   end
 end
 
+def scaling(w)
+  w.page(:units => :in, :margins => 0.5) do |p|
+    p.puts("Scale", :underline => true)
+    1.upto(10) { |i| p.move_to(0, i); p.line_to(0.125, i) }
+    p.line_dash_pattern :dotted
+    [[0.5, 1, 1.0, 1.0],
+     [0.5, 4, 0.75, 0.75],
+     [0.5, 7, 0.5, 0.5]
+    ].each do |parms|
+      p.scale(*parms) do
+        p.font("Helvetica", 12)
+        p.rectangle(0, 0, 4.0, 2.5)
+        p.paragraph_xy(0, 0, LOREM, :width => 4.0, :height => 2.5)
+      end
+    end
+  end
+end
+
 start = Time.now
 docw = EideticPDF::DocumentWriter.new
 
-# docw.doc(:font => { :name => 'Courier', :size => 10 }, :orientation => :landscape, :pages_up => [3, 2]) do |w|
+# docw.doc(:font => { :name => 'Courier', :size => 10 }, :orientation => :landscape, :pages_up => [2, 1]) do |w|
 docw.doc(:font => { :name => 'Courier', :size => 10 }, :built_in_fonts => BuiltInFonts) do |w|
+  scaling(w)
   rotations(w)
   angled_lines(w)
   rich_text(w)

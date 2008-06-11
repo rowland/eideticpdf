@@ -1681,13 +1681,38 @@ module EideticPDF
       v_sin = Math::sin(theta)
 
       xx, xy = to_points(@units, x), @page_height - to_points(@units, y)
-      # $stdout.puts "xx: #{xx}, xy: #{xy}"
       rot_x, rot_y = rotate_xy_coordinate(xx, xy, angle)
-      # $stdout.puts "off_x: #{off_x}, off_y: #{off_y}"
       gw.save_graphics_state
       gw.concat_matrix(v_cos, v_sin, -v_sin, v_cos, xx - rot_x, xy - rot_y)
       yield
       gw.restore_graphics_state
+    end
+
+    def scale(x, y, scale_x, scale_y, &block)
+      return unless x && scale_x && y && scale_y && block_given?
+      end_path if @in_path
+      check_set(:line_color, :line_width, :line_dash_pattern, :fill_color)
+      sub_area = IDENTITY_MATRIX.dup
+      # a: Sx (horizontal scaling, 1 unit in new is x units in old)
+      # b: 
+      # c: 
+      # d: Sy (vertical scaling, 1 unit in new is y units in old)
+      # e: Tx (horizontal translation of the origin)
+      # f: Ty (vertical translation of the origin)
+      sub_area[0] = scale_x
+      sub_area[3] = scale_y
+      sub_area[4] = to_points(@units, x)
+      sub_area[5] = to_points(@units, -y)
+      save_page_height = @page_height
+      @page_height = save_page_height.quo(scale_y)
+      gw.save_graphics_state
+      gw.concat_matrix(*sub_area)
+      @last_page_font = nil
+      yield
+      end_text if @in_text
+      end_graph if @in_graph
+      gw.restore_graphics_state
+      @page_height = save_page_height
     end
   end
 end
