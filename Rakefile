@@ -5,8 +5,8 @@ require 'rcov/rcovtask'
 
 spec = Gem::Specification.new do |s|
   s.name = "eideticpdf"
-  s.version = "0.9.2"
-  s.date = "2008-03-19"
+  s.version = "0.9.3"
+  s.date = "2008-06-20"
   s.summary = "PDF Library"
   s.requirements = "Ruby 1.8.x"
   s.require_path = '.'
