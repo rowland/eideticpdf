@@ -1684,8 +1684,10 @@ module EideticPDF
       rot_x, rot_y = rotate_xy_coordinate(xx, xy, angle)
       gw.save_graphics_state
       gw.concat_matrix(v_cos, v_sin, -v_sin, v_cos, xx - rot_x, xy - rot_y)
+      @last_page_font = nil
       yield
       gw.restore_graphics_state
+      @last_page_font = nil
     end
 
     def scale(x, y, scale_x, scale_y, &block)
@@ -1712,6 +1714,7 @@ module EideticPDF
       end_text if @in_text
       end_graph if @in_graph
       gw.restore_graphics_state
+      @last_page_font = nil
       @page_height = save_page_height
     end
   end
