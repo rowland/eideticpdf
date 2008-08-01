@@ -47,3 +47,8 @@ task :clean do
   rm "test.pdf"
   rm "test/test.pdf"
 end
+
+desc "Build documentation."
+task :doc do
+  `ruby doc/build_documentation.rb`
+end
