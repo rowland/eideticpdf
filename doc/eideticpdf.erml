@@ -14,7 +14,7 @@
       desc p { font.line-height: 1.6; }
       options { padding: 5pt; }
       key { width: 30%; padding: 3pt; font: code; line-height: 1.3; }
-      definition { line-height: 1.3; border: dotted; }
+      definition { line-height: 1.3; }
       code { font: code; }
     -->
   </rules>
@@ -608,135 +608,191 @@
       </desc>
 
       <method>text_height(units=nil)</method>
-      <p>Returns text height, based on the current font, excluding external leading.</p>
-      <options>
-        <key>units</key>
-        <definition>Units the value is returned in.</definition>
-      </options>
+      <desc>
+        <p>Returns text height, based on the current font, excluding external leading.</p>
+        <options>
+          <key>units</key>
+          <definition>Units the value is returned in.</definition>
+        </options>
+      </desc>
+    </page>
+    <page>
+      <method>height(text='', units=nil)</method>
+      <desc>
+        <p>Returns height of a line or array of lines, including external leading as determined by <code>line_height</code>.</p>
+        <options>
+          <key>text</key>
+          <definition>Line or array of lines to be measured.  Height is determined only by current font and number of lines.</definition>
+          
+          <key>units</key>
+          <definition>Units result should be expressed in.  Defaults to current <code>units</code>.</definition>
+        </options>
+      </desc>
+
+      <method>paragraph(text, options={})</method>
+      <desc>
+        <p>Wrap <code>text</code> and render with the following <code>options</code>.</p>
+        <options>
+          <key>:width</key>
+          <definition>Maximum width to wrap text within.  Defaults to the canvas width minus the current horizontal position.</definition>
+          
+          <key>:height</key>
+          <definition>Maximum height allowed.  Any text no
+          t rendered will be returned by the method call.  Defaults to the canvas height minus the current vertical position.</definition>
+          
+          <key>:bullet</key>
+          <definition>Render paragraph as a bullet, using the named bullet as defined using the <code>bullet</code> method.  The bullet width is subtracted from the <code>:width</code> specified.</definition>
+        </options>
+      </desc>
+      
+      <method>paragraph_xy(x, y, text, options={})</method>
+      <desc>
+        <p>Move to <code>(x, y)</code> and render paragraph.</p>
+      </desc>
+      
+      <method>v_text_align(vta=nil)</method>
+      <desc>
+        <p>Set vertical text alignment.  This is the part of the text that would coincide with a line if one were drawn at the same coordinates as the text.</p>
+        <options>
+          <key>:above</key>
+          <definition>At the top of the text, plus an amount equal to the height of descenders.</definition>
+          
+          <key>:top</key>
+          <definition>At the top of the text--text is rendered below the line.</definition>
+          
+          <key>:middle</key>
+          <definition>Through the middle of the text, like a strikeout.</definition>
+          
+          <key>:base</key>
+          <definition>At the base of the text--text is rendered above the line, except for descenders.</definition>
+          
+          <key>:below</key>
+          <definition>Below the text--text is rendered above the line, including descenders.</definition>
+        </options>
+        <p>Default is <code>:top</code>.</p>
+      </desc>
+
+      <method>underline(underline=nil)</method>
+      <desc>
+        <p>Set new underline status, returning previous status.  If new status is not specified, returns current underline status.</p>
+      </desc>
+
+      <method>type1_font_names</method>
+      <desc>
+        <p>Returns an array of font names, including weight and style, from the (local) fonts directory.</p>
+      </desc>
+
+    </page>
+    <page>
+      <method>font(name=nil, size=nil, options={})</method>
+      <desc>
+        <p>Set font, returning previous font.  If no font is specified, returns current font.</p>
+        <options>
+          <key>name</key>
+          <definition>Base name of a Type1 font with metrics file in fonts directory.</definition>
+          
+          <key>size</key>
+          <definition>Size of font in points.  See also <code>font_size</code> method.</definition>
+        </options>
+        
+        <p>The following <code>options</code> apply:</p>
+        <options>
+          <key>:style</key>
+          <definition>Bold, Italic, Oblique or a combination of weight and style such as BoldItalic or BoldOblique.  See <code>font_style</code> method.</definition>
+          
+          <key>:color</key>
+          <definition>Font color as given to <code>font_color</code> method.  Color is unchanged if not specified.</definition>
+          
+          <key>:encoding</key>
+          <definition>Currently-supported encodings include StandardEncoding, WinAnsiEncoding/CP1250, CP1250, CP1254, ISO-8859-1, ISO-8859-2, ISO-8859-3, ISO-8859-4, ISO-8859-7, ISO-8859-9, ISO-8859-10, ISO-8859-13, ISO-8859-14, ISO-8859-15, ISO-8859-16, MacTurkish or Macintosh.  Defaults to WinAnsiEncoding.</definition>
+          
+          <key>:sub_type</key>
+          <definition>Currently only Type1 fonts are supported.  Defaults to Type1.</definition>
+          
+          <key>:fill</key>
+          <definition>Fill text with current <code>font_color</code>.  Defaults to <code>true</code>.</definition>
+          
+          <key>:stroke</key>
+          <definition>Stroke text with current <code>line_color</code>.  Defaults to <code>false</code>.</definition>
+        </options>
+      </desc>
+      
+      <method>font_style(style=nil)</method>
+      <desc>
+        <p>Set font style, returning previous font style.  If no style is specified, returns current font style.</p>
+        <options>
+          <key>style</key>
+          <definition>Bold (or other weight), Italic, Oblique or combination such as BoldItalic or BoldOblique.</definition>
+        </options>
+        <p>Exact weights and combinations available depend on the font specification files in the (local) fonts directory.</p>
+      </desc>
+
+      <method>font_size(size=nil)</method>
+      <desc>
+        <p>Set font size, returning previous font size.  If no size is specified, returns current font size.</p>
+        <options>
+          <key>size</key>
+          <definition>Size of font in points.</definition>
+        </options>
+      </desc>
+
+    </page>
+    <page>
+      <method>jpeg?(image)</method>
+      <desc>
+        <p>Returns <code>true</code> if image is a buffer beginning with a JPEG signature.</p>
+      </desc>
+      
+      <method>jpeg_dimensions(image)</method>
+      <desc>
+        <p>Returns a tuple (array) of image dimensions of the form [width, height, components, bits_per_component].  Raises ArgumentError if <code>image</code> is not a JPEG.</p>
+      </desc>
+      
+      <method>print_image_file(image_file_name, x=nil, y=nil, width=nil, height=nil)</method>
+      <desc>
+        <p>Load graphic file (currently only JPEG is supported) from disk (or network, if open-uri library is loaded) and display at the specified location.</p>
+        <options>
+          <key>image_file_name</key>
+          <definition>Path or URL to image.</definition>
+          
+          <key>x</key>
+          <definition>Left edge of image is placed at this offset.  Defaults to <code>pen_pos.x</code>.</definition>
+          
+          <key>y</key>
+          <definition>Top edge of image is placed at this offset.  Defaults to <code>pen_pos.y</code>.</definition>
+          
+          <key>width</key>
+          <definition>Width to make image.  Defaults to natural image width or a width proportionate to <code>height</code> if <code>height</code> is specified.</definition>
+          
+          <key>height</key>
+          <definition>Height to make image.  Defaults to natural image height or a height proportionate to <code>width</code> if <code>width</code> is specified.</definition>
+        </options>
+      </desc>
+
+      <method>print_image(data, x=nil, y=nil, width=nil, height=nil)</method>
+      <desc>
+        <p>Display graphic (currently only JPEG is supported) from disk (or network, if open-uri library is loaded) and display at the specified location.</p>
+        <options>
+          <key>data</key>
+          <definition>Buffer containing image.</definition>
+          
+          <key>x</key>
+          <definition>Left edge of image is placed at this offset.  Defaults to <code>pen_pos.x</code>.</definition>
+          
+          <key>y</key>
+          <definition>Top edge of image is placed at this offset.  Defaults to <code>pen_pos.y</code>.</definition>
+          
+          <key>width</key>
+          <definition>Width to make image.  Defaults to natural image width or a width proportionate to <code>height</code> if <code>height</code> is specified.</definition>
+          
+          <key>height</key>
+          <definition>Height to make image.  Defaults to natural image height or a height proportionate to <code>width</code> if <code>width</code> is specified.</definition>
+        </options>
+      </desc>
 
     </page>
   </pages>
 <!--
-    # Returns height of a line or array of lines, including external leading as determined by <code>line_height</code>.
-    <key>text</key><definition>Line or array of lines to be measured.  Height is determined only by current font and number of lines.
-    <key>units</key><definition>Units result should be expressed in.  Defaults to current <code>units</code>.
-    def height(text='', units=nil) # may not include external leading?
-      cur_page.height(text, units)
-    end
-
-    # Wrap <code>text</code> and render with the following <code>options</code>.
-    <key>:width</key><definition>Maximum width to wrap text within.  Defaults to the canvas width minus the current horizontal position.
-    <key>:height</key><definition>Maximum height allowed.  Any text not rendered will be returned by the method call.  Defaults to the canvas height minus the current vertical position.
-    <key>:bullet</key><definition>Render paragraph as a bullet, using the named bullet as defined using the <code>bullet</code> method.  The bullet width is subtracted from the <code>:width</code> specified.
-    def paragraph(text, options={})
-      cur_page.paragraph(text, options)
-    end
-
-    # Move to <code>(x, y)</code> and render paragraph.
-    def paragraph_xy(x, y, text, options={})
-      cur_page.paragraph_xy(x, y, text, options)
-    end
-
-    # Set vertical text alignment.  This is the part of the text that would coincide with a line if one were drawn at the same
-    # coordinates as the text.
-    <key>:above</key><definition>At the top of the text, plus an amount equal to the height of descenders.
-    <key>:top</key><definition>At the top of the text--text is rendered below the line.
-    <key>:middle</key><definition>Through the middle of the text, like a strikeout.
-    <key>:base</key><definition>At the base of the text--text is rendered above the line, except for descenders.
-    <key>:below</key><definition>Below the text--text is rendered above the line, including descenders.
-    # Default is <code>:top</code>.
-    def v_text_align(vta=nil)
-      cur_page.v_text_align(vta)
-    end
-
-    # Set new underline status, returning previous status.  If new status is not specified, returns current underline status.
-    def underline(underline=nil)
-      cur_page.underline(underline)
-    end
-
-    # Returns an array of font names, including weight and style, from the (local) fonts directory.
-    def type1_font_names
-      if @options[:built_in_fonts]
-        PdfK::FONT_NAMES
-      else
-        AFM::font_names
-      end
-    end
-
-    def truetype_font_names # :nodoc:
-      if @options[:built_in_fonts]
-        PdfTT::FONT_NAMES
-      else
-        raise Exception.new("Non-built-in TrueType fonts not supported yet.")
-      end
-    end
-
-    # Set font, returning previous font.  If no font is specified, returns current font.
-    <key>name</key><definition>Base name of a Type1 font with metrics file in fonts directory.
-    <key>size</key><definition>Size of font in points.  See also <code>font_size</code> method.
-    # The following <code>options</code> apply:
-    <key>:style</key><definition>Bold, Italic, Oblique or a combination of weight and style such as BoldItalic or BoldOblique.  See <code>font_style</code> method.
-    <key>:color</key><definition>Font color as given to <code>font_color</code> method.  Color is unchanged if not specified.
-    <key>:encoding</key><definition>Currently-supported encodings include StandardEncoding, WinAnsiEncoding/CP1250, CP1250, CP1254, ISO-8859-1, ISO-8859-2, ISO-8859-3, ISO-8859-4, ISO-8859-7, ISO-8859-9, ISO-8859-10, ISO-8859-13, ISO-8859-14, ISO-8859-15, ISO-8859-16, MacTurkish or Macintosh.  Defaults to WinAnsiEncoding.
-    <key>:sub_type</key><definition>Currently only Type1 fonts are supported.  Defaults to Type1.
-    <key>:fill</key><definition>Fill text with current <code>font_color</code>.  Defaults to <code>true</code>.
-    <key>:stroke</key><definition>Stroke text with current <code>line_color</code>.  Defaults to <code>false</code>.
-    def font(name=nil, size=nil, options={})
-      cur_page.font(name, size, options)
-    end
-
-    # Set font style, returning previous font style.  If no style is specified, returns current font style.
-    <key>style</key><definition>Bold (or other weight), Italic, Oblique or combination such as BoldItalic or BoldOblique.
-    # Exact weights and combinations available depend on the font specification files in the (local) fonts directory.
-    def font_style(style=nil)
-      cur_page.font_style(style)
-    end
-
-    # Set font size, returning previous font size.  If no size is specified, returns current font size.
-    <key>size</key><definition>Size of font in points.
-    def font_size(size=nil)
-      cur_page.font_size(size)
-    end
-
-    # Returns <code>true</code> if image is a buffer beginning with a JPEG signature.
-    def jpeg?(image)
-      cur_page.jpeg?(image)
-    end
-
-    # Returns a tuple (array) of image dimensions of the form [width, height, components, bits_per_component].
-    # Raises ArgumentError if <code>image</code> is not a JPEG.
-    def jpeg_dimensions(image)
-      cur_page.jpeg_dimensions(image)
-    end
-
-    def load_image(image_file_name, stream=nil) # :nodoc:
-      cur_page.load_image(image_file_name, stream)
-    end
-
-    # Load graphic file (currently only JPEG is supported) from disk (or network, if open-uri library is loaded) and display at the specified location.
-    <key>image_file_name</key><definition>Path or URL to image.
-    <key>x</key><definition>Left edge of image is placed at this offset.  Defaults to <code>pen_pos.x</code>.
-    <key>y</key><definition>Top edge of image is placed at this offset.  Defaults to <code>pen_pos.y</code>.
-    <key>width</key><definition>Width to make image.  Defaults to natural image width or a width proportionate to <code>height</code> if <code>height</code> is specified.
-    <key>height</key><definition>Height to make image.  Defaults to natural image height or a height proportionate to <code>width</code> if <code>width</code> is specified.
-    def print_image_file(image_file_name, x=nil, y=nil, width=nil, height=nil)
-      cur_page.print_image_file(image_file_name, x, y, width, height)
-    end
-
-    # Display graphic (currently only JPEG is supported) from disk (or network, if open-uri library is loaded) and display at the specified location.
-    <key>data</key><definition>Buffer containing image.
-    <key>x</key><definition>Left edge of image is placed at this offset.  Defaults to <code>pen_pos.x</code>.
-    <key>y</key><definition>Top edge of image is placed at this offset.  Defaults to <code>pen_pos.y</code>.
-    <key>width</key><definition>Width to make image.  Defaults to natural image width or a width proportionate to <code>height</code> if <code>height</code> is specified.
-    <key>height</key><definition>Height to make image.  Defaults to natural image height or a height proportionate to <code>width</code> if <code>width</code> is specified.
-    def print_image(data, x=nil, y=nil, width=nil, height=nil)
-      cur_page.print_image(data, x, y, width, height)
-    end
-
-    def print_link(s, uri) # :nodoc:
-      cur_page.print_link(s, uri)
-    end
-
     # Given a block, defines a named bullet.  Otherwise the named Bullet struct is returned.
     #
     # The following <code>options</code> apply:
@@ -745,43 +801,20 @@
     #
     # If a block is given, the block should expect a <code>writer</code> parameter to be used for printing or drawing the bullet.
     # Within the block, all altered settings, other than the location, should be restored.
-    def bullet(name, options={}, &block)
+    <method>bullet(name, options={}, &block)</method>
       cur_page.bullet(name, options, &block)
     end
 
     # Rotate anything drawn within the supplied block <code>angle</code> degrees around origin <code>(x, y)</code>.
-    def rotate(angle, x, y, &block)
+    <method>rotate(angle, x, y, &block)</method>
       cur_page.rotate(angle, x, y, &block)
     end
 
-    def scale(x, y, scale_x, scale_y, &block)
+    <method>scale(x, y, scale_x, scale_y, &block)</method>
       cur_page.scale(x, y, scale_x, scale_y, &block)
     end
 
-  protected
-    def define_resources # :nodoc:
-      @resources = PdfObjects::PdfResources.new(next_seq, 0)
-      @resources.proc_set = PdfObjects::PdfName.ary ['PDF','Text','ImageB','ImageC']
-      @file.body << @resources
-    end
 
-    def sub_page(page_no) # :nodoc:
-      if @pages_up == 1
-        nil
-      elsif @options[:pages_up_layout] == :down
-        [page_no % @pages_down, @pages_across, (page_no / @pages_down) % @pages_across, @pages_down]
-      else
-        [page_no % @pages_across, @pages_across, (page_no / @pages_across) % @pages_down, @pages_down]
-      end
-    end
-
-    def pdf_page(page_no) # :nodoc:
-      if page = @pages[page_no / @pages_up * @pages_up]
-        page.page
-      else
-        nil
-      end
-    end
   end
 end
 -->
