@@ -4,14 +4,14 @@
 	  <font id="body" name="NewCenturySchlbk" size="12" />
 	  <font id="code" name="Courier" size="12" />
 	  <brush id="method" color="LightSteelBlue" />
-	  <layout id="desc" manager="vbox" vpadding="3pt" />
+	  <layout id="desc" manager="vbox" vpadding="5pt" />
 	  <layout id="options" manager="table" vpadding="5pt" />
   </styles>
   <rules>
     <!--
       title { font: title; font.underline: true; }
       method { font: code; fill: method; padding: 3pt; }
-      desc p { font.line-height: 1.6; }
+      desc p { font.line-height: 1.5; }
       options { padding: 5pt; }
       key { width: 30%; padding: 3pt; font: code; line-height: 1.3; }
       definition { line-height: 1.3; }
@@ -201,7 +201,7 @@
           <definition>The new indentation.</definition>
 
           <key>absolute</key>
-          <definition>If <code>true</code>, the new value is relative only to the left margin.  If <code>false</code>, value is relative to previous indentation.</definition>
+          <definition>If <code>true</code>, the new value is relative only to the left margin.  If <code>false,</code> value is relative to previous indentation.</definition>
         </options>
         <p>The indent setting is used by the <code>puts</code> and <code>new_line</code> methods.</p>
       </desc>
@@ -280,7 +280,7 @@
 
       <method>curve(x0, y0, x1, y1, x2, y2, x3, y3)</method>
       <desc>
-        <p>Draw a cubic Bezier curve from <code>(x0, y0)</code> to <code>(x3, y3)</code> with control points <code>[x1, y1]</code> and <code>(x2, y2)</code>.  If the first point does not coincide with the current position, any current path is stroked and a new path is begun.  Otherwise, the curve is appended to the current path.</p>
+        <p>Draw a cubic Bezier curve from <code>(x0, y0)</code> to <code>(x3, y3)</code> with control points <code>(x1, y1)</code> and <code>(x2, y2)</code>.  If the first point does not coincide with the current position, any current path is stroked and a new path is begun.  Otherwise, the curve is appended to the current path.</p>
       </desc>
 
       <method>curve_points(points)</method>
@@ -337,7 +337,8 @@
         </options>
         <p>These current settings also apply: <code>line_color</code>, <code>line_width</code>, <code>line_dash_pattern</code> and <code>fill_color</code>.</p>
       </desc>
-
+    </page>
+    <page>
       <method>points_for_arc(x, y, r, start_angle, end_angle)</method>
       <desc>
         <p>Returns array of <code>Location</code> structs for arc, suitable for feeding to <code>curve_points</code> method.  See <code>arc</code> method.</p>
@@ -349,8 +350,7 @@
         <p>By default, arc extends the current path to the point where the arc begins.  If <code>move_to0</code> is true (or there is no current path) a move is performed to where the arc begins.</p>
         <p>This method returns immediately if <code>start_angle == end_angle</code>.</p>
       </desc>
-    </page>
-    <page>
+
       <method>pie(x, y, r, start_angle, end_angle, options={})</method>
       <desc>
         <p>Draw a pie-shaped wedge with origin <code>x, y</code> and radius <code>r</code> from <code>start_angle</code> to <code>end_angle</code> degrees.</p>
@@ -383,7 +383,8 @@
         </options>
         <p>These current settings also apply: <code>line_color</code>, <code>line_width</code>, <code>line_dash_pattern</code> and <code>fill_color</code>.</p>
       </desc>
-
+    </page>
+    <page>
       <method>points_for_polygon(x, y, r, sides, options={})</method>
       <desc>
         <p>Returns array of <code>Location</code> structs representing the vertices of a polygon.  See <code>polygon</code> method.</p>
@@ -408,8 +409,6 @@
         </options>
         <p>These current settings also apply: <code>line_color</code>, <code>line_width</code>, <code>line_dash_pattern</code> and <code>fill_color</code>.</p>
       </desc>
-    </page>
-    <page>
 
       <method>star(x, y, r1, r2, points, options={})</method>
       <desc>
@@ -460,8 +459,6 @@
       <desc>
         <p>Fill and stroke current path (begun by <code>pat</code> method) and resume <code>auto_path</code>.  The <code>line_color</code> and <code>fill_color</code> in effect before <code>path</code> was begun are restored.  Raises Exception if no current path exists.</p>
       </desc>
-    </page>
-    <page>
 
       <method>clip(options={}, &amp;block)</method>
       <desc>
@@ -506,7 +503,8 @@
           <definition>Units value is expressed in.  Defaults to current units setting.</definition>
         </options>
       </desc>
-
+    </page>
+    <page>
       <method>named_colors</method>
       <desc>
         <p>Returns hash of named colors consisting of (name, color) pairs.  Initial value comes from EideticPDF::PdfK::NAMED_COLORS, but may be augmented or replaced.</p>
@@ -531,8 +529,6 @@
         </options>
         <p>Return values are always in integer form.</p>
       </desc>
-    </page>
-    <page>
 
       <method>font_color(color=nil)</method>
       <desc>
