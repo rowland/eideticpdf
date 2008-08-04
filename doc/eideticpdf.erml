@@ -408,168 +408,215 @@
         </options>
         <p>These current settings also apply: <code>line_color</code>, <code>line_width</code>, <code>line_dash_pattern</code> and <code>fill_color</code>.</p>
       </desc>
+    </page>
+    <page>
+
+      <method>star(x, y, r1, r2, points, options={})</method>
+      <desc>
+        <p>Draw a star with origin <code>(x, y)</code>, outer radius <code>r1</code>, inner radius <code>r2</code> and the specified number of <code>sides</code>.</p>
+        <p>The following <code>options</code> apply:</p>
+        <options>
+          <key>:border</key>
+          <definition>If true or a color, a border is drawn with the current or specified <code>line_color</code>, respectively. Defaults to <code>true</code>.</definition>
+          
+          <key>:fill</key>
+          <definition>If true or a color, the area is filled with the current or specified <code>fill_color</code>, respectively. Defaults to <code>false</code>.</definition>
+          
+          <key>:clip</key>
+          <definition>If true and a block is given, the shape acts as a clipping boundary for anything drawn within the supplied block.</definition>
+          
+          <key>:reverse</key>
+          <definition>Draw polygon clockwise.  This is useful for drawing hollow shapes.</definition>
+        </options>
+        <p>These current settings also apply: <code>line_color</code>, <code>line_width</code>, <code>line_dash_pattern</code> and <code>fill_color</code>.</p>
+      </desc>
+      
+      <method>auto_path</method>
+      <desc>
+        <p>Returns current status of auto_path.  Defaults to <code>true</code>.  False while in a block given to <code>path</code> method.  When <code>true</code>, paths are automatically stroked before a new, non-contiguous segment is appended or a closed shape is drawn.</p>
+      </desc>
+      
+      <method>path(options={}, &amp;block)</method>
+      <desc>
+        <p>Turn off auto_path.  If a block is given, yields to it before filling and/or stroking anything drawn within it according to the <code>options</code> supplied.  The path may be non-contiguous.  Shapes may be hollow when inner paths are drawn in the opposite direction as outer paths.</p>
+        <p>The following options apply:</p>
+        <options>
+          <key>:stroke</key><definition>If true or a color, the path will be stroked with the current or specified <code>line_color</code>, respectively.  Defaults to <code>false</code>.</definition>
+          <key>:fill</key><definition>If true or a color, the area bounded by the path will be filled with the current or specified <code>fill_color</code>, respectively.  Defaults to <code>false</code>.</definition>
+        </options>
+      </desc>
+      
+      <method>fill</method>
+      <desc>
+        <p>Fill current path (begun by <code>path</code> method) and resume <code>auto_path</code>.  The <code>line_color</code> and <code>fill_color</code> in effect before <code>path</code> was begun are restored.  Raises Exception if no current path exists.</p>
+      </desc>
+      
+      <method>stroke</method>
+      <desc>
+        <p>Stroke current path (begun by <code>path</code> method) and resume <code>auto_path</code>.  The <code>line_color</code> and <code>fill_color</code> in effect before <code>path</code> was begun are restored.  Raises Exception if no current path exists.</p>
+      </desc>
+      
+      <method>fill_and_stroke</method>
+      <desc>
+        <p>Fill and stroke current path (begun by <code>pat</code> method) and resume <code>auto_path</code>.  The <code>line_color</code> and <code>fill_color</code> in effect before <code>path</code> was begun are restored.  Raises Exception if no current path exists.</p>
+      </desc>
+    </page>
+    <page>
+      
+      <method>clip(options={}, &amp;block)</method>
+      <desc>
+        <p>Use current path as a clipping boundary for anything drawn within the supplied block.</p>
+        <p>The following <code>options</code> apply:</p>
+        <options>
+          <key>:stroke</key>
+          <definition>If true, the current path is stroked with the current <code>line_color</code>.  Defaults to <code>false</code>.</definition>
+          
+          <key>:fill</key>
+          <definition>If true
+          , the area bounded by the current path is filled with the current <code>fill_color</code>.  Defaults to <code>false</code>.</definition>
+        </options>
+      </desc>
+
+      <method>line_cap_style(style=nil)</method>
+      <desc>
+        <p>Set the shape to be used at the ends of lines.  If no style is specified, returns current style.</p>
+        <options>
+          <key>style</key>
+          <definition>One of the symbols :butt_cap, :round_cap or :projecting_square_cap, or a string 'butt_cap', 'round_cap' or 'projecting_square_cap'.</definition>
+        </options>
+      </desc>
+      
+      <method>line_dash_pattern(pattern=nil)</method>
+      <desc>
+        <p>Set the pattern of dashes and gaps used to draw lines.  If no pattern is specified, returns current pattern.</p>
+        <options>
+          <key>pattern</key>
+          <definition>A string of the form '[dash gap] phase' or one of the symbols <code>:solid</code>, <code>:dotted</code> or <code>:dashed</code>.</definition>
+        </options>
+        <p>When a symbol is specified, dash and gap lengths are multiplied by <code>line_width</code> for proportion.</p>
+      </desc>
+      
+      <method>line_width(value=nil, units=nil)</method>
+      <desc>
+        <p>Set line width used when stroking paths.  If no width is specified, returns current <code>line_width</code>.</p>
+        <options>
+          <key>value</key>
+          <definition>If <code>value</code> is a number, the new <code>line_width</code> setting. If <code>value</code> is a symbol (such as :pt, :cm or :in), the units to return the current <code>line_width</code> in.  If <code>value</code> is a string, it may include the units as a suffix, e.g. "5.5in" for 5.5 inches.</definition>
+          <key>units</key>
+          <definition>Units value is expressed in.  Defaults to current units setting.</definition>
+        </options>
+      </desc>
+      
+      <method>named_colors</method>
+      <desc>
+        <p>Returns hash of named colors consisting of (name, color) pairs.  Initial value comes from EideticPDF::PdfK::NAMED_COLORS, but may be augmented or replaced.</p>
+      </desc>
+      
+      <method>line_color(color=nil)</method>
+      <desc>
+        <p>Set line color, returning previous line color.  If no color is specified, returns current font color.</p>
+        <options>
+          <key>color</key>
+          <definition>Tuple (array) containing [red, green, blue] components of new color (where components range from 0..255), string key into <code>named_colors</code> or integer encoded from rgb bytes where blue is in the least-significant byte.</definition>
+        </options>
+        <p>Return values are always in string or integer form.</p>
+      </desc>
+      
+      <method>fill_color(color=nil)</method>
+      <desc>
+        <p>Set fill color, returning previous fill color.  If no color is specified, returns current fill color.</p>
+        <options>
+          <key>color</key>
+          <definition>Tuple (array) containing [red, green, blue] components of new color (where components range from 0..255) or integer encoded from rgb bytes where blue is in the least-significant byte.</definition>
+        </options>
+        <p>Return values are always in integer form.</p>
+      </desc>
+    </page>
+    <page>
+
+      <method>font_color(color=nil)</method>
+      <desc>
+        <p>Set font color, returning previous font color.  If no color is specified, returns current font color.</p>
+        <options>
+          <key>color</key>
+          <definition>Tuple (array) containing [red, green, blue] components of new color (where components range from 0..255) or integer encoded from rgb bytes where blue is in the least-significant byte.</definition>
+        </options>
+        <p>Return values are always in integer form.</p>
+      </desc>
+      
+      <method>print(text, options={}, &amp;block)</method>
+      <desc>
+        <p>Print text, starting from the current position.</p>
+        <p>The following options apply:</p>
+        <options>
+          <key>:align</key>
+          <definition>When <code>:left</code>, left edge of text is aligned to current position.  When <code>:center</code>, text is centered at current position.  When <code>:right</code>, right edge of text is aligned to current position.  When any alignment is specified, the pen is restored to its original location.</definition>
+          
+          <key>:angle</key>
+          <definition>Print text at the specified <code>angle</code> in degrees.  Defaults to 0.</definition>
+          
+          <key>:scale</key>
+          <definition>Horizontal scaling of text, specified as ratio to normal width.  Defaults to 1.0.  Cannot be combined with <code>:clip</code>.</definition>
+          
+          <key>:underline</key>
+          <definition>Override <code>underline</code> setting for this piece of text.</definition>
+          
+          <key>:clip</key>
+          <definition>If true and a block is given, the edges of the text act as a clipping boundary for anything drawn within the supplied block.  Cannot be combined with <code>:scale</code>.</definition>
+          
+          <key>:fill</key>
+          <definition>(Only applicable with <code>:clip</code>) Fill text and add to path for clipping.</definition>
+          
+          <key>:stroke</key>
+          <definition>(Only applicable with <code>:clip</code>) Stroke text with current <code>line_color</code> and add to path for clipping.</definition>
+        </options>
+        <p>These current settings also apply: <code>font</code>, <code>font_color</code>, <code>line_color</code> (when outlines are stroked) and vertical text alignment (<code>v_text_align</code>).</p>
+      </desc>
+      
+      <method>print_xy(x, y, text, options={}, &amp;block)</method>
+      <desc>
+        <p>Move to <code>(x, y)</code> and print text.  See <code>print</code> method.</p>
+      </desc>
+      
+      <method>puts(text='', options={}, &amp;block)</method>
+      <desc>
+        <p>Print one or more lines of text before moving to the next line, as specified by <code>indent</code>.</p>
+      </desc>
+      
+      <method>puts_xy(x, y, text, options={}, &amp;block)</method>
+      <desc>
+        <p>Move to <code>(x, y)</code> and print one or more lines of text indented to <code>x</code>.  See <code>puts</code> method.</p>
+      </desc>
+
+      <method>new_line(count=1)</method>
+      <desc>
+        <p>Move pen down one or more lines and back to current indent.</p>
+        <options>
+          <key>count</key>
+          <definition>Number of lines to move down.</definition>
+        </options>
+      </desc>
+      
+      <method>width(text)</method>
+      <desc>
+        <p>Returns width of a string as rendered using the current font.</p>
+      </desc>
+
+      <method>wrap(text, length)</method>
+      <desc>
+        <p>Breaks text into tokens and reassembles into array of strings, each one not exceeding <code>length</code>.  Newlines are respected and all other white space is preserved.</p>
+      </desc>
+
+      <method>text_height(units=nil)</method>
+      <p>Returns text height, based on the current font, excluding external leading.</p>
+      <options>
+        <key>units</key>
+        <definition>Units the value is returned in.</definition>
+      </options>
 
     </page>
   </pages>
 <!--
-    # Draw a star with origin <code>(x, y)</code>, outer radius <code>r1</code>, inner radius <code>r2</code> and the specified number of <code>sides</code>.
-    #
-    # The following <code>options</code> apply:
-    <key>:border</key><definition>If true or a color, a border is drawn with the current or specified <code>line_color</code>, respectively. Defaults to <code>true</code>.
-    <key>:fill</key><definition>If true or a color, the area is filled with the current or specified <code>fill_color</code>, respectively. Defaults to <code>false</code>.
-    <key>:clip</key><definition>If true and a block is given, the shape acts as a clipping boundary for anything drawn within the supplied block.
-    <key>:reverse</key><definition>Draw polygon clockwise.  This is useful for drawing hollow shapes.
-    #
-    # These current settings also apply: <code>line_color</code>, <code>line_width</code>, <code>line_dash_pattern</code> and <code>fill_color</code>.
-    def star(x, y, r1, r2, points, options={})
-      cur_page.star(x, y, r1, r2, points, options)
-    end
-
-    # Returns current status of auto_path.  Defaults to <code>true</code>.  False while in a block given to <code>path</code> method.
-    # When <code>true</code>, paths are automatically stroked before a new, non-contiguous segment is appended or a closed shape is drawn.
-    def auto_path
-      cur_page.auto_path
-    end
-
-    # Turn off auto_path.  If a block is given, yields to it before filling and/or stroking anything drawn within it according to
-    # the <code>options</code> supplied.  The path may be non-contiguous.  Shapes may be hollow when inner paths are drawn in the opposite
-    # direction as outer paths.
-    #
-    # The following options apply:
-    <key>:stroke</key><definition>If true or a color, the path will be stroked with the current or specified <code>line_color</code>, respectively.  Defaults to <code>false</code>.
-    <key>:fill</key><definition>If true or a color, the area bounded by the path will be filled with the current or specified <code>fill_color</code>, respectively.  Defaults to <code>false</code>.
-    def path(options={}, &block)
-      cur_page.path(options, &block)
-    end
-
-    # Fill current path (begun by <code>path</code> method) and resume <code>auto_path</code>.  The <code>line_color</code> and <code>fill_color</code> in effect before <code>path</code>
-    # was begun are restored.  Raises Exception if no current path exists.
-    def fill
-      cur_page.fill
-    end
-
-    # Stroke current path (begun by <code>path</code> method) and resume <code>auto_path</code>.  The <code>line_color</code> and <code>fill_color</code> in effect before <code>path</code>
-    # was begun are restored.  Raises Exception if no current path exists.
-    def stroke
-      cur_page.stroke
-    end
-
-    # Fill and stroke current path (begun by <code>pat</code> method) and resume <code>auto_path</code>.  The <code>line_color</code> and <code>fill_color</code> in effect
-    # before <code>path</code> was begun are restored.  Raises Exception if no current path exists.
-    def fill_and_stroke
-      cur_page.fill_and_stroke
-    end
-
-    # Use current path as a clipping boundary for anything drawn within the supplied block.
-    #
-    # The following <code>options</code> apply:
-    <key>:stroke</key><definition>If true, the current path is stroked with the current <code>line_color</code>.  Defaults to <code>false</code>.
-    <key>:fill</key><definition>If true, the area bounded by the current path is filled with the current <code>fill_color</code>.  Defaults to <code>false</code>.
-    def clip(options={}, &block)
-      cur_page.clip(options, &block)
-    end
-
-    # Set the shape to be used at the ends of lines.  If no style is specified, returns current style.
-    <key>style</key><definition>One of the symbols :butt_cap, :round_cap or :projecting_square_cap, or a string 'butt_cap', 'round_cap' or 'projecting_square_cap'.
-    def line_cap_style(style=nil)
-      cur_page.line_cap_style(style)
-    end
-
-    # Set the pattern of dashes and gaps used to draw lines.  If no pattern is specified, returns current pattern.
-    <key>pattern</key><definition>A string of the form '[dash gap] phase' or one of the symbols <code>:solid</code>, <code>:dotted</code> or <code>:dashed</code>.
-    # When a symbol is specified, dash and gap lengths are multiplied by <code>line_width</code> for proportion.
-    def line_dash_pattern(pattern=nil)
-      cur_page.line_dash_pattern(pattern)
-    end
-
-    # Set line width used when stroking paths.  If no width is specified, returns current <code>line_width</code>.
-    <key>value</key><definition>If <code>value</code> is a number, the new <code>line_width</code> setting. If <code>value</code> is a symbol (such as :pt, :cm or :in), the units to return the current <code>line_width</code> in.  If <code>value</code> is a string, it may include the units as a suffix, e.g. "5.5in" for 5.5 inches.
-    <key>units</key><definition>Units value is expressed in.  Defaults to current units setting.
-    def line_width(value=nil, units=nil)
-      cur_page.line_width(value, units)
-    end
-
-    # Returns hash of named colors consisting of (name, color) pairs.
-    # Initial value comes from EideticPDF::PdfK::NAMED_COLORS, but may be augmented or replaced.
-    def named_colors
-      @named_colors ||= PdfK::NAMED_COLORS.dup
-    end
-
-    # Set line color, returning previous line color.  If no color is specified, returns current font color.
-    <key>color</key><definition>Tuple (array) containing [red, green, blue] components of new color (where components range from 0..255), string key into <code>named_colors</code> or integer encoded from rgb bytes where blue is in the least-significant byte.
-    # Return values are always in string or integer form.
-    def line_color(color=nil)
-      cur_page.line_color(color)
-    end
-
-    # Set fill color, returning previous fill color.  If no color is specified, returns current fill color.
-    <key>color</key><definition>Tuple (array) containing [red, green, blue] components of new color (where components range from 0..255) or integer encoded from rgb bytes where blue is in the least-significant byte.
-    # Return values are always in integer form.
-    def fill_color(color=nil)
-      cur_page.fill_color(color)
-    end
-
-    # Set font color, returning previous font color.  If no color is specified, returns current font color.
-    <key>color</key><definition>Tuple (array) containing [red, green, blue] components of new color (where components range from 0..255) or integer encoded from rgb bytes where blue is in the least-significant byte.
-    # Return values are always in integer form.
-    def font_color(color=nil)
-      cur_page.font_color(color)
-    end
-
-    # Print text, starting from the current position.
-    #
-    # The following options apply:
-    <key>:align</key><definition>When <code>:left</code>, left edge of text is aligned to current position.  When <code>:center</code>, text is centered at current position.  When <code>:right</code>, right edge of text is aligned to current position.  When any alignment is specified, the pen is restored to its original location.
-    <key>:angle</key><definition>Print text at the specified <code>angle</code> in degrees.  Defaults to 0.
-    <key>:scale</key><definition>Horizontal scaling of text, specified as ratio to normal width.  Defaults to 1.0.  Cannot be combined with <code>:clip</code>.
-    <key>:underline</key><definition>Override <code>underline</code> setting for this piece of text.
-    <key>:clip</key><definition>If true and a block is given, the edges of the text act as a clipping boundary for anything drawn within the supplied block.  Cannot be combined with <code>:scale</code>.
-    <key>:fill</key><definition>(Only applicable with <code>:clip</code>) Fill text and add to path for clipping.
-    <key>:stroke</key><definition>(Only applicable with <code>:clip</code>) Stroke text with current <code>line_color</code> and add to path for clipping.
-    #
-    # These current settings also apply: <code>font</code>, <code>font_color</code>, <code>line_color</code> (when outlines are stroked) and vertical text alignment (<code>v_text_align</code>).
-    def print(text, options={}, &block)
-      cur_page.print(text, options, &block)
-    end
-
-    # Move to <code>(x, y)</code> and print text.  See <code>print</code> method.
-    def print_xy(x, y, text, options={}, &block)
-      cur_page.print_xy(x, y, text, options, &block)
-    end
-
-    # Print one or more lines of text before moving to the next line, as specified by <code>indent</code>.
-    def puts(text='', options={}, &block)
-      cur_page.puts(text, options, &block)
-    end
-
-    # Move to <code>(x, y)</code> and print one or more lines of text indented to <code>x</code>.  See <code>puts</code> method.
-    def puts_xy(x, y, text, options={}, &block)
-      cur_page.puts_xy(x, y, text, options={}, &block)
-    end
-
-    # Move pen down one or more lines and back to current indent.
-    <key>count</key><definition>Number of lines to move down.
-    def new_line(count=1)
-      cur_page.new_line(count)
-    end
-
-    # Returns width of a string as rendered using the current font.
-    def width(text)
-      cur_page.width(text)
-    end
-
-    # Breaks text into tokens and reassembles into array of strings, each one not exceeding <code>length</code>.
-    # Newlines are respected and all other white space is preserved.
-    def wrap(text, length)
-      cur_page.wrap(text, length)
-    end
-
-    # Returns text height, based on the current font, excluding external leading.
-    <key>units</key><definition>Units the value is returned in.
-    def text_height(units=nil)
-      cur_page.text_height(units)
-    end
-
     # Returns height of a line or array of lines, including external leading as determined by <code>line_height</code>.
     <key>text</key><definition>Line or array of lines to be measured.  Height is determined only by current font and number of lines.
     <key>units</key><definition>Units result should be expressed in.  Defaults to current <code>units</code>.
