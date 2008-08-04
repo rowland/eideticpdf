@@ -1,220 +1,239 @@
 <erml>
   <styles>
+	  <font id="title" name="NewCenturySchlbk" size="14" />
+	  <font id="body" name="NewCenturySchlbk" size="12" />
+	  <font id="code" name="Courier" size="12" />
+	  <brush id="method" color="LightSteelBlue" />
+	  <layout id="desc" manager="vbox" vpadding="3pt" />
+	  <layout id="options" manager="table" vpadding="5pt" />
   </styles>
   <rules>
     <!--
-      options { border: dotted; padding: 5pt; }
-      key { border: solid; padding: 3pt; }
+      title { font: title; font.underline: true; }
+      method { font: code; fill: method; padding: 3pt; }
+      desc p { font.line-height: 1.6; }
+      options { padding: 5pt; }
+      key { width: 30%; padding: 3pt; font: code; line-height: 1.3; }
+      definition { line-height: 1.3; border: dotted; }
+      code { font: code; }
     -->
   </rules>
-  <pages margin="0.5" units="in">
+  <pages margin="0.5" units="in" font="body">
     <define id="title" tag="p" />
-    <define id="meth" tag="p" />
-    <define id="desc" tag="div" layout="vbox" />
-		<define id="options" tag="div" layout="table" order="rows" cols="2" />
+    <define id="method" tag="p" />
+    <define id="desc" tag="div" layout="desc" />
+		<define id="options" tag="div" layout="options" order="rows" cols="2" />
 		<define id="key" tag="p" />
 		<define id="definition" tag="p" />
+		<define id="code" tag="span" />
     <page>
       <title>Life Cycle</title>
-      <meth>new</meth>
-      <desc>
-        <p>Instantiate a new DocumentWriter object.  Document is NOT open for writing at this point.</p>
-      </desc>
-      <meth>open(options={})</meth>
 
+      <method>new</method>
+      <desc>
+        <p>Instantiate a new DocumentWriter object.  Document is <i>not</i> open for writing at this point.</p>
+      </desc>
+
+      <method>open(options={})</method>
       <desc>
         <p>Open the document for writing.</p>
         <p>The following document options apply:</p>
         <options>
           <key>:pages_up</key>
-          <definition>
-            A tuple (array) of the form [+pages_across+, +pages_down+] specifying the layout of virtual pages.
-            Defaults to [1, 1] (no virtual pages).
-          </definition>
+          <definition>A tuple (array) of the form <code>[pages_across, pages_down]</code> specifying the layout of virtual pages.  Defaults to <code>[1, 1]</code> (no virtual pages).</definition>
+
           <key>:pages_up_layout</key>
           <definition>
-            When :across, virtual pages proceed from left to right before top to bottom.
-            When :down, virtual pages proceed from top to bottom before left to right.
+            When <code>:across</code>, virtual pages proceed from left to right before top to bottom.
+            When <code>:down</code>, virtual pages proceed from top to bottom before left to right.
           </definition>
         </options>
-        <p>
-          In addition, any of the options for +open_page+ may be supplied and will apply to each page, 
-          unless explicitly overridden.
-        </p>
+        <p>In addition, any of the options for <code>open_page</code> may be supplied and will apply to each page, unless explicitly overridden.</p>
       </desc>
-      <meth>to_s</meth>
+
+      <method>to_s</method>
       <desc>
         <p>Render document to PDF and return as a binary string.</p>
       </desc>
 
+      <method>close</method>
+      <desc>
+        <p>Close any open pages, preparing the document for rendering to PDF.</p>
+      </desc>
+
+      <method>doc(options={}, &amp;block)</method>
+      <desc>
+        <p>Open the document for writing and yield to the block given before calling <code>close</code>.</p>
+      </desc>
+
+      <method>open_page(options={})</method>
+      <desc>
+        <p>Open a page for writing.  Raises Exception if a page is already open.</p>
+        <p>The following page options apply:</p>
+        <options>
+          <key>:compress</key>
+          <definition>Compress page streams using zlib deflate.</definition>
+        
+          <key>:units</key>
+          <definition>
+            A symbol from <code>EideticPDF::UNIT_CONVERSION</code> hash, specifying ratio of units to points.  Defaults to <code>:pt</code>.
+            Other choices are <code>:in</code> for inches and <code>:cm</code> for centimeters.  Custom units may be added.
+          </definition>
+        
+          <key>:v_text_align</key>
+          <definition>Initial vertical text alignment for page.  See <code>v_text_align</code> method.</definition>
+
+          <key>:font</key>
+          <definition>Initial font for page.  Defaults to <code>{ :name => 'Helvetica', :size => 12 }</code>.</definition>
+        
+          <key>:fill_color</key>
+          <definition>Initial fill color.  Defaults to 0 (black).  See <code>fill_color</code> method.</definition>
+        
+          <key>:line_color</key>
+          <definition>Initial line color.  Defaults to 0 (black).  See <code>line_color</code> method.</definition>
+        
+          <key>:line_height</key>
+          <definition>Initial line height.  Defaults to 1.7.  See <code>line_height</code> method.</definition>
+        
+          <key>:line_width</key>
+          <definition>Initial line width.  Defaults to 1.0.  See <code>line_width</code> method.</definition>
+        
+          <key>:margins</key>
+          <definition>Page margins.  Defaults to 0.  See <code>margins</code> method.</definition>
+        
+          <key>:unscaled</key>
+          <definition>If true, virtual pages are not scaled down.  Defaults to <code>false</code>.</definition>
+        </options>
+      </desc>
+    </page>
+    <page>
+      <method>close_page</method>
+      <desc>
+        <p>Close the current open page.  Raises Exception if no page is currently open.</p>
+      </desc>
+
+      <method>page(options={}, &amp;block)</method>
+      <desc>
+        <p>Open a page for writing and yield to the block given before calling <code>close_page</code>.</p>
+        <p><code>options</code> is passed through to <code>open_page</code>.</p>
+      </desc>
+
+      <method>new_page(options={})</method>
+      <desc>
+        <p>Close the current page and begin a new page with the specified options.</p>
+        <options>
+          <key>options</key>
+          <definition>See <code>open_page</code> method.</definition>
+        </options>
+      </desc>
+      
+      <method>units(units=nil)</method>
+      <desc>
+        <p>Set units measurements are to be specified in.  If no units are specified, returns current units setting.  Valid units include <code>:pt</code> (points), <code>:in</code> (inches) and <code>:cm</code> (centimeters) by default.</p>
+        <p>Custom units can be specified by updating the <code>EideticPDF::UNIT_CONVERSION</code> hash with a new symbol and conversion ratio.</p>
+      </desc>
+
+      <method>margins(*margins)</method>
+      <desc>
+        <p>Set top, right, bottom and left margins.  If 1, 2 or 4 values are not specified, returns current margins as a tuple (array) of values in the form [top, right, bottom, left].</p>
+        <options>
+          <key>margins</key>
+          <definition>When 4 values are given, [top, right, bottom, left].  When 2 values are given, [top and bottom, right and left].  When 1 value is specified, it is used for all 4 settings.</definition>
+        </options>
+      </desc>
+
+      <method>margin_top</method>
+      <desc>
+        <p>Returns top margin as set by <code>margins</code> method.</p>
+      </desc>
+      
+      <method>margin_right</method>
+      <desc>
+        <p>Returns right margin as set by <code>margins</code> method.</p>
+      </desc>
+      
+      <method>margin_bottom</method>
+      <desc>
+        <p>Returns bottom margin as set by <code>margins</code> method.</p>
+      </desc>
+      
+      <method>margin_left</method>
+      <desc>
+        <p>Returns left margin as set by <code>margins</code> method.</p>
+      </desc>
+      
+      <method>canvas_width</method>
+      <desc>
+        <p><code>page_height</code> excluding top and bottom margins.</p>
+      </desc>
+      
+      <method>canvas_height</method>
+      <desc>
+        <p><code>page_width</code> excluding left and right margins.</p>
+      </desc>
+    </page>
+    <page>      
+      <method>tabs(tabs=nil)</method>
+      <desc>
+        <p>Set horizontal tabs using an array of numbers or a comma-delimited string.  If no tabs are specified, returns current tabs.  Use false to clear current tab stops.</p>
+      </desc>
+      
+      <method>tab(&amp;block)</method>
+      <desc>
+        <p>Move right to next horizontal tab.  If no more tab stops exist, then moves to first tab stop on the following line.  If a block is given, the value returned is used instead as the vertical distance to move down.</p>
+      </desc>
+      
+      <method>vtabs(tabs=nil)</method>
+      <desc>
+        <p>Set vertical tabs using an array of numbers or a comma-delimited string.  If no tabs are specified, returns current tabs.  Use false to clear current tab stops.</p>
+      </desc>
+
+      <method>vtab(&amp;block)</method>
+      <desc>
+        <p>Move down to next vertical tab.  If no more tab stops exist and a block is given, moves up to the first vertical tab stop and right the value returned by the block.</p>
+      </desc>
+
+      <method>indent(value=nil, absolute=false)</method>
+      <desc>
+        <p>Set horizontal indentation.  If no value is specified, returns current indentation setting.</p>
+        <options>
+          <key>value</key>
+          <definition>The new indentation.</definition>
+          
+          <key>absolute</key>
+          <definition>If <code>true</code>, the new value is relative only to the left margin.  If <code>false</code>, value is relative to previous indentation.</definition>
+        </options>
+        <p>The indent setting is used by the <code>puts</code> and <code>new_line</code> methods.</p>
+      </desc>
+      
+      <method>page_width</method>
+      <desc>
+        <p>Returns page width in current units.</p>
+      </desc>
+      
+      <method>page_height</method>
+      <desc>
+        <p>Returns page height in current units.</p>
+      </desc>
+      
+      <method>line_height(height=nil)</method>
+      <desc>
+        <p>Set line height as used by methods like <code>paragraph</code> that display multiple lines of text.  If no value is specified, returns current <code>line_height</code>.</p>
+        <options>
+          <key>height</key>
+          <definition>Ratio of <code>font_size</code> to effective line height.</definition>
+        </options>
+      </desc>
+      
+      <method>move_to(x, y)</method>
+      <desc>
+        <p>Move pen to point <code>(x, y)</code>.</p>
+      </desc>
+
     </page>
   </pages>
-
 <!--
-    # Close any open pages, preparing the document for rendering to PDF.
-    def close
-      open_page if @pages.empty? # empty document needs at least one page
-      close_page if @in_page
-      @pages.each { |page| page.close unless page.closed? }
-    end
-
-    # Open the document for writing and yield to the block given before calling +close+.
-    def doc(options={}, &block)
-      open(options)
-      yield(self)
-      close
-    end
-
-    # Open a page for writing.  Raises Exception if a page is already open.
-    #
-    # The following page options apply:
-    # [:+compress+] Compress page streams using zlib deflate.
-    # [:+units+] A symbol from EideticPDF::UNIT_CONVERSION hash, specifying ratio of units to points.  Defaults to :+pt+.  Other choices are :+in+ for inches and :+cm+ for centimeters.  Custom units may be added.
-    # [:+v_text_align+] Initial vertical text alignment for page.  See +v_text_align+ method.
-    # [:+font+] Initial font for page.  Defaults to <tt>{ :name => 'Helvetica', :size => 12 }</tt>.
-    # [:+fill_color+] Initial fill color.  Defaults to 0 (black).  See +fill_color+ method.
-    # [:+line_color+] Initial line color.  Defaults to 0 (black).  See +line_color+ method.
-    # [:+line_height+] Initial line height.  Defaults to 1.7.  See +line_height+ method.
-    # [:+line_width+] Initial line width.  Defaults to 1.0.  See +line_width+ method.
-    # [:+margins+] Page margins.  Defaults to 0.  See +margins+ method.
-    # [:+unscaled+] If true, virtual pages are not scaled down.  Defaults to +false+.
-    def open_page(options={})
-      raise Exception.new("Already in page") if @in_page
-      options.update(:_page => pdf_page(@pages.size), :sub_page => sub_page(@pages.size))
-      @cur_page = PageWriter.new(self, @options.merge(options))
-      @pages << @cur_page
-      @in_page = true
-      return @cur_page
-    end
-
-    # Close the current open page.  Raises Exception if no page is currently open.
-    def close_page
-      raise Exception.new("Not in page") unless @in_page
-      @cur_page.close
-      @cur_page = nil
-      @in_page = false
-    end
-
-    # Open a page for writing and yield to the block given before calling +close_page+.
-    #
-    # +options+ is passed through to +open_page+.
-    def page(options={}, &block)
-      cur_page = open_page(options)
-      yield(cur_page)
-      close_page
-    end
-
-    # Close the current page and begin a new page with the specified options.
-    # [+options+] See +open_page+ method.
-    def new_page(options={})
-      close_page
-      open_page(options)
-    end
-
-    def cur_page # :nodoc:
-      @cur_page || open_page
-    end
-
-    # Set units measurements are to be specified in.  If no units are specified, returns current units setting.
-    # Valid units include :+pt+ (points), :+in+ (inches) and :+cm+ (centimeters) by default.
-    #
-    # Custom units can be specified by updating the EideticPDF::UNIT_CONVERSION hash with a new symbol and conversion ratio.
-    def units(units=nil)
-      cur_page.units(units)
-    end
-
-    # Set top, right, bottom and left margins.  If 1, 2 or 4 values are not specified, returns current margins as a tuple (array)
-    # of values in the form [top, right, bottom, left].
-    # [+margins+] When 4 values are given, [top, right, bottom, left].  When 2 values are given, [top and bottom, right and left].  When 1 value is specified, it is used for all 4 settings.
-    def margins(*margins)
-      cur_page.margins(*margins)
-    end
-
-    # Returns top margin as set by +margins+ method.
-    def margin_top
-      cur_page.margin_top
-    end
-
-    # Returns right margin as set by +margins+ method.
-    def margin_right
-      cur_page.margin_right
-    end
-
-    # Returns bottom margin as set by +margins+ method.
-    def margin_bottom
-      cur_page.margin_bottom
-    end
-
-    # Returns left margin as set by +margins+ method.
-    def margin_left
-      cur_page.margin_left
-    end
-
-    # +page_height+ excluding top and bottom margins.
-    def canvas_width
-      cur_page.canvas_width
-    end
-
-    # +page_width+ excluding left and right margins.
-    def canvas_height
-      cur_page.canvas_height
-    end
-
-    # Set horizontal tabs using an array of numbers or a comma-delimited string.  If no tabs are specified, returns current tabs.
-    # Use false to clear current tab stops.
-    def tabs(tabs=nil)
-      cur_page.tabs(tabs)
-    end
-
-    # Move right to next horizontal tab.  If no more tab stops exist, then moves to first tab stop on the following line.
-    # If a block is given, the value returned is used instead as the vertical distance to move down.
-    def tab(&block)
-      cur_page.tab(&block)
-    end
-
-    # Set vertical tabs using an array of numbers or a comma-delimited string.  If no tabs are specified, returns current tabs.
-    # Use false to clear current tab stops.
-    def vtabs(tabs=nil)
-      cur_page.vtabs(tabs)
-    end
-
-    # Move down to next vertical tab.  If no more tab stops exist and a block is given, moves up to the first vertical tab stop
-    # and right the value returned by the block.
-    def vtab(&block)
-      cur_page.vtab(&block)
-    end
-
-    # Set horizontal indentation.  If no value is specified, returns current indentation setting.
-    # [+value+] The new indentation.
-    # [+absolute+] If +true+, the new value is relative only to the left margin.  If +false+, value is relative to previous indentation.
-    # The indent setting is used by the +puts+ and +new_line+ methods.
-    def indent(value=nil, absolute=false)
-      cur_page.indent(value, absolute)
-    end
-
-    # Returns page width in current units.
-    def page_width
-      cur_page.page_width
-    end
-
-    # Returns page height in current units.
-    def page_height
-      cur_page.page_height
-    end
-
-    # Set line height as used by methods like +paragraph+ that display multiple lines of text.
-    # If no value is specified, returns current +line_height+.
-    # [+height+] Ratio of +font_size+ to effective line height.
-    def line_height(height=nil)
-      cur_page.line_height(height)
-    end
-
-    # Move pen to point <tt>(x, y)</tt>.
-    def move_to(x, y)
-      cur_page.move_to(x, y)
-    end
-
-    # Move pen to point <tt>(x, y)</tt> like +move_to+, returning previous location.  If x is not specified, returns current location.
+    # Move pen to point <code>(x, y)</code> like <code>move_to</code>, returning previous location.  If x is not specified, returns current location.
     def pen_pos(x=nil, y=nil)
       cur_page.pen_pos(x, y)
     end
@@ -226,31 +245,31 @@
       cur_page.move_by(dx, dy)
     end
 
-    # Draw a line from the current location to point <tt>(x, y)</tt>.
-    # If +auto_path+ is off, a new segment is appended to the current path.
+    # Draw a line from the current location to point <code>(x, y)</code>.
+    # If <code>auto_path</code> is off, a new segment is appended to the current path.
     def line_to(x, y)
       cur_page.line_to(x, y)
     end
 
-    # Draw a line from point <tt>(x, y)</tt> to a point +length+ units distant at +angle+ degrees.
+    # Draw a line from point <code>(x, y)</code> to a point <code>length</code> units distant at <code>angle</code> degrees.
     def line(x, y, angle, length)
       cur_page.line(x, y, angle, length)
     end
 
-    # Draw a rectangle with the specified +width+ and +height+ and its top, left corner at <tt>(x, y)</tt>.
+    # Draw a rectangle with the specified <code>width</code> and <code>height</code> and its top, left corner at <code>(x, y)</code>.
     #
-    # The following +options+ apply:
-    # [:+border+] If true or a color, a border is drawn with the current or specified +line_color+, respectively. Defaults to +true+.
-    # [:+fill+] If true or a color, the area is filled with the current or specified +fill_color+, respectively. Defaults to +false+.
+    # The following <code>options</code> apply:
+    # [:+border+] If true or a color, a border is drawn with the current or specified <code>line_color</code>, respectively. Defaults to <code>true</code>.
+    # [:+fill+] If true or a color, the area is filled with the current or specified <code>fill_color</code>, respectively. Defaults to <code>false</code>.
     # [:+clip+] If true and a block is given, the shape acts as a clipping boundary for anything drawn within the supplied block.
     # [:+reverse+] Draw polygon clockwise.  This is useful for drawing hollow shapes.
     #
-    # These current settings also apply: +line_color+, +line_width+, +line_dash_pattern+ and +fill_color+.
+    # These current settings also apply: <code>line_color</code>, <code>line_width</code>, <code>line_dash_pattern</code> and <code>fill_color</code>.
     def rectangle(x, y, width, height, options={})
       cur_page.rectangle(x, y, width, height, options)
     end
 
-    # Draw a cubic Bezier curve from <tt>(x0, y0)</tt> to <tt>(x3, y3)</tt> with control points <tt><x1, y1></tt> and <tt>(x2, y2)</tt>.
+    # Draw a cubic Bezier curve from <code>(x0, y0)</code> to <code>(x3, y3)</code> with control points <code><x1, y1></code> and <code>(x2, y2)</code>.
     # If the first point does not coincide with the current position, any current path is stroked and a new path is begun.
     # Otherwise, the curve is appended to the current path.
     def curve(x0, y0, x1, y1, x2, y2, x3, y3)
@@ -261,162 +280,162 @@
     # with the 2nd and 3rd points acting as control points.  A curve is appended to the current path for each additional group
     # of 3 points, with the 1st and 2nd point in each group acting as control points.
     #
-    # [+points+] array of +Location+ structs
+    # [+points+] array of <code>Location</code> structs
     def curve_points(points)
       cur_page.curve_points(points)
     end
 
-    # Returns array of +Location+ structs for circle, suitable for feeding to +curve_points+ method.  See +circle+ method.
+    # Returns array of <code>Location</code> structs for circle, suitable for feeding to <code>curve_points</code> method.  See <code>circle</code> method.
     def points_for_circle(x, y, r)
       cur_page.points_for_circle(x, y, r)
     end
 
-    # Draw a circle with center <tt>x, y</tt> and radius +r+.
-    # Direction is counterclockwise (anticlockwise), unless :+reverse+ option is specified.
+    # Draw a circle with center <code>x, y</code> and radius <code>r</code>.
+    # Direction is counterclockwise (anticlockwise), unless <code>:reverse</code> option is specified.
     #
-    # The following +options+ apply:
-    # [:+border+] If true or a color, a border is drawn with the current or specified +line_color+, respectively. Defaults to +true+.
-    # [:+fill+] If true or a color, the area is filled with the current or specified +fill_color+, respectively. Defaults to +false+.
+    # The following <code>options</code> apply:
+    # [:+border+] If true or a color, a border is drawn with the current or specified <code>line_color</code>, respectively. Defaults to <code>true</code>.
+    # [:+fill+] If true or a color, the area is filled with the current or specified <code>fill_color</code>, respectively. Defaults to <code>false</code>.
     # [:+clip+] The shape acts as a clipping boundary for anything drawn within the supplied block.
     # [:+reverse+] Draw circle clockwise.  Useful for drawing hollow shapes.
     #
-    # These current settings also apply: +line_color+, +line_width+, +line_dash_pattern+ and +fill_color+.
+    # These current settings also apply: <code>line_color</code>, <code>line_width</code>, <code>line_dash_pattern</code> and <code>fill_color</code>.
     def circle(x, y, r, options={}, &block)
       cur_page.circle(x, y, r, options, &block)
     end
 
-    # Returns array of +Location+ structs for ellipse, suitable for feeding to +curve_points+ method.  See +ellipse+ method.
+    # Returns array of <code>Location</code> structs for ellipse, suitable for feeding to <code>curve_points</code> method.  See <code>ellipse</code> method.
     def points_for_ellipse(x, y, rx, ry)
       cur_page.points_for_ellipse(x, y, rx, ry)
     end
 
-    # Draw an ellipse with foci (<tt>x, y</tt>) and (<tt>x, y</tt>) and radius +r+.
-    # Direction is counterclockwise (anticlockwise), unless :+reverse+ option is specified.
+    # Draw an ellipse with foci (<code>x, y</code>) and (<code>x, y</code>) and radius <code>r</code>.
+    # Direction is counterclockwise (anticlockwise), unless <code>:reverse</code> option is specified.
     #
-    # The following +options+ apply:
-    # [:+border+] If true or a color, a border is drawn with the current or specified +line_color+, respectively. Defaults to +true+.
-    # [:+fill+] If true or a color, the area is filled with the current or specified +fill_color+, respectively. Defaults to +false+.
+    # The following <code>options</code> apply:
+    # [:+border+] If true or a color, a border is drawn with the current or specified <code>line_color</code>, respectively. Defaults to <code>true</code>.
+    # [:+fill+] If true or a color, the area is filled with the current or specified <code>fill_color</code>, respectively. Defaults to <code>false</code>.
     # [:+clip+] The shape acts as a clipping boundary for anything drawn within the supplied block.
     # [:+reverse+] Draw ellipse clockwise.  Useful for drawing hollow shapes.
     #
-    # These current settings also apply: +line_color+, +line_width+, +line_dash_pattern+ and +fill_color+.
+    # These current settings also apply: <code>line_color</code>, <code>line_width</code>, <code>line_dash_pattern</code> and <code>fill_color</code>.
     def ellipse(x, y, rx, ry, options={})
       cur_page.ellipse(x, y, rx, ry, options)
     end
 
-    # Returns array of +Location+ structs for arc, suitable for feeding to +curve_points+ method.  See +arc+ method.
+    # Returns array of <code>Location</code> structs for arc, suitable for feeding to <code>curve_points</code> method.  See <code>arc</code> method.
     def points_for_arc(x, y, r, start_angle, end_angle)
       cur_page.points_for_arc(x, y, r, start_angle, end_angle)
     end
 
-    # Draw an arc with origin <tt>x, y</tt> and radius +r+ from +start_angle+ to +end_angle+ degrees.
-    # Direction is counterclockwise (anticlockwise), unless +end_angle+ < +start_angle+.
+    # Draw an arc with origin <code>x, y</code> and radius <code>r</code> from <code>start_angle</code> to <code>end_angle</code> degrees.
+    # Direction is counterclockwise (anticlockwise), unless <code>end_angle</code> < <code>start_angle</code>.
     # Angles are allowed to exceed 360 degrees.
     #
     # By default, arc extends the current path to the point where the arc begins.
-    # If <tt>move_to0</tt> is true (or there is no current path) a move is performed to where the arc begins.
+    # If <code>move_to0</code> is true (or there is no current path) a move is performed to where the arc begins.
     #
-    # This method returns immediately if <tt>start_angle == end_angle</tt>.
+    # This method returns immediately if <code>start_angle == end_angle</code>.
     def arc(x, y, r, start_angle, end_angle, move_to0=false)
       cur_page.arc(x, y, r, start_angle, end_angle, move_to0)
     end
 
-    # Draw a pie-shaped wedge with origin <tt>x, y</tt> and radius +r+ from +start_angle+ to +end_angle+ degrees.
-    # [:+border+] If true or a color, a border is drawn with the current or specified +line_color+, respectively. Defaults to +true+.
-    # [:+fill+] If true or a color, the area is filled with the current or specified +fill_color+, respectively. Defaults to +false+.
+    # Draw a pie-shaped wedge with origin <code>x, y</code> and radius <code>r</code> from <code>start_angle</code> to <code>end_angle</code> degrees.
+    # [:+border+] If true or a color, a border is drawn with the current or specified <code>line_color</code>, respectively. Defaults to <code>true</code>.
+    # [:+fill+] If true or a color, the area is filled with the current or specified <code>fill_color</code>, respectively. Defaults to <code>false</code>.
     # [:+clip+] If true and a block is given, the shape acts as a clipping boundary for anything drawn within the supplied block.
-    # [:+reverse+] By default, the bounding path is drawn from <tt>(x, y)</tt> to <tt>(r, start_angle)</tt> through <tt>(r, end_angle)</tt> and back to <tt>(x, y)</tt>.  This order is reversed if <tt>:reverse => true</tt>.  This is useful for drawing hollow shapes.
+    # [:+reverse+] By default, the bounding path is drawn from <code>(x, y)</code> to <code>(r, start_angle)</code> through <code>(r, end_angle)</code> and back to <code>(x, y)</code>.  This order is reversed if <code>:reverse => true</code>.  This is useful for drawing hollow shapes.
     #
-    # These current settings also apply: +line_color+, +line_width+, +line_dash_pattern+ and +fill_color+.
+    # These current settings also apply: <code>line_color</code>, <code>line_width</code>, <code>line_dash_pattern</code> and <code>fill_color</code>.
     def pie(x, y, r, start_angle, end_angle, options={})
       cur_page.pie(x, y, r, start_angle, end_angle, options)
     end
 
-    # Draw an arch with origin <tt>x, y</tt> from +start_angle+ to _end_angle_ degrees.
-    # The result is a bounded area between radii <tt>r1</tt> and <tt>r2</tt>.
+    # Draw an arch with origin <code>x, y</code> from <code>start_angle</code> to _end_angle_ degrees.
+    # The result is a bounded area between radii <code>r1</code> and <code>r2</code>.
     #
-    # The following +options+ apply:
-    # [:+border+] If true or a color, a border is drawn with the current or specified +line_color+, respectively. Defaults to +true+.
-    # [:+fill+] If true or a color, the area is filled with the current or specified +fill_color+, respectively. Defaults to +false+.
+    # The following <code>options</code> apply:
+    # [:+border+] If true or a color, a border is drawn with the current or specified <code>line_color</code>, respectively. Defaults to <code>true</code>.
+    # [:+fill+] If true or a color, the area is filled with the current or specified <code>fill_color</code>, respectively. Defaults to <code>false</code>.
     # [:+clip+] If true and a block is given, the shape acts as a clipping boundary for anything drawn within the supplied block.
-    # [:+reverse+] By default, the bounding path is drawn from <tt>(r1, start_angle)</tt> to <tt>(r1, end_angle)</tt>, <tt>(r2, end_angle)</tt>, <tt>(r2, start_angle)</tt> and back to <tt>(r1, start_angle)</tt>.  This order is reversed if <tt>reverse => true</tt>.  This is useful for drawing hollow shapes.
+    # [:+reverse+] By default, the bounding path is drawn from <code>(r1, start_angle)</code> to <code>(r1, end_angle)</code>, <code>(r2, end_angle)</code>, <code>(r2, start_angle)</code> and back to <code>(r1, start_angle)</code>.  This order is reversed if <code>reverse => true</code>.  This is useful for drawing hollow shapes.
     #
-    # These current settings also apply: +line_color+, +line_width+, +line_dash_pattern+ and +fill_color+.
+    # These current settings also apply: <code>line_color</code>, <code>line_width</code>, <code>line_dash_pattern</code> and <code>fill_color</code>.
     def arch(x, y, r1, r2, start_angle, end_angle, options={}, &block)
       cur_page.arch(x, y, r1, r2, start_angle, end_angle, options, &block)
     end
 
-    # Returns array of +Location+ structs representing the vertices of a polygon.  See +polygon+ method.
+    # Returns array of <code>Location</code> structs representing the vertices of a polygon.  See <code>polygon</code> method.
     def points_for_polygon(x, y, r, sides, options={})
       cur_page.points_for_polygon(x, y, r, sides, options)
     end
 
-    # Draw a polygon with origin <tt>(x, y)</tt>, radius +r+ and the specified number of +sides+.
+    # Draw a polygon with origin <code>(x, y)</code>, radius <code>r</code> and the specified number of <code>sides</code>.
     #
-    # The following +options+ apply:
-    # [:+border+] If true or a color, a border is drawn with the current or specified +line_color+, respectively. Defaults to +true+.
-    # [:+fill+] If true or a color, the area is filled with the current or specified +fill_color+, respectively. Defaults to +false+.
+    # The following <code>options</code> apply:
+    # [:+border+] If true or a color, a border is drawn with the current or specified <code>line_color</code>, respectively. Defaults to <code>true</code>.
+    # [:+fill+] If true or a color, the area is filled with the current or specified <code>fill_color</code>, respectively. Defaults to <code>false</code>.
     # [:+clip+] If true and a block is given, the shape acts as a clipping boundary for anything drawn within the supplied block.
     # [:+reverse+] Draw polygon clockwise.  This is useful for drawing hollow shapes.
     #
-    # These current settings also apply: +line_color+, +line_width+, +line_dash_pattern+ and +fill_color+.
+    # These current settings also apply: <code>line_color</code>, <code>line_width</code>, <code>line_dash_pattern</code> and <code>fill_color</code>.
     def polygon(x, y, r, sides, options={})
       cur_page.polygon(x, y, r, sides, options)
     end
 
-    # Draw a star with origin <tt>(x, y)</tt>, outer radius +r1+, inner radius +r2+ and the specified number of +sides+.
+    # Draw a star with origin <code>(x, y)</code>, outer radius <code>r1</code>, inner radius <code>r2</code> and the specified number of <code>sides</code>.
     #
-    # The following +options+ apply:
-    # [:+border+] If true or a color, a border is drawn with the current or specified +line_color+, respectively. Defaults to +true+.
-    # [:+fill+] If true or a color, the area is filled with the current or specified +fill_color+, respectively. Defaults to +false+.
+    # The following <code>options</code> apply:
+    # [:+border+] If true or a color, a border is drawn with the current or specified <code>line_color</code>, respectively. Defaults to <code>true</code>.
+    # [:+fill+] If true or a color, the area is filled with the current or specified <code>fill_color</code>, respectively. Defaults to <code>false</code>.
     # [:+clip+] If true and a block is given, the shape acts as a clipping boundary for anything drawn within the supplied block.
     # [:+reverse+] Draw polygon clockwise.  This is useful for drawing hollow shapes.
     #
-    # These current settings also apply: +line_color+, +line_width+, +line_dash_pattern+ and +fill_color+.
+    # These current settings also apply: <code>line_color</code>, <code>line_width</code>, <code>line_dash_pattern</code> and <code>fill_color</code>.
     def star(x, y, r1, r2, points, options={})
       cur_page.star(x, y, r1, r2, points, options)
     end
 
-    # Returns current status of auto_path.  Defaults to +true+.  False while in a block given to +path+ method.
-    # When +true+, paths are automatically stroked before a new, non-contiguous segment is appended or a closed shape is drawn.
+    # Returns current status of auto_path.  Defaults to <code>true</code>.  False while in a block given to <code>path</code> method.
+    # When <code>true</code>, paths are automatically stroked before a new, non-contiguous segment is appended or a closed shape is drawn.
     def auto_path
       cur_page.auto_path
     end
 
     # Turn off auto_path.  If a block is given, yields to it before filling and/or stroking anything drawn within it according to
-    # the +options+ supplied.  The path may be non-contiguous.  Shapes may be hollow when inner paths are drawn in the opposite
+    # the <code>options</code> supplied.  The path may be non-contiguous.  Shapes may be hollow when inner paths are drawn in the opposite
     # direction as outer paths.
     #
     # The following options apply:
-    # [:+stroke+] If true or a color, the path will be stroked with the current or specified +line_color+, respectively.  Defaults to +false+.
-    # [:+fill+] If true or a color, the area bounded by the path will be filled with the current or specified +fill_color+, respectively.  Defaults to +false+.
+    # [:+stroke+] If true or a color, the path will be stroked with the current or specified <code>line_color</code>, respectively.  Defaults to <code>false</code>.
+    # [:+fill+] If true or a color, the area bounded by the path will be filled with the current or specified <code>fill_color</code>, respectively.  Defaults to <code>false</code>.
     def path(options={}, &block)
       cur_page.path(options, &block)
     end
 
-    # Fill current path (begun by +path+ method) and resume +auto_path+.  The +line_color+ and +fill_color+ in effect before +path+
+    # Fill current path (begun by <code>path</code> method) and resume <code>auto_path</code>.  The <code>line_color</code> and <code>fill_color</code> in effect before <code>path</code>
     # was begun are restored.  Raises Exception if no current path exists.
     def fill
       cur_page.fill
     end
 
-    # Stroke current path (begun by +path+ method) and resume +auto_path+.  The +line_color+ and +fill_color+ in effect before +path+
+    # Stroke current path (begun by <code>path</code> method) and resume <code>auto_path</code>.  The <code>line_color</code> and <code>fill_color</code> in effect before <code>path</code>
     # was begun are restored.  Raises Exception if no current path exists.
     def stroke
       cur_page.stroke
     end
 
-    # Fill and stroke current path (begun by +pat+ method) and resume +auto_path+.  The +line_color+ and +fill_color+ in effect
-    # before +path+ was begun are restored.  Raises Exception if no current path exists.
+    # Fill and stroke current path (begun by <code>pat</code> method) and resume <code>auto_path</code>.  The <code>line_color</code> and <code>fill_color</code> in effect
+    # before <code>path</code> was begun are restored.  Raises Exception if no current path exists.
     def fill_and_stroke
       cur_page.fill_and_stroke
     end
 
     # Use current path as a clipping boundary for anything drawn within the supplied block.
     #
-    # The following +options+ apply:
-    # [:+stroke+] If true, the current path is stroked with the current +line_color+.  Defaults to +false+.
-    # [:+fill+] If true, the area bounded by the current path is filled with the current +fill_color+.  Defaults to +false+.
+    # The following <code>options</code> apply:
+    # [:+stroke+] If true, the current path is stroked with the current <code>line_color</code>.  Defaults to <code>false</code>.
+    # [:+fill+] If true, the area bounded by the current path is filled with the current <code>fill_color</code>.  Defaults to <code>false</code>.
     def clip(options={}, &block)
       cur_page.clip(options, &block)
     end
@@ -428,14 +447,14 @@
     end
 
     # Set the pattern of dashes and gaps used to draw lines.  If no pattern is specified, returns current pattern.
-    # [+pattern+] A string of the form '[dash gap] phase' or one of the symbols :+solid+, :+dotted+ or :+dashed+.
-    # When a symbol is specified, dash and gap lengths are multiplied by +line_width+ for proportion.
+    # [+pattern+] A string of the form '[dash gap] phase' or one of the symbols <code>:solid</code>, <code>:dotted</code> or <code>:dashed</code>.
+    # When a symbol is specified, dash and gap lengths are multiplied by <code>line_width</code> for proportion.
     def line_dash_pattern(pattern=nil)
       cur_page.line_dash_pattern(pattern)
     end
 
-    # Set line width used when stroking paths.  If no width is specified, returns current +line_width+.
-    # [+value+] If +value+ is a number, the new +line_width+ setting. If +value+ is a symbol (such as :pt, :cm or :in), the units to return the current +line_width+ in.  If +value+ is a string, it may include the units as a suffix, e.g. "5.5in" for 5.5 inches.
+    # Set line width used when stroking paths.  If no width is specified, returns current <code>line_width</code>.
+    # [+value+] If <code>value</code> is a number, the new <code>line_width</code> setting. If <code>value</code> is a symbol (such as :pt, :cm or :in), the units to return the current <code>line_width</code> in.  If <code>value</code> is a string, it may include the units as a suffix, e.g. "5.5in" for 5.5 inches.
     # [+units+] Units value is expressed in.  Defaults to current units setting.
     def line_width(value=nil, units=nil)
       cur_page.line_width(value, units)
@@ -448,7 +467,7 @@
     end
 
     # Set line color, returning previous line color.  If no color is specified, returns current font color.
-    # [+color+] Tuple (array) containing [red, green, blue] components of new color (where components range from 0..255), string key into +named_colors+ or integer encoded from rgb bytes where blue is in the least-significant byte.
+    # [+color+] Tuple (array) containing [red, green, blue] components of new color (where components range from 0..255), string key into <code>named_colors</code> or integer encoded from rgb bytes where blue is in the least-significant byte.
     # Return values are always in string or integer form.
     def line_color(color=nil)
       cur_page.line_color(color)
@@ -471,30 +490,30 @@
     # Print text, starting from the current position.
     #
     # The following options apply:
-    # [:+align+] When :+left+, left edge of text is aligned to current position.  When :+center+, text is centered at current position.  When :+right+, right edge of text is aligned to current position.  When any alignment is specified, the pen is restored to its original location.
-    # [:+angle+] Print text at the specified +angle+ in degrees.  Defaults to 0.
-    # [:+scale+] Horizontal scaling of text, specified as ratio to normal width.  Defaults to 1.0.  Cannot be combined with :+clip+.
-    # [:+underline+] Override +underline+ setting for this piece of text.
-    # [:+clip+] If true and a block is given, the edges of the text act as a clipping boundary for anything drawn within the supplied block.  Cannot be combined with :+scale+.
-    # [:+fill+] (Only applicable with :+clip+) Fill text and add to path for clipping.
-    # [:+stroke+] (Only applicable with :+clip+) Stroke text with current +line_color+ and add to path for clipping.
+    # [:+align+] When <code>:left</code>, left edge of text is aligned to current position.  When <code>:center</code>, text is centered at current position.  When <code>:right</code>, right edge of text is aligned to current position.  When any alignment is specified, the pen is restored to its original location.
+    # [:+angle+] Print text at the specified <code>angle</code> in degrees.  Defaults to 0.
+    # [:+scale+] Horizontal scaling of text, specified as ratio to normal width.  Defaults to 1.0.  Cannot be combined with <code>:clip</code>.
+    # [:+underline+] Override <code>underline</code> setting for this piece of text.
+    # [:+clip+] If true and a block is given, the edges of the text act as a clipping boundary for anything drawn within the supplied block.  Cannot be combined with <code>:scale</code>.
+    # [:+fill+] (Only applicable with <code>:clip</code>) Fill text and add to path for clipping.
+    # [:+stroke+] (Only applicable with <code>:clip</code>) Stroke text with current <code>line_color</code> and add to path for clipping.
     #
-    # These current settings also apply: +font+, +font_color+, +line_color+ (when outlines are stroked) and vertical text alignment (+v_text_align+).
+    # These current settings also apply: <code>font</code>, <code>font_color</code>, <code>line_color</code> (when outlines are stroked) and vertical text alignment (<code>v_text_align</code>).
     def print(text, options={}, &block)
       cur_page.print(text, options, &block)
     end
 
-    # Move to <tt>(x, y)</tt> and print text.  See +print+ method.
+    # Move to <code>(x, y)</code> and print text.  See <code>print</code> method.
     def print_xy(x, y, text, options={}, &block)
       cur_page.print_xy(x, y, text, options, &block)
     end
 
-    # Print one or more lines of text before moving to the next line, as specified by +indent+.
+    # Print one or more lines of text before moving to the next line, as specified by <code>indent</code>.
     def puts(text='', options={}, &block)
       cur_page.puts(text, options, &block)
     end
 
-    # Move to <tt>(x, y)</tt> and print one or more lines of text indented to +x+.  See +puts+ method.
+    # Move to <code>(x, y)</code> and print one or more lines of text indented to <code>x</code>.  See <code>puts</code> method.
     def puts_xy(x, y, text, options={}, &block)
       cur_page.puts_xy(x, y, text, options={}, &block)
     end
@@ -510,7 +529,7 @@
       cur_page.width(text)
     end
 
-    # Breaks text into tokens and reassembles into array of strings, each one not exceeding +length+.
+    # Breaks text into tokens and reassembles into array of strings, each one not exceeding <code>length</code>.
     # Newlines are respected and all other white space is preserved.
     def wrap(text, length)
       cur_page.wrap(text, length)
@@ -522,22 +541,22 @@
       cur_page.text_height(units)
     end
 
-    # Returns height of a line or array of lines, including external leading as determined by +line_height+.
+    # Returns height of a line or array of lines, including external leading as determined by <code>line_height</code>.
     # [+text+] Line or array of lines to be measured.  Height is determined only by current font and number of lines.
-    # [+units+] Units result should be expressed in.  Defaults to current +units+.
+    # [+units+] Units result should be expressed in.  Defaults to current <code>units</code>.
     def height(text='', units=nil) # may not include external leading?
       cur_page.height(text, units)
     end
 
-    # Wrap +text+ and render with the following +options+.
+    # Wrap <code>text</code> and render with the following <code>options</code>.
     # [:+width+] Maximum width to wrap text within.  Defaults to the canvas width minus the current horizontal position.
     # [:+height+] Maximum height allowed.  Any text not rendered will be returned by the method call.  Defaults to the canvas height minus the current vertical position.
-    # [:+bullet+] Render paragraph as a bullet, using the named bullet as defined using the +bullet+ method.  The bullet width is subtracted from the :+width+ specified.
+    # [:+bullet+] Render paragraph as a bullet, using the named bullet as defined using the <code>bullet</code> method.  The bullet width is subtracted from the <code>:width</code> specified.
     def paragraph(text, options={})
       cur_page.paragraph(text, options)
     end
 
-    # Move to <tt>(x, y)</tt> and render paragraph.
+    # Move to <code>(x, y)</code> and render paragraph.
     def paragraph_xy(x, y, text, options={})
       cur_page.paragraph_xy(x, y, text, options)
     end
@@ -549,7 +568,7 @@
     # [:+middle+] Through the middle of the text, like a strikeout.
     # [:+base+] At the base of the text--text is rendered above the line, except for descenders.
     # [:+below+] Below the text--text is rendered above the line, including descenders.
-    # Default is :+top+.
+    # Default is <code>:top</code>.
     def v_text_align(vta=nil)
       cur_page.v_text_align(vta)
     end
@@ -578,14 +597,14 @@
 
     # Set font, returning previous font.  If no font is specified, returns current font.
     # [+name+] Base name of a Type1 font with metrics file in fonts directory.
-    # [+size+] Size of font in points.  See also +font_size+ method.
-    # The following +options+ apply:
-    # [:+style+] Bold, Italic, Oblique or a combination of weight and style such as BoldItalic or BoldOblique.  See +font_style+ method.
-    # [:+color+] Font color as given to +font_color+ method.  Color is unchanged if not specified.
+    # [+size+] Size of font in points.  See also <code>font_size</code> method.
+    # The following <code>options</code> apply:
+    # [:+style+] Bold, Italic, Oblique or a combination of weight and style such as BoldItalic or BoldOblique.  See <code>font_style</code> method.
+    # [:+color+] Font color as given to <code>font_color</code> method.  Color is unchanged if not specified.
     # [:+encoding+] Currently-supported encodings include StandardEncoding, WinAnsiEncoding/CP1250, CP1250, CP1254, ISO-8859-1, ISO-8859-2, ISO-8859-3, ISO-8859-4, ISO-8859-7, ISO-8859-9, ISO-8859-10, ISO-8859-13, ISO-8859-14, ISO-8859-15, ISO-8859-16, MacTurkish or Macintosh.  Defaults to WinAnsiEncoding.
     # [:+sub_type+] Currently only Type1 fonts are supported.  Defaults to Type1.
-    # [:+fill+] Fill text with current +font_color+.  Defaults to +true+.
-    # [:+stroke+] Stroke text with current +line_color+.  Defaults to +false+.
+    # [:+fill+] Fill text with current <code>font_color</code>.  Defaults to <code>true</code>.
+    # [:+stroke+] Stroke text with current <code>line_color</code>.  Defaults to <code>false</code>.
     def font(name=nil, size=nil, options={})
       cur_page.font(name, size, options)
     end
@@ -603,13 +622,13 @@
       cur_page.font_size(size)
     end
 
-    # Returns +true+ if image is a buffer beginning with a JPEG signature.
+    # Returns <code>true</code> if image is a buffer beginning with a JPEG signature.
     def jpeg?(image)
       cur_page.jpeg?(image)
     end
 
     # Returns a tuple (array) of image dimensions of the form [width, height, components, bits_per_component].
-    # Raises ArgumentError if +image+ is not a JPEG.
+    # Raises ArgumentError if <code>image</code> is not a JPEG.
     def jpeg_dimensions(image)
       cur_page.jpeg_dimensions(image)
     end
@@ -620,20 +639,20 @@
 
     # Load graphic file (currently only JPEG is supported) from disk (or network, if open-uri library is loaded) and display at the specified location.
     # [+image_file_name+] Path or URL to image.
-    # [+x+] Left edge of image is placed at this offset.  Defaults to <tt>pen_pos.x</tt>.
-    # [+y+] Top edge of image is placed at this offset.  Defaults to <tt>pen_pos.y</tt>.
-    # [+width+] Width to make image.  Defaults to natural image width or a width proportionate to +height+ if +height+ is specified.
-    # [+height+] Height to make image.  Defaults to natural image height or a height proportionate to +width+ if +width+ is specified.
+    # [+x+] Left edge of image is placed at this offset.  Defaults to <code>pen_pos.x</code>.
+    # [+y+] Top edge of image is placed at this offset.  Defaults to <code>pen_pos.y</code>.
+    # [+width+] Width to make image.  Defaults to natural image width or a width proportionate to <code>height</code> if <code>height</code> is specified.
+    # [+height+] Height to make image.  Defaults to natural image height or a height proportionate to <code>width</code> if <code>width</code> is specified.
     def print_image_file(image_file_name, x=nil, y=nil, width=nil, height=nil)
       cur_page.print_image_file(image_file_name, x, y, width, height)
     end
 
     # Display graphic (currently only JPEG is supported) from disk (or network, if open-uri library is loaded) and display at the specified location.
     # [+data+] Buffer containing image.
-    # [+x+] Left edge of image is placed at this offset.  Defaults to <tt>pen_pos.x</tt>.
-    # [+y+] Top edge of image is placed at this offset.  Defaults to <tt>pen_pos.y</tt>.
-    # [+width+] Width to make image.  Defaults to natural image width or a width proportionate to +height+ if +height+ is specified.
-    # [+height+] Height to make image.  Defaults to natural image height or a height proportionate to +width+ if +width+ is specified.
+    # [+x+] Left edge of image is placed at this offset.  Defaults to <code>pen_pos.x</code>.
+    # [+y+] Top edge of image is placed at this offset.  Defaults to <code>pen_pos.y</code>.
+    # [+width+] Width to make image.  Defaults to natural image width or a width proportionate to <code>height</code> if <code>height</code> is specified.
+    # [+height+] Height to make image.  Defaults to natural image height or a height proportionate to <code>width</code> if <code>width</code> is specified.
     def print_image(data, x=nil, y=nil, width=nil, height=nil)
       cur_page.print_image(data, x, y, width, height)
     end
@@ -644,17 +663,17 @@
 
     # Given a block, defines a named bullet.  Otherwise the named Bullet struct is returned.
     #
-    # The following +options+ apply:
-    # [:+units+] The units that :+width+ is expressed in.  Defaults to the current units setting.
+    # The following <code>options</code> apply:
+    # [:+units+] The units that <code>:width</code> is expressed in.  Defaults to the current units setting.
     # [:+width+] The width of the area reserved for the bullet.
     #
-    # If a block is given, the block should expect a +writer+ parameter to be used for printing or drawing the bullet.
+    # If a block is given, the block should expect a <code>writer</code> parameter to be used for printing or drawing the bullet.
     # Within the block, all altered settings, other than the location, should be restored.
     def bullet(name, options={}, &block)
       cur_page.bullet(name, options, &block)
     end
 
-    # Rotate anything drawn within the supplied block +angle+ degrees around origin <tt>(x, y)</tt>.
+    # Rotate anything drawn within the supplied block <code>angle</code> degrees around origin <code>(x, y)</code>.
     def rotate(angle, x, y, &block)
       cur_page.rotate(angle, x, y, &block)
     end
