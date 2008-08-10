@@ -19,6 +19,8 @@
     -->
   </rules>
   <pages margin="0.5" units="in" font="body">
+	  <define id="header" tag="div" align="top" />
+	  <define id="footer" tag="div" align="bottom" />
     <define id="title" tag="p" />
     <define id="method" tag="div" layout="method" />
     <define id="signature" tag="p" />
@@ -27,7 +29,9 @@
 		<define id="definition" tag="p" />
 		<define id="code" tag="span" />
     <page>
-      <title>Life Cycle</title>
+      <header>
+        <title>Life Cycle</title>
+      </header>
 
       <method>
         <signature>new</signature>
@@ -125,6 +129,12 @@
           <definition>See <code>open_page</code> method.</definition>
         </options>
       </method>
+    </page>
+
+    <page>
+      <header>
+        <title>Page Setup</title>
+      </header>
 
       <method>
         <signature>units(units=nil)</signature>
@@ -213,15 +223,12 @@
         <signature>page_height</signature>
         <p>Returns page height in current units.</p>
       </method>
+    </page>
 
-      <method>
-        <signature>line_height(height=nil)</signature>
-        <p>Set line height as used by methods like <code>paragraph</code> that display multiple lines of text.  If no value is specified, returns current <code>line_height</code>.</p>
-        <options>
-          <key>height</key>
-          <definition>Ratio of <code>font_size</code> to effective line height.</definition>
-        </options>
-      </method>
+    <page>
+      <header>
+        <title>Movement</title>
+      </header>
 
       <method>
         <signature>move_to(x, y)</signature>
@@ -244,6 +251,12 @@
           <definition>Vertical distance to move pen.  Positive values move down.  Negative values move up.</definition>
         </options>
       </method>
+    </page>
+
+    <page>
+      <header>
+        <title>Drawing</title>
+      </header>
 
       <method>
         <signature>line_to(x, y)</signature>
@@ -500,6 +513,12 @@
           <definition>Units value is expressed in.  Defaults to current units setting.</definition>
         </options>
       </method>
+    </page>
+
+    <page>
+      <header>
+        <title>Colors</title>
+      </header>
 
       <method>
         <signature>named_colors</signature>
@@ -534,6 +553,21 @@
           <definition>Tuple (array) containing [red, green, blue] components of new color (where components range from 0..255) or integer encoded from rgb bytes where blue is in the least-significant byte.</definition>
         </options>
         <p>Return values are always in integer form.</p>
+      </method>
+    </page>
+
+    <page>
+      <header>
+        <title>Text</title>
+      </header>
+
+      <method>
+        <signature>line_height(height=nil)</signature>
+        <p>Set line height as used by methods like <code>paragraph</code> that display multiple lines of text.  If no value is specified, returns current <code>line_height</code>.</p>
+        <options>
+          <key>height</key>
+          <definition>Ratio of <code>font_size</code> to effective line height.</definition>
+        </options>
       </method>
 
       <method>
@@ -669,10 +703,28 @@
       </method>
 
       <method>
+        <signature>bullet(name, options={}, &amp;block)</signature>
+        <p>Given a block, defines a named bullet.  Otherwise the named Bullet struct is returned.</p>
+        <p>The following <code>options</code> apply:</p>
+        <options>
+          <key>:units</key>
+          <definition>The units that <code>:width</code> is expressed in.  Defaults to the current units setting.</definition>
+          <key>:width</key>
+          <definition>The width of the area reserved for the bullet.</definition>
+        </options>
+        <p>If a block is given, the block should expect a <code>writer</code> parameter to be used for printing or drawing the bullet.  Within the block, all altered settings, other than the location, should be restored.</p>
+      </method>
+    </page>
+
+    <page>
+      <header>
+        <title>Fonts</title>
+      </header>
+
+      <method>
         <signature>type1_font_names</signature>
         <p>Returns an array of font names, including weight and style, from the (local) fonts directory.</p>
       </method>
-
 
       <method>
         <signature>font(name=nil, size=nil, options={})</signature>
@@ -725,6 +777,12 @@
           <definition>Size of font in points.</definition>
         </options>
       </method>
+    </page>
+
+    <page>
+      <header>
+        <title>Images</title>
+      </header>
 
       <method>
         <signature>jpeg?(image)</signature>
@@ -777,19 +835,12 @@
           <definition>Height to make image.  Defaults to natural image height or a height proportionate to <code>width</code> if <code>width</code> is specified.</definition>
         </options>
       </method>
+    </page>
 
-      <method>
-        <signature>bullet(name, options={}, &amp;block)</signature>
-        <p>Given a block, defines a named bullet.  Otherwise the named Bullet struct is returned.</p>
-        <p>The following <code>options</code> apply:</p>
-        <options>
-          <key>:units</key>
-          <definition>The units that <code>:width</code> is expressed in.  Defaults to the current units setting.</definition>
-          <key>:width</key>
-          <definition>The width of the area reserved for the bullet.</definition>
-        </options>
-        <p>If a block is given, the block should expect a <code>writer</code> parameter to be used for printing or drawing the bullet.  Within the block, all altered settings, other than the location, should be restored.</p>
-      </method>
+    <page>
+      <header>
+        <title>Images</title>
+      </header>
 
       <method>
         <signature>rotate(angle, x, y, &amp;block)</signature>
