@@ -3,15 +3,15 @@
 	  <font id="title" name="NewCenturySchlbk" size="14" />
 	  <font id="body" name="NewCenturySchlbk" size="12" />
 	  <font id="code" name="Courier" size="12" />
-	  <brush id="method" color="LightSteelBlue" />
-	  <layout id="desc" manager="vbox" vpadding="5pt" />
+	  <brush id="signature" color="LightSteelBlue" />
+	  <layout id="method" manager="vbox" vpadding="5pt" />
 	  <layout id="options" manager="table" vpadding="5pt" />
   </styles>
   <rules>
     <!--
       title { font: title; font.underline: true; }
-      method { font: code; fill: method; padding: 3pt; }
-      desc p { font.line-height: 1.5; }
+      signature { font: code; fill: signature; padding: 3pt; }
+      method p { font.line-height: 1.5; }
       options { padding: 5pt; }
       key { width: 30%; padding: 3pt; font: code; line-height: 1.3; }
       definition { line-height: 1.3; }
@@ -20,8 +20,8 @@
   </rules>
   <pages margin="0.5" units="in" font="body">
     <define id="title" tag="p" />
-    <define id="method" tag="p" />
-    <define id="desc" tag="div" layout="desc" />
+    <define id="method" tag="div" layout="method" />
+    <define id="signature" tag="p" />
 		<define id="options" tag="div" layout="options" order="rows" cols="2" />
 		<define id="key" tag="p" />
 		<define id="definition" tag="p" />
@@ -29,13 +29,13 @@
     <page>
       <title>Life Cycle</title>
 
-      <method>new</method>
-      <desc>
+      <method>
+        <signature>new</signature>
         <p>Instantiate a new DocumentWriter object.  Document is <i>not</i> open for writing at this point.</p>
-      </desc>
+      </method>
 
-      <method>open(options={})</method>
-      <desc>
+      <method>
+        <signature>open(options={})</signature>
         <p>Open the document for writing.</p>
         <p>The following document options apply:</p>
         <options>
@@ -49,25 +49,25 @@
           </definition>
         </options>
         <p>In addition, any of the options for <code>open_page</code> may be supplied and will apply to each page, unless explicitly overridden.</p>
-      </desc>
+      </method>
 
-      <method>to_s</method>
-      <desc>
+      <method>
+        <signature>to_s</signature>
         <p>Render document to PDF and return as a binary string.</p>
-      </desc>
+      </method>
 
-      <method>close</method>
-      <desc>
+      <method>
+        <signature>close</signature>
         <p>Close any open pages, preparing the document for rendering to PDF.</p>
-      </desc>
+      </method>
 
-      <method>doc(options={}, &amp;block)</method>
-      <desc>
+      <method>
+        <signature>doc(options={}, &amp;block)</signature>
         <p>Open the document for writing and yield to the block given before calling <code>close</code>.</p>
-      </desc>
+      </method>
 
-      <method>open_page(options={})</method>
-      <desc>
+      <method>
+        <signature>open_page(options={})</signature>
         <p>Open a page for writing.  Raises Exception if a page is already open.</p>
         <p>The following page options apply:</p>
         <options>
@@ -104,97 +104,95 @@
           <key>:unscaled</key>
           <definition>If true, virtual pages are not scaled down.  Defaults to <code>false</code>.</definition>
         </options>
-      </desc>
-    </page>
-    <page>
-      <method>close_page</method>
-      <desc>
-        <p>Close the current open page.  Raises Exception if no page is currently open.</p>
-      </desc>
+      </method>
 
-      <method>page(options={}, &amp;block)</method>
-      <desc>
+      <method>
+        <signature>close_page</signature>
+        <p>Close the current open page.  Raises Exception if no page is currently open.</p>
+      </method>
+
+      <method>
+        <signature>page(options={}, &amp;block)</signature>
         <p>Open a page for writing and yield to the block given before calling <code>close_page</code>.</p>
         <p><code>options</code> is passed through to <code>open_page</code>.</p>
-      </desc>
+      </method>
 
-      <method>new_page(options={})</method>
-      <desc>
+      <method>
+        <signature>new_page(options={})</signature>
         <p>Close the current page and begin a new page with the specified options.</p>
         <options>
           <key>options</key>
           <definition>See <code>open_page</code> method.</definition>
         </options>
-      </desc>
+      </method>
 
-      <method>units(units=nil)</method>
-      <desc>
+      <method>
+        <signature>units(units=nil)</signature>
         <p>Set units measurements are to be specified in.  If no units are specified, returns current units setting.  Valid units include <code>:pt</code> (points), <code>:in</code> (inches) and <code>:cm</code> (centimeters) by default.</p>
         <p>Custom units can be specified by updating the <code>EideticPDF::UNIT_CONVERSION</code> hash with a new symbol and conversion ratio.</p>
-      </desc>
+      </method>
 
-      <method>margins(*margins)</method>
-      <desc>
+      <method>
+        <signature>margins(*margins)</signature>
         <p>Set top, right, bottom and left margins.  If 1, 2 or 4 values are not specified, returns current margins as a tuple (array) of values in the form [top, right, bottom, left].</p>
         <options>
           <key>margins</key>
           <definition>When 4 values are given, [top, right, bottom, left].  When 2 values are given, [top and bottom, right and left].  When 1 value is specified, it is used for all 4 settings.</definition>
         </options>
-      </desc>
+      </method>
 
-      <method>margin_top</method>
-      <desc>
+      <method>
+        <signature>margin_top</signature>
         <p>Returns top margin as set by <code>margins</code> method.</p>
-      </desc>
+      </method>
 
-      <method>margin_right</method>
-      <desc>
+      <method>
+        <signature>margin_right</signature>
         <p>Returns right margin as set by <code>margins</code> method.</p>
-      </desc>
+      </method>
 
-      <method>margin_bottom</method>
-      <desc>
+      <method>
+        <signature>margin_bottom</signature>
         <p>Returns bottom margin as set by <code>margins</code> method.</p>
-      </desc>
+      </method>
 
-      <method>margin_left</method>
-      <desc>
+      <method>
+        <signature>margin_left</signature>
         <p>Returns left margin as set by <code>margins</code> method.</p>
-      </desc>
+      </method>
 
-      <method>canvas_width</method>
-      <desc>
+      <method>
+        <signature>canvas_width</signature>
         <p><code>page_height</code> excluding top and bottom margins.</p>
-      </desc>
+      </method>
 
-      <method>canvas_height</method>
-      <desc>
+      <method>
+        <signature>canvas_height</signature>
         <p><code>page_width</code> excluding left and right margins.</p>
-      </desc>
-    </page>
-    <page>
-      <method>tabs(tabs=nil)</method>
-      <desc>
+      </method>
+
+      <method>
+        <signature>tabs(tabs=nil)</signature>
         <p>Set horizontal tabs using an array of numbers or a comma-delimited string.  If no tabs are specified, returns current tabs.  Use false to clear current tab stops.</p>
-      </desc>
+      </method>
 
-      <method>tab(&amp;block)</method>
-      <desc>
+      <method>
+        <signature>tab(&amp;block)</signature>
         <p>Move right to next horizontal tab.  If no more tab stops exist, then moves to first tab stop on the following line.  If a block is given, the value returned is used instead as the vertical distance to move down.</p>
-      </desc>
+      </method>
 
-      <method>vtabs(tabs=nil)</method>
-      <desc>
+      <method>
+        <signature>vtabs(tabs=nil)</signature>
         <p>Set vertical tabs using an array of numbers or a comma-delimited string.  If no tabs are specified, returns current tabs.  Use false to clear current tab stops.</p>
-      </desc>
+      </method>
 
-      <method>vtab(&amp;block)</method>
-      <desc>
+      <method>
+        <signature>vtab(&amp;block)</signature>
         <p>Move down to next vertical tab.  If no more tab stops exist and a block is given, moves up to the first vertical tab stop and right the value returned by the block.</p>
-      </desc>
+      </method>
 
-      <method>indent(value=nil, absolute=false)</method>
-      <desc>
+      <method>
+        <signature>indent(value=nil, absolute=false)</signature>
         <p>Set horizontal indentation.  If no value is specified, returns current indentation setting.</p>
         <options>
           <key>value</key>
@@ -204,40 +202,39 @@
           <definition>If <code>true</code>, the new value is relative only to the left margin.  If <code>false,</code> value is relative to previous indentation.</definition>
         </options>
         <p>The indent setting is used by the <code>puts</code> and <code>new_line</code> methods.</p>
-      </desc>
+      </method>
 
-      <method>page_width</method>
-      <desc>
+      <method>
+        <signature>page_width</signature>
         <p>Returns page width in current units.</p>
-      </desc>
+      </method>
 
-      <method>page_height</method>
-      <desc>
+      <method>
+        <signature>page_height</signature>
         <p>Returns page height in current units.</p>
-      </desc>
+      </method>
 
-      <method>line_height(height=nil)</method>
-      <desc>
+      <method>
+        <signature>line_height(height=nil)</signature>
         <p>Set line height as used by methods like <code>paragraph</code> that display multiple lines of text.  If no value is specified, returns current <code>line_height</code>.</p>
         <options>
           <key>height</key>
           <definition>Ratio of <code>font_size</code> to effective line height.</definition>
         </options>
-      </desc>
-    </page>
-    <page>
-      <method>move_to(x, y)</method>
-      <desc>
+      </method>
+
+      <method>
+        <signature>move_to(x, y)</signature>
         <p>Move pen to point <code>(x, y)</code>.</p>
-      </desc>
+      </method>
 
-      <method>pen_pos(x=nil, y=nil)</method>
-      <desc>
+      <method>
+        <signature>pen_pos(x=nil, y=nil)</signature>
         <p>Move pen to point <code>(x, y)</code> like <code>move_to</code>, returning previous location.  If x is not specified, returns current location.</p>
-      </desc>
+      </method>
 
-      <method>move_by(dx, dy)</method>
-      <desc>
+      <method>
+        <signature>move_by(dx, dy)</signature>
         <p>Move the pen to a new location relative to the current location.</p>
         <options>
           <key>dx</key>
@@ -246,20 +243,20 @@
           <key>dy</key>
           <definition>Vertical distance to move pen.  Positive values move down.  Negative values move up.</definition>
         </options>
-      </desc>
+      </method>
 
-      <method>line_to(x, y)</method>
-      <desc>
+      <method>
+        <signature>line_to(x, y)</signature>
         <p>Draw a line from the current location to point <code>(x, y)</code>.  If <code>auto_path</code> is off, a new segment is appended to the current path.</p>
-      </desc>
+      </method>
 
-      <method>line(x, y, angle, length)</method>
-      <desc>
+      <method>
+        <signature>line(x, y, angle, length)</signature>
         <p>Draw a line from point <code>(x, y)</code> to a point <code>length</code> units distant at <code>angle</code> degrees.</p>
-      </desc>
+      </method>
 
-      <method>rectangle(x, y, width, height, options={})</method>
-      <desc>
+      <method>
+        <signature>rectangle(x, y, width, height, options={})</signature>
         <p>Draw a rectangle with the specified <code>width</code> and <code>height</code> and its top, left corner at <code>(x, y)</code>.</p>
         <p>The following <code>options</code> apply:</p>
         <options>
@@ -276,31 +273,31 @@
           <definition>Draw polygon clockwise.  This is useful for drawing hollow shapes.</definition>
         </options>
         <p>These current settings also apply: <code>line_color</code>, <code>line_width</code>, <code>line_dash_pattern</code> and <code>fill_color</code>.</p>
-      </desc>
+      </method>
 
-      <method>curve(x0, y0, x1, y1, x2, y2, x3, y3)</method>
-      <desc>
+      <method>
+        <signature>curve(x0, y0, x1, y1, x2, y2, x3, y3)</signature>
         <p>Draw a cubic Bezier curve from <code>(x0, y0)</code> to <code>(x3, y3)</code> with control points <code>(x1, y1)</code> and <code>(x2, y2)</code>.  If the first point does not coincide with the current position, any current path is stroked and a new path is begun.  Otherwise, the curve is appended to the current path.</p>
-      </desc>
+      </method>
 
-      <method>curve_points(points)</method>
-      <desc>
+      <method>
+        <signature>curve_points(points)</signature>
         <p>Draw a series of cubic Bezier curves.  After moving to the first point, a curve to the 4th point is appended to the current path with the 2nd and 3rd points acting as control points.  A curve is appended to the current path for each additional group of 3 points, with the 1st and 2nd point in each group acting as control points.</p>
         <options>
           <key>points</key>
           <definition>array of <code>Location</code> structs</definition>
         </options>
-      </desc>
+      </method>
     </page>
     <page>
 
-      <method>points_for_circle(x, y, r)</method>
-      <desc>
+      <method>
+        <signature>points_for_circle(x, y, r)</signature>
         <p>Returns array of <code>Location</code> structs for circle, suitable for feeding to <code>curve_points</code> method.  See <code>circle</code> method.</p>
-      </desc>
+      </method>
 
-      <method>circle(x, y, r, options={}, &amp;block)</method>
-      <desc>
+      <method>
+        <signature>circle(x, y, r, options={}, &amp;block)</signature>
         <p>Draw a circle with center <code>x, y</code> and radius <code>r</code>.  Direction is counterclockwise (anticlockwise), unless <code>:reverse</code> option is specified.</p>
         <p>The following <code>options</code> apply:</p>
         <options>
@@ -314,15 +311,15 @@
           <definition>Draw circle clockwise.  Useful for drawing hollow shapes.</definition>
         </options>
         <p>These current settings also apply: <code>line_color</code>, <code>line_width</code>, <code>line_dash_pattern</code> and <code>fill_color</code>.</p>
-      </desc>
+      </method>
 
-      <method>points_for_ellipse(x, y, rx, ry)</method>
-      <desc>
+      <method>
+        <signature>points_for_ellipse(x, y, rx, ry)</signature>
         <p>Returns array of <code>Location</code> structs for ellipse, suitable for feeding to <code>curve_points</code> method.  See <code>ellipse</code> method.</p>
-      </desc>
+      </method>
 
-      <method>ellipse(x, y, rx, ry, options={})</method>
-      <desc>
+      <method>
+        <signature>ellipse(x, y, rx, ry, options={})</signature>
         <p>Draw an ellipse with foci (<code>x, y</code>) and (<code>x, y</code>) and radius <code>r</code>.  Direction is counterclockwise (anticlockwise), unless <code>:reverse</code> option is specified.</p>
         <p>The following <code>options</code> apply:</p>
         <options>
@@ -336,23 +333,23 @@
           <definition>Draw ellipse clockwise.  Useful for drawing hollow shapes.</definition>
         </options>
         <p>These current settings also apply: <code>line_color</code>, <code>line_width</code>, <code>line_dash_pattern</code> and <code>fill_color</code>.</p>
-      </desc>
+      </method>
     </page>
     <page>
-      <method>points_for_arc(x, y, r, start_angle, end_angle)</method>
-      <desc>
+      <method>
+        <signature>points_for_arc(x, y, r, start_angle, end_angle)</signature>
         <p>Returns array of <code>Location</code> structs for arc, suitable for feeding to <code>curve_points</code> method.  See <code>arc</code> method.</p>
-      </desc>
+      </method>
 
-      <method>arc(x, y, r, start_angle, end_angle, move_to0=false)</method>
-      <desc>
+      <method>
+        <signature>arc(x, y, r, start_angle, end_angle, move_to0=false)</signature>
         <p>Draw an arc with origin <code>x, y</code> and radius <code>r</code> from <code>start_angle</code> to <code>end_angle</code> degrees.  Direction is counterclockwise (anticlockwise), unless <code>end_angle</code> &lt; <code>start_angle</code>.  Angles are allowed to exceed 360 degrees.</p>
         <p>By default, arc extends the current path to the point where the arc begins.  If <code>move_to0</code> is true (or there is no current path) a move is performed to where the arc begins.</p>
         <p>This method returns immediately if <code>start_angle == end_angle</code>.</p>
-      </desc>
+      </method>
 
-      <method>pie(x, y, r, start_angle, end_angle, options={})</method>
-      <desc>
+      <method>
+        <signature>pie(x, y, r, start_angle, end_angle, options={})</signature>
         <p>Draw a pie-shaped wedge with origin <code>x, y</code> and radius <code>r</code> from <code>start_angle</code> to <code>end_angle</code> degrees.</p>
         <options>
           <key>:border</key>
@@ -365,10 +362,10 @@
           <definition>By default, the bounding path is drawn from <code>(x, y)</code> to <code>(r, start_angle)</code> through <code>(r, end_angle)</code> and back to <code>(x, y)</code>.  This order is reversed if <code>:reverse => true</code>.  This is useful for drawing hollow shapes.</definition>
         </options>
         <p>These current settings also apply: <code>line_color</code>, <code>line_width</code>, <code>line_dash_pattern</code> and <code>fill_color</code>.</p>
-      </desc>
+      </method>
 
-      <method>arch(x, y, r1, r2, start_angle, end_angle, options={}, &amp;block)</method>
-      <desc>
+      <method>
+        <signature>arch(x, y, r1, r2, start_angle, end_angle, options={}, &amp;block)</signature>
         <p>Draw an arch with origin <code>x, y</code> from <code>start_angle</code> to _end_angle_ degrees.  The result is a bounded area between radii <code>r1</code> and <code>r2</code>.</p>
         <p>The following <code>options</code> apply:</p>
         <options>
@@ -382,16 +379,16 @@
           <definition>By default, the bounding path is drawn from <code>(r1, start_angle)</code> to <code>(r1, end_angle)</code>, <code>(r2, end_angle)</code>, <code>(r2, start_angle)</code> and back to <code>(r1, start_angle)</code>.  This order is reversed if <code>reverse => true</code>.  This is useful for drawing hollow shapes.</definition>
         </options>
         <p>These current settings also apply: <code>line_color</code>, <code>line_width</code>, <code>line_dash_pattern</code> and <code>fill_color</code>.</p>
-      </desc>
+      </method>
     </page>
     <page>
-      <method>points_for_polygon(x, y, r, sides, options={})</method>
-      <desc>
+      <method>
+        <signature>points_for_polygon(x, y, r, sides, options={})</signature>
         <p>Returns array of <code>Location</code> structs representing the vertices of a polygon.  See <code>polygon</code> method.</p>
-      </desc>
+      </method>
 
-      <method>polygon(x, y, r, sides, options={})</method>
-      <desc>
+      <method>
+        <signature>polygon(x, y, r, sides, options={})</signature>
         <p>Draw a polygon with origin <code>(x, y)</code>, radius <code>r</code> and the specified number of <code>sides</code>.</p>
         <p>The following <code>options</code> apply:</p>
         <options>
@@ -408,10 +405,10 @@
           <definition>Draw polygon clockwise.  This is useful for drawing hollow shapes.</definition>
         </options>
         <p>These current settings also apply: <code>line_color</code>, <code>line_width</code>, <code>line_dash_pattern</code> and <code>fill_color</code>.</p>
-      </desc>
+      </method>
 
-      <method>star(x, y, r1, r2, points, options={})</method>
-      <desc>
+      <method>
+        <signature>star(x, y, r1, r2, points, options={})</signature>
         <p>Draw a star with origin <code>(x, y)</code>, outer radius <code>r1</code>, inner radius <code>r2</code> and the specified number of <code>sides</code>.</p>
         <p>The following <code>options</code> apply:</p>
         <options>
@@ -428,40 +425,40 @@
           <definition>Draw polygon clockwise.  This is useful for drawing hollow shapes.</definition>
         </options>
         <p>These current settings also apply: <code>line_color</code>, <code>line_width</code>, <code>line_dash_pattern</code> and <code>fill_color</code>.</p>
-      </desc>
+      </method>
 
-      <method>auto_path</method>
-      <desc>
+      <method>
+        <signature>auto_path</signature>
         <p>Returns current status of auto_path.  Defaults to <code>true</code>.  False while in a block given to <code>path</code> method.  When <code>true</code>, paths are automatically stroked before a new, non-contiguous segment is appended or a closed shape is drawn.</p>
-      </desc>
+      </method>
 
-      <method>path(options={}, &amp;block)</method>
-      <desc>
+      <method>
+        <signature>path(options={}, &amp;block)</signature>
         <p>Turn off auto_path.  If a block is given, yields to it before filling and/or stroking anything drawn within it according to the <code>options</code> supplied.  The path may be non-contiguous.  Shapes may be hollow when inner paths are drawn in the opposite direction as outer paths.</p>
         <p>The following options apply:</p>
         <options>
           <key>:stroke</key><definition>If true or a color, the path will be stroked with the current or specified <code>line_color</code>, respectively.  Defaults to <code>false</code>.</definition>
           <key>:fill</key><definition>If true or a color, the area bounded by the path will be filled with the current or specified <code>fill_color</code>, respectively.  Defaults to <code>false</code>.</definition>
         </options>
-      </desc>
+      </method>
 
-      <method>fill</method>
-      <desc>
+      <method>
+        <signature>fill</signature>
         <p>Fill current path (begun by <code>path</code> method) and resume <code>auto_path</code>.  The <code>line_color</code> and <code>fill_color</code> in effect before <code>path</code> was begun are restored.  Raises Exception if no current path exists.</p>
-      </desc>
+      </method>
 
-      <method>stroke</method>
-      <desc>
+      <method>
+        <signature>stroke</signature>
         <p>Stroke current path (begun by <code>path</code> method) and resume <code>auto_path</code>.  The <code>line_color</code> and <code>fill_color</code> in effect before <code>path</code> was begun are restored.  Raises Exception if no current path exists.</p>
-      </desc>
+      </method>
 
-      <method>fill_and_stroke</method>
-      <desc>
+      <method>
+        <signature>fill_and_stroke</signature>
         <p>Fill and stroke current path (begun by <code>pat</code> method) and resume <code>auto_path</code>.  The <code>line_color</code> and <code>fill_color</code> in effect before <code>path</code> was begun are restored.  Raises Exception if no current path exists.</p>
-      </desc>
+      </method>
 
-      <method>clip(options={}, &amp;block)</method>
-      <desc>
+      <method>
+        <signature>clip(options={}, &amp;block)</signature>
         <p>Use current path as a clipping boundary for anything drawn within the supplied block.</p>
         <p>The following <code>options</code> apply:</p>
         <options>
@@ -472,29 +469,29 @@
           <definition>If true
           , the area bounded by the current path is filled with the current <code>fill_color</code>.  Defaults to <code>false</code>.</definition>
         </options>
-      </desc>
+      </method>
 
-      <method>line_cap_style(style=nil)</method>
-      <desc>
+      <method>
+        <signature>line_cap_style(style=nil)</signature>
         <p>Set the shape to be used at the ends of lines.  If no style is specified, returns current style.</p>
         <options>
           <key>style</key>
           <definition>One of the symbols :butt_cap, :round_cap or :projecting_square_cap, or a string 'butt_cap', 'round_cap' or 'projecting_square_cap'.</definition>
         </options>
-      </desc>
+      </method>
 
-      <method>line_dash_pattern(pattern=nil)</method>
-      <desc>
+      <method>
+        <signature>line_dash_pattern(pattern=nil)</signature>
         <p>Set the pattern of dashes and gaps used to draw lines.  If no pattern is specified, returns current pattern.</p>
         <options>
           <key>pattern</key>
           <definition>A string of the form '[dash gap] phase' or one of the symbols <code>:solid</code>, <code>:dotted</code> or <code>:dashed</code>.</definition>
         </options>
         <p>When a symbol is specified, dash and gap lengths are multiplied by <code>line_width</code> for proportion.</p>
-      </desc>
+      </method>
 
-      <method>line_width(value=nil, units=nil)</method>
-      <desc>
+      <method>
+        <signature>line_width(value=nil, units=nil)</signature>
         <p>Set line width used when stroking paths.  If no width is specified, returns current <code>line_width</code>.</p>
         <options>
           <key>value</key>
@@ -502,46 +499,45 @@
           <key>units</key>
           <definition>Units value is expressed in.  Defaults to current units setting.</definition>
         </options>
-      </desc>
-    </page>
-    <page>
-      <method>named_colors</method>
-      <desc>
-        <p>Returns hash of named colors consisting of (name, color) pairs.  Initial value comes from EideticPDF::PdfK::NAMED_COLORS, but may be augmented or replaced.</p>
-      </desc>
+      </method>
 
-      <method>line_color(color=nil)</method>
-      <desc>
+      <method>
+        <signature>named_colors</signature>
+        <p>Returns hash of named colors consisting of (name, color) pairs.  Initial value comes from EideticPDF::PdfK::NAMED_COLORS, but may be augmented or replaced.</p>
+      </method>
+
+      <method>
+        <signature>line_color(color=nil)</signature>
         <p>Set line color, returning previous line color.  If no color is specified, returns current font color.</p>
         <options>
           <key>color</key>
           <definition>Tuple (array) containing [red, green, blue] components of new color (where components range from 0..255), string key into <code>named_colors</code> or integer encoded from rgb bytes where blue is in the least-significant byte.</definition>
         </options>
         <p>Return values are always in string or integer form.</p>
-      </desc>
+      </method>
 
-      <method>fill_color(color=nil)</method>
-      <desc>
+      <method>
+        <signature>fill_color(color=nil)</signature>
         <p>Set fill color, returning previous fill color.  If no color is specified, returns current fill color.</p>
         <options>
           <key>color</key>
           <definition>Tuple (array) containing [red, green, blue] components of new color (where components range from 0..255) or integer encoded from rgb bytes where blue is in the least-significant byte.</definition>
         </options>
         <p>Return values are always in integer form.</p>
-      </desc>
+      </method>
 
-      <method>font_color(color=nil)</method>
-      <desc>
+      <method>
+        <signature>font_color(color=nil)</signature>
         <p>Set font color, returning previous font color.  If no color is specified, returns current font color.</p>
         <options>
           <key>color</key>
           <definition>Tuple (array) containing [red, green, blue] components of new color (where components range from 0..255) or integer encoded from rgb bytes where blue is in the least-significant byte.</definition>
         </options>
         <p>Return values are always in integer form.</p>
-      </desc>
+      </method>
 
-      <method>print(text, options={}, &amp;block)</method>
-      <desc>
+      <method>
+        <signature>print(text, options={}, &amp;block)</signature>
         <p>Print text, starting from the current position.</p>
         <p>The following options apply:</p>
         <options>
@@ -567,54 +563,53 @@
           <definition>(Only applicable with <code>:clip</code>) Stroke text with current <code>line_color</code> and add to path for clipping.</definition>
         </options>
         <p>These current settings also apply: <code>font</code>, <code>font_color</code>, <code>line_color</code> (when outlines are stroked) and vertical text alignment (<code>v_text_align</code>).</p>
-      </desc>
+      </method>
 
-      <method>print_xy(x, y, text, options={}, &amp;block)</method>
-      <desc>
+      <method>
+        <signature>print_xy(x, y, text, options={}, &amp;block)</signature>
         <p>Move to <code>(x, y)</code> and print text.  See <code>print</code> method.</p>
-      </desc>
+      </method>
 
-      <method>puts(text='', options={}, &amp;block)</method>
-      <desc>
+      <method>
+        <signature>puts(text='', options={}, &amp;block)</signature>
         <p>Print one or more lines of text before moving to the next line, as specified by <code>indent</code>.</p>
-      </desc>
+      </method>
 
-      <method>puts_xy(x, y, text, options={}, &amp;block)</method>
-      <desc>
+      <method>
+        <signature>puts_xy(x, y, text, options={}, &amp;block)</signature>
         <p>Move to <code>(x, y)</code> and print one or more lines of text indented to <code>x</code>.  See <code>puts</code> method.</p>
-      </desc>
+      </method>
 
-      <method>new_line(count=1)</method>
-      <desc>
+      <method>
+        <signature>new_line(count=1)</signature>
         <p>Move pen down one or more lines and back to current indent.</p>
         <options>
           <key>count</key>
           <definition>Number of lines to move down.</definition>
         </options>
-      </desc>
+      </method>
 
-      <method>width(text)</method>
-      <desc>
+      <method>
+        <signature>width(text)</signature>
         <p>Returns width of a string as rendered using the current font.</p>
-      </desc>
+      </method>
 
-      <method>wrap(text, length)</method>
-      <desc>
+      <method>
+        <signature>wrap(text, length)</signature>
         <p>Breaks text into tokens and reassembles into array of strings, each one not exceeding <code>length</code>.  Newlines are respected and all other white space is preserved.</p>
-      </desc>
+      </method>
 
-      <method>text_height(units=nil)</method>
-      <desc>
+      <method>
+        <signature>text_height(units=nil)</signature>
         <p>Returns text height, based on the current font, excluding external leading.</p>
         <options>
           <key>units</key>
           <definition>Units the value is returned in.</definition>
         </options>
-      </desc>
-    </page>
-    <page>
-      <method>height(text='', units=nil)</method>
-      <desc>
+      </method>
+
+      <method>
+        <signature>height(text='', units=nil)</signature>
         <p>Returns height of a line or array of lines, including external leading as determined by <code>line_height</code>.</p>
         <options>
           <key>text</key>
@@ -623,10 +618,10 @@
           <key>units</key>
           <definition>Units result should be expressed in.  Defaults to current <code>units</code>.</definition>
         </options>
-      </desc>
+      </method>
 
-      <method>paragraph(text, options={})</method>
-      <desc>
+      <method>
+        <signature>paragraph(text, options={})</signature>
         <p>Wrap <code>text</code> and render with the following <code>options</code>.</p>
         <options>
           <key>:width</key>
@@ -639,15 +634,15 @@
           <key>:bullet</key>
           <definition>Render paragraph as a bullet, using the named bullet as defined using the <code>bullet</code> method.  The bullet width is subtracted from the <code>:width</code> specified.</definition>
         </options>
-      </desc>
+      </method>
 
-      <method>paragraph_xy(x, y, text, options={})</method>
-      <desc>
+      <method>
+        <signature>paragraph_xy(x, y, text, options={})</signature>
         <p>Move to <code>(x, y)</code> and render paragraph.</p>
-      </desc>
+      </method>
 
-      <method>v_text_align(vta=nil)</method>
-      <desc>
+      <method>
+        <signature>v_text_align(vta=nil)</signature>
         <p>Set vertical text alignment.  This is the part of the text that would coincide with a line if one were drawn at the same coordinates as the text.</p>
         <options>
           <key>:above</key>
@@ -666,22 +661,21 @@
           <definition>Below the text--text is rendered above the line, including descenders.</definition>
         </options>
         <p>Default is <code>:top</code>.</p>
-      </desc>
+      </method>
 
-      <method>underline(underline=nil)</method>
-      <desc>
+      <method>
+        <signature>underline(underline=nil)</signature>
         <p>Set new underline status, returning previous status.  If new status is not specified, returns current underline status.</p>
-      </desc>
+      </method>
 
-      <method>type1_font_names</method>
-      <desc>
+      <method>
+        <signature>type1_font_names</signature>
         <p>Returns an array of font names, including weight and style, from the (local) fonts directory.</p>
-      </desc>
+      </method>
 
-    </page>
-    <page>
-      <method>font(name=nil, size=nil, options={})</method>
-      <desc>
+
+      <method>
+        <signature>font(name=nil, size=nil, options={})</signature>
         <p>Set font, returning previous font.  If no font is specified, returns current font.</p>
         <options>
           <key>name</key>
@@ -711,41 +705,39 @@
           <key>:stroke</key>
           <definition>Stroke text with current <code>line_color</code>.  Defaults to <code>false</code>.</definition>
         </options>
-      </desc>
+      </method>
 
-      <method>font_style(style=nil)</method>
-      <desc>
+      <method>
+        <signature>font_style(style=nil)</signature>
         <p>Set font style, returning previous font style.  If no style is specified, returns current font style.</p>
         <options>
           <key>style</key>
           <definition>Bold (or other weight), Italic, Oblique or combination such as BoldItalic or BoldOblique.</definition>
         </options>
         <p>Exact weights and combinations available depend on the font specification files in the (local) fonts directory.</p>
-      </desc>
+      </method>
 
-      <method>font_size(size=nil)</method>
-      <desc>
+      <method>
+        <signature>font_size(size=nil)</signature>
         <p>Set font size, returning previous font size.  If no size is specified, returns current font size.</p>
         <options>
           <key>size</key>
           <definition>Size of font in points.</definition>
         </options>
-      </desc>
+      </method>
 
-    </page>
-    <page>
-      <method>jpeg?(image)</method>
-      <desc>
+      <method>
+        <signature>jpeg?(image)</signature>
         <p>Returns <code>true</code> if image is a buffer beginning with a JPEG signature.</p>
-      </desc>
+      </method>
 
-      <method>jpeg_dimensions(image)</method>
-      <desc>
+      <method>
+        <signature>jpeg_dimensions(image)</signature>
         <p>Returns a tuple (array) of image dimensions of the form [width, height, components, bits_per_component].  Raises ArgumentError if <code>image</code> is not a JPEG.</p>
-      </desc>
+      </method>
 
-      <method>print_image_file(image_file_name, x=nil, y=nil, width=nil, height=nil)</method>
-      <desc>
+      <method>
+        <signature>print_image_file(image_file_name, x=nil, y=nil, width=nil, height=nil)</signature>
         <p>Load graphic file (currently only JPEG is supported) from disk (or network, if open-uri library is loaded) and display at the specified location.</p>
         <options>
           <key>image_file_name</key>
@@ -763,10 +755,10 @@
           <key>height</key>
           <definition>Height to make image.  Defaults to natural image height or a height proportionate to <code>width</code> if <code>width</code> is specified.</definition>
         </options>
-      </desc>
+      </method>
 
-      <method>print_image(data, x=nil, y=nil, width=nil, height=nil)</method>
-      <desc>
+      <method>
+        <signature>print_image(data, x=nil, y=nil, width=nil, height=nil)</signature>
         <p>Display graphic (currently only JPEG is supported) from disk (or network, if open-uri library is loaded) and display at the specified location.</p>
         <options>
           <key>data</key>
@@ -784,10 +776,10 @@
           <key>height</key>
           <definition>Height to make image.  Defaults to natural image height or a height proportionate to <code>width</code> if <code>width</code> is specified.</definition>
         </options>
-      </desc>
+      </method>
 
-      <method>bullet(name, options={}, &amp;block)</method>
-      <desc>
+      <method>
+        <signature>bullet(name, options={}, &amp;block)</signature>
         <p>Given a block, defines a named bullet.  Otherwise the named Bullet struct is returned.</p>
         <p>The following <code>options</code> apply:</p>
         <options>
@@ -797,14 +789,16 @@
           <definition>The width of the area reserved for the bullet.</definition>
         </options>
         <p>If a block is given, the block should expect a <code>writer</code> parameter to be used for printing or drawing the bullet.  Within the block, all altered settings, other than the location, should be restored.</p>
-      </desc>
+      </method>
 
-      <method>rotate(angle, x, y, &amp;block)</method>
-      <desc>
+      <method>
+        <signature>rotate(angle, x, y, &amp;block)</signature>
         <p>Rotate anything drawn within the supplied block <code>angle</code> degrees around origin <code>(x, y)</code>.</p>
-      </desc>
+      </method>
 
-      <method>scale(x, y, scale_x, scale_y, &amp;block)</method>
+      <method>
+        <signature>scale(x, y, scale_x, scale_y, &amp;block)</signature>
+      </method>
     </page>
   </pages>
 </erml>
