@@ -4,6 +4,7 @@
 	  <font id="body" name="NewCenturySchlbk" size="12" />
 	  <font id="code" name="Courier" size="12" />
 	  <brush id="signature" color="LightSteelBlue" />
+	  <brush id="codeblock" color="#EEEEEE" />
 	  <layout id="method" manager="vbox" vpadding="5pt" />
 	  <layout id="options" manager="table" vpadding="5pt" />
   </styles>
@@ -16,6 +17,7 @@
       key { width: 30%; padding: 3pt; font: code; line-height: 1.3; }
       definition { line-height: 1.3; }
       code { font: code; }
+      codeblock { font: code; border: Gray; fill: codeblock; padding: 5pt; width: 100%; }
     -->
   </rules>
   <pages margin="0.5" units="in" font="body">
@@ -28,14 +30,24 @@
 		<define id="key" tag="p" />
 		<define id="definition" tag="p" />
 		<define id="code" tag="span" />
+		<define id="codeblock" tag="pre" />
     <page>
       <header>
         <title>Life Cycle</title>
       </header>
 
+  		<codeblock url="doc/life_cycle.rb" />
+
       <method>
         <signature>new</signature>
         <p>Instantiate a new DocumentWriter object.  Document is <i>not</i> open for writing at this point.</p>
+      </method>
+
+      <method>
+        <signature>doc(options={}, &amp;block)</signature>
+        <p>Open the document for writing and yield to the block given before calling <code>close</code>.</p>
+        <p>The options for <code>open</code> are all valid here.</p>
+        <codeblock url="doc/doc.rb" />
       </method>
 
       <method>
@@ -56,18 +68,14 @@
       </method>
 
       <method>
-        <signature>to_s</signature>
-        <p>Render document to PDF and return as a binary string.</p>
-      </method>
-
-      <method>
         <signature>close</signature>
         <p>Close any open pages, preparing the document for rendering to PDF.</p>
       </method>
 
       <method>
-        <signature>doc(options={}, &amp;block)</signature>
-        <p>Open the document for writing and yield to the block given before calling <code>close</code>.</p>
+        <signature>page(options={}, &amp;block)</signature>
+        <p>Open a page for writing and yield to the block given before calling <code>close_page</code>.</p>
+        <p><code>options</code> is passed through to <code>open_page</code>.</p>
       </method>
 
       <method>
@@ -111,23 +119,22 @@
       </method>
 
       <method>
-        <signature>close_page</signature>
-        <p>Close the current open page.  Raises Exception if no page is currently open.</p>
-      </method>
-
-      <method>
-        <signature>page(options={}, &amp;block)</signature>
-        <p>Open a page for writing and yield to the block given before calling <code>close_page</code>.</p>
-        <p><code>options</code> is passed through to <code>open_page</code>.</p>
-      </method>
-
-      <method>
         <signature>new_page(options={})</signature>
         <p>Close the current page and begin a new page with the specified options.</p>
         <options>
           <key>options</key>
           <definition>See <code>open_page</code> method.</definition>
         </options>
+      </method>
+
+      <method>
+        <signature>close_page</signature>
+        <p>Close the current open page.  Raises Exception if no page is currently open.</p>
+      </method>
+
+      <method>
+        <signature>to_s</signature>
+        <p>Render document to PDF and return as a binary string.</p>
       </method>
     </page>
 
@@ -301,8 +308,6 @@
           <definition>array of <code>Location</code> structs</definition>
         </options>
       </method>
-    </page>
-    <page>
 
       <method>
         <signature>points_for_circle(x, y, r)</signature>
@@ -347,8 +352,7 @@
         </options>
         <p>These current settings also apply: <code>line_color</code>, <code>line_width</code>, <code>line_dash_pattern</code> and <code>fill_color</code>.</p>
       </method>
-    </page>
-    <page>
+
       <method>
         <signature>points_for_arc(x, y, r, start_angle, end_angle)</signature>
         <p>Returns array of <code>Location</code> structs for arc, suitable for feeding to <code>curve_points</code> method.  See <code>arc</code> method.</p>
@@ -393,8 +397,7 @@
         </options>
         <p>These current settings also apply: <code>line_color</code>, <code>line_width</code>, <code>line_dash_pattern</code> and <code>fill_color</code>.</p>
       </method>
-    </page>
-    <page>
+
       <method>
         <signature>points_for_polygon(x, y, r, sides, options={})</signature>
         <p>Returns array of <code>Location</code> structs representing the vertices of a polygon.  See <code>polygon</code> method.</p>
