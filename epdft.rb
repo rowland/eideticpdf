@@ -10,6 +10,14 @@ module EideticPDF
       @height ||= map { |p| 0.001 * p.font.height * p.font.size }.max
     end
 
+    def ascent
+      @ascent ||= map { |p| 0.001 * p.font.ascent * p.font.size }.max
+    end
+
+    def descent
+      @descent ||= map { |p| 0.001 * p.font.descent * p.font.size }.min
+    end
+
     def width
       @width ||= inject(0) { |total, p| total + p.width }
     end

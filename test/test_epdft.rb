@@ -45,6 +45,8 @@ class RichTextTestCases < Test::Unit::TestCase
   def test_max_height
     line = @wrapper.next(500)
     assert_in_delta(11.1, line.height, 0.1)
+    assert_in_delta(8.6, line.ascent, 0.1)
+    assert_in_delta(-2.5, line.descent, 0.1)
   end
 
   def count_lines(rich_text)
