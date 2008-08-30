@@ -169,3 +169,21 @@ class RichTextTestCases2 < Test::Unit::TestCase
     assert_equal(@helv, pieces[2].font)
   end
 end
+
+class RichTextTestCases3 < Test::Unit::TestCase
+  def setup
+    fm = PdfK::font_metrics('Helvetica')
+    @font12 = Font.new('Helvetica', 12, '', nil, 'WinAnsiEncoding', 'Type1', fm.widths, fm.ascent, fm.descent, fm.ascent + fm.descent.abs)
+    @font16 = Font.new('Helvetica', 16, '', nil, 'WinAnsiEncoding', 'Type1', fm.widths, fm.ascent, fm.descent, fm.ascent + fm.descent.abs)
+    @font20 = Font.new('Helvetica', 20, '', nil, 'WinAnsiEncoding', 'Type1', fm.widths, fm.ascent, fm.descent, fm.ascent + fm.descent.abs)
+  end
+
+  def test_max_height
+    t1 = PdfText::RichText.new("World! ", @font20)
+    t2 = PdfText::RichText.new
+    t2.add "Hello ", @font12
+    t2.add "World! ", @font20
+    t2.add "What's up?", @font16
+    assert_equal t1.height, t2.height
+  end
+end

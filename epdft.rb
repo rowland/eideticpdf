@@ -120,8 +120,9 @@ module EideticPDF
       def height(width=nil)
         return 0 if @words.empty?
         if width.nil?
-          f = @words.first.font
-          0.001 * f.height * f.size
+          @words.clone.extend(TextLine).height
+          # f = @words.first.font
+          # 0.001 * f.height * f.size
         else
           lines(width).inject(0) { |total, line| total + line.height }
         end
