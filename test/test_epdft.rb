@@ -178,6 +178,15 @@ class RichTextTestCases3 < Test::Unit::TestCase
     @font20 = Font.new('Helvetica', 20, '', nil, 'WinAnsiEncoding', 'Type1', fm.widths, fm.ascent, fm.descent, fm.ascent + fm.descent.abs)
   end
 
+  def test_max_ascent
+    t1 = PdfText::RichText.new("World! ", @font20)
+    t2 = PdfText::RichText.new
+    t2.add "Hello ", @font12
+    t2.add "World! ", @font20
+    t2.add "What's up?", @font16
+    assert_equal t1.ascent, t2.ascent
+  end
+
   def test_max_height
     t1 = PdfText::RichText.new("World! ", @font20)
     t2 = PdfText::RichText.new

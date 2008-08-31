@@ -117,6 +117,15 @@ module EideticPDF
         @words.empty?
       end
 
+      def ascent(width=nil)
+        return 0 if @words.empty?
+        if width.nil?
+          @words.clone.extend(TextLine).ascent
+        else
+          self.clone.next(width).ascent
+        end
+      end
+
       def height(width=nil)
         return 0 if @words.empty?
         if width.nil?
