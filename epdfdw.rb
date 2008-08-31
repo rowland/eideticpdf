@@ -524,6 +524,12 @@ module EideticPDF
       cur_page.wrap(text, length)
     end
 
+    # Returns text ascent, based on the current font.
+    # [+units+] Units the value is returned in.
+    def text_ascent(units=nil)
+      cur_page.text_ascent(units)
+    end
+
     # Returns text height, based on the current font, excluding external leading.
     # [+units+] Units the value is returned in.
     def text_height(units=nil)

@@ -1407,6 +1407,12 @@ module EideticPDF
       end
     end
 
+    def text_ascent(units=nil)
+      units ||= @units
+      set_default_font if @font.nil?
+      0.001 * @font.ascent * @font.size.quo(UNIT_CONVERSION[units])
+    end
+
     def text_height(units=nil)
       units ||= @units
       set_default_font if @font.nil?

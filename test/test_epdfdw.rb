@@ -30,6 +30,10 @@ class DocumentWriterTestCases < Test::Unit::TestCase
     @doc.close
   end
 
+  def test_text_ascent
+    assert_equal(6.29, @doc.text_ascent(:pt))
+  end
+
   def test_text_height
     assert_equal(1.7, @doc.line_height)
     assert_equal(7.86, @doc.text_height(:pt))
