@@ -1292,6 +1292,7 @@ module EideticPDF
       angle = options[:angle] || 0.0
       @scale = options[:scale] || 1.0
       prev_underline = underline(options[:underline]) unless options[:underline].nil?
+      prev_v_text_align = v_text_align(options[:v_text_align]) unless options[:v_text_align].nil?
       clip = options[:clip] && block_given?
       if clip
         gw.save_graphics_state
@@ -1323,6 +1324,7 @@ module EideticPDF
       new_loc = (angle == 0.0) ? Location.new(@loc.x + ds, @loc.y) : add_vector(@loc, angle, ds)
       draw_underline(translate_p(@last_loc), translate_p(new_loc), @font.underline_position, @font.underline_thickness, angle) if @underline
       underline(prev_underline) unless options[:underline].nil?
+      v_text_align(prev_v_text_align) unless options[:v_text_align].nil?
       @loc = align ? prev_loc : new_loc
       if clip
         yield

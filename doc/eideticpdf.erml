@@ -84,7 +84,7 @@
         <p>The following page options apply:</p>
         <options>
           <key>:compress</key>
-          <definition>Compress page streams using zlib deflate.</definition>
+          <definition>Compress page streams using zlib deflate. Defaults to <code>false.</code></definition>
 
           <key>:units</key>
           <definition>
@@ -470,7 +470,7 @@
 
       <method>
         <signature>fill_and_stroke</signature>
-        <p>Fill and stroke current path (begun by <code>pat</code> method) and resume <code>auto_path</code>.  The <code>line_color</code> and <code>fill_color</code> in effect before <code>path</code> was begun are restored.  Raises Exception if no current path exists.</p>
+        <p>Fill and stroke current path (begun by <code>path</code> method) and resume <code>auto_path</code>.  The <code>line_color</code> and <code>fill_color</code> in effect before <code>path</code> was begun are restored.  Raises Exception if no current path exists.</p>
       </method>
 
       <method>
@@ -590,6 +590,9 @@
           <key>:underline</key>
           <definition>Override <code>underline</code> setting for this piece of text.</definition>
 
+          <key>:v_text_align</key>
+          <definition>Override <code>v_text_align</code> setting for this piece of text.</definition>
+
           <key>:clip</key>
           <definition>If true and a block is given, the edges of the text act as a clipping boundary for anything drawn within the supplied block.  Cannot be combined with <code>:scale</code>.</definition>
 
@@ -599,7 +602,7 @@
           <key>:stroke</key>
           <definition>(Only applicable with <code>:clip</code>) Stroke text with current <code>line_color</code> and add to path for clipping.</definition>
         </options>
-        <p>These current settings also apply: <code>font</code>, <code>font_color</code>, <code>line_color</code> (when outlines are stroked) and vertical text alignment (<code>v_text_align</code>).</p>
+        <p>These current settings also apply: <code>font</code>, <code>font_color</code> and <code>line_color</code> (when outlines are stroked).</p>
       </method>
 
       <method>
