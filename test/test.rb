@@ -499,6 +499,8 @@ def images(w)
     p.print_image(img, 1, 3, 4.5)
     # specified height with auto-width
     p.print_image_file(TestImg, 3.25, 7, nil, 2)
+    # specified width and height
+    p.print_image_file(TestImg, 0, 8, 1, 1)
   end
 end
 

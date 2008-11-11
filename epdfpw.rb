@@ -1650,6 +1650,8 @@ module EideticPDF
       elsif height.nil?
         width = to_points(@units, width)
         height = width * image.height.quo(image.width)
+      else
+        width, height = to_points(@units, width), to_points(@units, height)
       end
       end_path if @in_path
       gw.save_graphics_state
