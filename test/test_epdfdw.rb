@@ -337,4 +337,33 @@ class DocumentWriterTestCases < Test::Unit::TestCase
     @doc.underline(false)
     assert(!@doc.underline)
   end
+
+  def test_sub_page
+    @doc.instance_eval do
+      @pages_across, @pages_down = 2, 2
+      @pages_up = @pages_across * @pages_down
+      @options[:pages_up_layout] = :across
+    end
+    assert_equal [0, 2, 0, 2], @doc.send(:sub_page, 0) # top left
+    assert_equal [1, 2, 0, 2], @doc.send(:sub_page, 1) # top right
+    assert_equal [0, 2, 1, 2], @doc.send(:sub_page, 2) # bottom left
+    assert_equal [1, 2, 1, 2], @doc.send(:sub_page, 3) # bottom right
+    assert_equal [0, 2, 0, 2], @doc.send(:sub_page, 4) # top left
+    assert_equal [1, 2, 0, 2], @doc.send(:sub_page, 5) # top right
+    assert_equal [0, 2, 1, 2], @doc.send(:sub_page, 6) # bottom left
+    assert_equal [1, 2, 1, 2], @doc.send(:sub_page, 7) # bottom right
+
+    @doc.instance_eval do
+      @options[:pages_up_layout] = :down
+    end
+    assert_equal [0, 2, 0, 2], @doc.send(:sub_page, 0) # top left
+    assert_equal [0, 2, 1, 2], @doc.send(:sub_page, 1) # bottom left
+    assert_equal [1, 2, 0, 2], @doc.send(:sub_page, 2) # top right
+    assert_equal [1, 2, 1, 2], @doc.send(:sub_page, 3) # buttom right
+
+    assert_equal [0, 2, 0, 2], @doc.send(:sub_page, 4) # top left
+    assert_equal [0, 2, 1, 2], @doc.send(:sub_page, 5) # bottom left
+    assert_equal [1, 2, 0, 2], @doc.send(:sub_page, 6) # top right
+    assert_equal [1, 2, 1, 2], @doc.send(:sub_page, 7) # buttom right
+  end
 end

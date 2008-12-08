@@ -688,7 +688,7 @@ module EideticPDF
       if @pages_up == 1
         nil
       elsif @options[:pages_up_layout] == :down
-        [page_no % @pages_down, @pages_across, (page_no / @pages_down) % @pages_across, @pages_down]
+        [(page_no / @pages_down) % @pages_across, @pages_across, page_no % @pages_down, @pages_down]
       else
         [page_no % @pages_across, @pages_across, (page_no / @pages_across) % @pages_down, @pages_down]
       end
