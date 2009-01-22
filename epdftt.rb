@@ -439,7 +439,6 @@ module EideticPDF
       'CourierNew,BoldItalic'
     ]
 
-  module_function
     def font_index(font_name)
       FONT_NAMES.index(font_name)
     end
@@ -453,5 +452,7 @@ module EideticPDF
         FONT_CAP_HEIGHTS[index], FONT_X_HEIGHTS[index], FONT_LEADINGS[index], FONT_MAX_WIDTHS[index], FONT_AVG_WIDTHS[index],
         PdfK::UNDERLINE_POSITION, PdfK::UNDERLINE_THICKNESS)
     end
+
+    module_function :font_index, :font_metrics
   end
 end

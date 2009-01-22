@@ -293,7 +293,6 @@ module EideticPDF
       end
     end
 
-  module_function
     def find_font(family, weight='', style='')
       italic = (style =~ /Italic|Oblique/i) ? '(Italic|Obl(ique)?)' : ''
       weight_style = "#{weight}#{italic}"
@@ -329,5 +328,7 @@ module EideticPDF
     def font_names(reload=false)
       AdobeFontMetrics.afm_cache(reload).map { |afm| afm.font_name }
     end
+
+    module_function :find_font, :font_metrics, :font_weights, :font_names
   end
 end

@@ -3117,7 +3117,7 @@ module EideticPDF
     FontMetrics = Struct.new(:needs_descriptor, :widths, :ascent, :descent, :flags, :b_box, :missing_width,
       :stem_v, :stem_h, :italic_angle, :cap_height, :x_height, :leading, :max_width, :avg_width, 
       :underline_position, :underline_thickness, :differences)
-  module_function
+
     def font_index(font_name)
       FONT_NAMES.index(font_name)
     end
@@ -3136,5 +3136,7 @@ module EideticPDF
       return nil if codepoint.nil? or codepoint < 0x20
       GLYPHS[codepoint] || 'question'
     end
+
+    module_function :font_index, :font_metrics, :glyph_name
   end
 end
