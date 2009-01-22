@@ -760,11 +760,25 @@ def scaling(w)
   end
 end
 
+def justification(w)
+  width = 1.5
+  w.page(:units => :in, :margins => 0.5) do |p|
+    p.puts("Justification", :underline => true)
+    p.paragraph(LOREM, :align => :justify, :width => 7.5)
+    p.new_line
+    p.paragraph(LOREM, :align => :justify, :width => 3)
+    p.new_line
+    p.paragraph(LOREM + " abcdefghijklmnopqrstuvwxyz", :align => :justify, :width => width)
+    # p.move_to(width, 0); p.line_to(width, w.canvas_height)
+  end
+end
+
 start = Time.now
 docw = EideticPDF::DocumentWriter.new
 
-# docw.doc(:font => { :name => 'Courier', :size => 10 }, :orientation => :landscape, :pages_up => [2, 1]) do |w|
+# docw.doc(:font => { :name => 'Courier', :size => 10 }, :orientation => :landscape, :pages_up => [3, 2], :pages_up_layout => :down) do |w|
 docw.doc(:font => { :name => 'Courier', :size => 10 }, :built_in_fonts => BuiltInFonts) do |w|
+  justification(w)
   scaling(w)
   rotations(w)
   angled_lines(w)

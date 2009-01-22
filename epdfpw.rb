@@ -1454,13 +1454,17 @@ module EideticPDF
         when :justify then
           width_pt = to_points(@units, width)
           delta_pt = width_pt - line.width
-          if delta_pt.quo(width_pt) < 0.2
-            if delta_pt / (line.tokens - 1) > 3
+          words = (line.tokens / 2) + 1
+          if delta_pt.abs.quo(width_pt) < 0.4
+            if words == 1
+              @word_spacing = 0
+              @char_spacing = delta_pt.quo(line.chars - 1)
+            elsif delta_pt.abs / words > 3
               @word_spacing = 3
-              delta_pt -= (line.tokens - 1) * @word_spacing
-              @char_spacing = delta_pt.quo(line.chars)
+              delta_pt -= (words - 1) * @word_spacing
+              @char_spacing = delta_pt.quo(line.chars - 1)
             else
-              @word_spacing = delta_pt.quo(line.tokens - 1) * 2
+              @word_spacing = delta_pt.quo(words - 1)
               @char_spacing = 0
             end
           end
