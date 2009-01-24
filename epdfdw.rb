@@ -476,6 +476,11 @@ module EideticPDF
       cur_page.font_color(color)
     end
 
+    # Set font encoding, returning previous font encoding.  If no encoding is specified, returns current font encoding.
+    def font_encoding(encoding=nil)
+      cur_page.font_encoding(encoding)
+    end
+
     # Print text, starting from the current position.
     #
     # The following options apply:

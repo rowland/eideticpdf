@@ -593,6 +593,7 @@ module EideticPDF
       start_misc
       sub_page(*options[:sub_page] + Array(options[:unscaled])) if options[:sub_page]
       margins(options[:margins] || 0)
+      text_encoding(options[:text_encoding])
       @indent = 0
     end
 
@@ -1288,6 +1289,7 @@ module EideticPDF
     def print(text, options={}, &block)
       text = text.to_s
       return if text.empty?
+      text = @ic.iconv(text) unless @ic.nil?
       align = options[:align]
       angle = options[:angle] || 0.0
       @scale = options[:scale] || 1.0
@@ -1300,7 +1302,7 @@ module EideticPDF
       end
       start_text unless @in_text
       check_set(:font, :font_color, :line_color, :v_text_align, :spacing, :scale, :text_rendering_mode)
-      ds = width(text)
+      ds = width(text, true)
       if align
         prev_loc = @loc.clone
         @loc = case align
@@ -1314,12 +1316,13 @@ module EideticPDF
       elsif @loc != @last_loc
         tw.move_by(to_points(@units, @loc.x - @last_loc.x), to_points(@units, @loc.y - @last_loc.y))
       end
-      if @ic.nil?
-        tw.show(text)
-      else
-        text = @ic.iconv(text)
-        tw.show_wide(text)
-      end
+      tw.show(text)
+      # if @ic.nil?
+      #   tw.show(text)
+      # else
+      #   text = @ic.iconv(text)
+      #   tw.show_wide(text)
+      # end
       @last_loc = @loc.clone
       new_loc = (angle == 0.0) ? Location.new(@loc.x + ds, @loc.y) : add_vector(@loc, angle, ds)
       draw_underline(translate_p(@last_loc), translate_p(new_loc), @font.underline_position, @font.underline_thickness, angle) if @underline
@@ -1363,20 +1366,14 @@ module EideticPDF
       nil
     end
 
-    def width(text)
+    def width(text, encoded=false)
       set_default_font if @font.nil?
       result = 0.0
       fsize = @font.size * 0.001
-      if @ic.nil?
-        text.each_byte do |b|
-          result += fsize * @font.widths[b] + @char_spacing
-          result += @word_spacing if b == 32 # space
-        end
-      else
-        text.unpack('n*').each do |cp|
-          result += fsize * @font.widths[cp] + @char_spacing
-          result += @word_spacing if cp == 32 # space
-        end
+      text = @ic.iconv(text) unless @ic.nil? or encoded
+      text.each_byte do |b|
+        result += fsize * @font.widths[b] + @char_spacing
+        result += @word_spacing if b == 32 # space
       end
       from_points(@units, result - @char_spacing)
     end
@@ -1536,13 +1533,14 @@ module EideticPDF
         elsif font.sub_type == 'TrueType'
           raise Exception.new("Non-built-in TrueType fonts not supported yet.")
         elsif font.sub_type == 'Type0'
-          metrics = AFM::font_metrics(full_name, :encoding => :unicode)
-          require 'iconv'
-          @ic = Iconv.new('UCS-2BE', iconv_encoding(font.encoding))
+          # metrics = AFM::font_metrics(full_name, :encoding => :unicode)
+          # require 'iconv'
+          # @ic = Iconv.new('UCS-2BE', iconv_encoding(font.encoding))
         else
           raise Exception.new("Unsupported subtype #{font.sub_type}.")
         end
       end
+      @ic = Iconv.new(iconv_encoding(font.encoding)+'//IGNORE', iconv_encoding(text_encoding)) unless font.encoding == text_encoding
       font.widths, font.ascent, font.descent = metrics.widths, metrics.ascent, metrics.descent
       font.height = font.ascent + font.descent.abs
       font.underline_position = metrics.underline_position * -0.001 * font.size
@@ -1625,6 +1623,14 @@ module EideticPDF
       end
       @font.color = @font_color unless @font.nil?
       prev_font_color
+    end
+
+    def font_encoding(encoding=nil)
+      set_default_font if @font.nil?
+      return @font.encoding if encoding.nil?
+      prev_encoding = @font.encoding
+      font(@font.name, @font.size, :style => @font.style, :color => @font.color, :encoding => encoding, :sub_type => @font.sub_type)
+      prev_encoding
     end
 
     def load_image(image_file_name, stream=nil)
@@ -1730,6 +1736,11 @@ module EideticPDF
       gw.restore_graphics_state
       @last_page_font = nil
       @page_height = save_page_height
+    end
+
+    def text_encoding(value=nil)
+      return @text_encoding || 'WinAnsiEncoding' if value.nil?
+      @text_encoding = value
     end
   end
 end
