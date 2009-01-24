@@ -1540,7 +1540,9 @@ module EideticPDF
           raise Exception.new("Unsupported subtype #{font.sub_type}.")
         end
       end
-      @ic = Iconv.new(iconv_encoding(font.encoding)+'//IGNORE', iconv_encoding(text_encoding)) unless font.encoding == text_encoding
+      unless text_encoding.nil? or (font.encoding == 'StandardEncoding') or (font.encoding == text_encoding)
+        @ic = Iconv.new(iconv_encoding(font.encoding)+'//IGNORE', iconv_encoding(text_encoding))
+      end
       font.widths, font.ascent, font.descent = metrics.widths, metrics.ascent, metrics.descent
       font.height = font.ascent + font.descent.abs
       font.underline_position = metrics.underline_position * -0.001 * font.size
@@ -1739,7 +1741,7 @@ module EideticPDF
     end
 
     def text_encoding(value=nil)
-      return @text_encoding || 'WinAnsiEncoding' if value.nil?
+      return @text_encoding if value.nil?
       @text_encoding = value
     end
   end
