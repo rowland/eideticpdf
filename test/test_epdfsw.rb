@@ -5,7 +5,7 @@
 #
 # Eidetic PDF Stream Writer Test Cases
 
-$: << File.dirname(__FILE__) + '/../'
+$: << File.dirname(__FILE__) + '/../lib'
 require 'test/unit'
 require 'epdfsw'
 

@@ -5,11 +5,11 @@ require 'rcov/rcovtask'
 
 spec = Gem::Specification.new do |s|
   s.name = "eideticpdf"
-  s.version = "0.9.7"
-  s.date = "2009-01-24"
+  s.version = "0.9.8"
+  s.date = "2010-09-15"
   s.summary = "PDF Library"
   s.requirements = "Ruby 1.8.x"
-  s.require_path = '.'
+  # s.require_path = '.'
 #  s.autorequire = 'epdfdw'
   s.author = "Brent Rowland"
   s.email = "brent.rowland@eideticsoftware.com"
@@ -18,10 +18,8 @@ spec = Gem::Specification.new do |s|
   s.test_file = "test/pdf_tests.rb"
   s.has_rdoc = true
   # s.extra_rdoc_files = ['README']
-  s.rdoc_options << '--title' << 'Eidetic PDF' << '--main' << 'epdfdw.rb' << '-x' << 'test'
-  s.files = ['epdfafm.rb', 'epdfdw.rb', 'epdfk.rb', 'epdfo.rb', 'epdfs.rb', 'epdfsw.rb', 'epdft.rb', 'epdftt.rb', 'epdfpw.rb'] + 
-    FileList["test/test*.rb"] + ['test/testimg.jpg'] + 
-    FileList["fonts/*.afm"] + FileList["fonts/*.inf"]
+  s.rdoc_options << '--title' << 'Eidetic PDF' << '--main' << 'lib/epdfdw.rb' << '-x' << 'test'
+  s.files = FileList["lib/*.rb"] + FileList["test/test*.rb"] + ['test/testimg.jpg'] + FileList["fonts/*.afm"] + FileList["fonts/*.inf"]
   s.platform = Gem::Platform::RUBY
 end
 

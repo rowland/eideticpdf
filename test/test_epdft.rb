@@ -3,7 +3,7 @@
 #  Created by Brent Rowland on 2007-11-27.
 #  Copyright (c) 2007, Eidetic Software. All rights reserved.
 
-$: << File.dirname(__FILE__) + '/../'
+$: << File.dirname(__FILE__) + '/../lib'
 require 'test/unit'
 require File.join(File.dirname(__FILE__), 'test_helpers')
 require 'epdft'

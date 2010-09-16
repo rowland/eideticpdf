@@ -3,7 +3,7 @@
 #  Created by Brent Rowland on 2008-01-12.
 #  Copyright (c) 2008, Eidetic Software. All rights reserved.
 
-$: << File.dirname(__FILE__) + '/../'
+$: << File.dirname(__FILE__) + '/../lib'
 require 'test/unit'
 require 'epdfs'
 

@@ -3,7 +3,7 @@
 #  Created by Brent Rowland on 2007-12-09.
 #  Copyright (c) 2007, Eidetic Software. All rights reserved.
 
-$: << File.dirname(__FILE__) + '/../'
+$: << File.dirname(__FILE__) + '/../lib'
 require 'epdfdw'
 
 start = Time.now

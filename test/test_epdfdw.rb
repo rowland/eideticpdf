@@ -5,7 +5,7 @@
 #
 # Eidetic PDF Document Writer Tests
 
-$: << File.dirname(__FILE__) + '/../'
+$: << File.dirname(__FILE__) + '/../lib'
 require 'test/unit'
 require File.join(File.dirname(__FILE__), 'test_helpers')
 require 'epdfdw'

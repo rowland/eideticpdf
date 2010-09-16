@@ -4,7 +4,7 @@
 #  Created by Brent Rowland on 2007-09-30.
 #  Copyright (c) 2007, Eidetic Software. All rights reserved.
 
-$: << File.dirname(__FILE__) + '/../'
+$: << File.dirname(__FILE__) + '/../lib'
 require 'epdfdw'
 
 TestImg = File.join(File.dirname(__FILE__), 'testimg.jpg')

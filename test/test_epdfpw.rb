@@ -5,7 +5,7 @@
 #
 # Eidetic PDF PageWriter Test Cases
 
-$: << File.dirname(__FILE__) + '/../'
+$: << File.dirname(__FILE__) + '/../lib'
 require 'test/unit'
 require 'epdfpw'
 require 'epdfdw'
