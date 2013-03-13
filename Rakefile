@@ -1,19 +1,19 @@
 require 'rubygems'
-require 'rake/gempackagetask'
+require 'rubygems/package_task'
 require 'rake/testtask'
 require 'rcov/rcovtask'
 
 spec = Gem::Specification.new do |s|
   s.name = "eideticpdf"
-  s.version = "0.9.8"
-  s.date = "2010-09-15"
+  s.version = "0.9.9"
+  s.date = "2013-03-13"
   s.summary = "PDF Library"
   s.requirements = "Ruby 1.8.x"
   # s.require_path = '.'
 #  s.autorequire = 'epdfdw'
   s.author = "Brent Rowland"
-  s.email = "brent.rowland@eideticsoftware.com"
-  s.homepage = "http://www.eideticsoftware.com"
+  s.email = "rowland@rowlandresearch.com"
+  s.homepage = "https://github.com/rowland/eideticpdf"
   s.rubyforge_project = "eideticpdf"
   s.test_file = "test/pdf_tests.rb"
   s.has_rdoc = true
@@ -23,7 +23,7 @@ spec = Gem::Specification.new do |s|
   s.platform = Gem::Platform::RUBY
 end
 
-Rake::GemPackageTask.new(spec) do |pkg|
+Gem::PackageTask.new(spec) do |pkg|
   pkg.need_tar = true
   pkg.need_zip = true
 end
