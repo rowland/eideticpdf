@@ -770,7 +770,6 @@ module EideticPDF
         elsif contents.size == 1
           dictionary['Contents'] = contents.first.reference_object
         end
-        dictionary['Length'] = PdfInteger.new(contents.inject(0) { |length, stream| length + stream.length })
         super
       end
 
