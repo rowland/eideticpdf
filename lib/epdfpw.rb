@@ -1144,6 +1144,7 @@ module EideticPDF
     end
 
     def path(options={}, &block)
+      check_set(:line_color, :line_width, :line_dash_pattern, :fill_color)
       stroke = options[:stroke].nil? ? false : options[:stroke]
       fill = options[:fill].nil? ? false : options[:fill]
       line_colors.push(stroke)
