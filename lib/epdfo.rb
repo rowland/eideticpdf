@@ -440,6 +440,7 @@ module EideticPDF
     # defines Type1, TrueType, etc font
     class PdfFont <  PdfDictionaryObject
       def encoding=(encoding)
+        return if encoding == 'StandardEncoding'
         encoding = PdfName.new(encoding) if encoding.is_a?(String)
         dictionary['Encoding'] = encoding
       end
