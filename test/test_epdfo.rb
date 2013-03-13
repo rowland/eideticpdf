@@ -669,7 +669,7 @@ class PdfPageTestCases < Test::Unit::TestCase
   end
 
   def test_body
-    assert_equal("<<\n/Contents 3 0 R \n/Length 4 \n/Parent 1 0 R \n/Type /Page \n>>\n", @page.body)
+    assert_equal("<<\n/Contents 3 0 R \n/Parent 1 0 R \n/Type /Page \n>>\n", @page.body)
   end
 
   def test_contents
