@@ -2818,7 +2818,7 @@ module EideticPDF
       0x002F => 'slash',
       0x263A => 'smileface',
       0x0020 => 'space',
-      0x00A0 => 'space',
+      0x00A0 => 'nbsp',
       0x2660 => 'spade',
       0xF6F2 => 'ssuperior',
       0x00A3 => 'sterling',
