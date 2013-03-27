@@ -76,7 +76,9 @@ module EideticPDF
   module JpegInfo # :nodoc:
     def jpeg?(image)
       # image[0, 2] == "\xFF\xD8"
-      image[0, 2].hash == "\xFF\xD8".hash
+      # image[0, 2].hash == "\xFF\xD8".hash
+      # String#bytes requires Ruby 1.8.7+
+      image.bytes.first(2) == [0xFF, 0xD8]
     end
 
     def jpeg_dimensions(image)
