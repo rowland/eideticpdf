@@ -1,41 +1,31 @@
 require 'rubygems'
+require 'rake/dsl_definition'
 require 'rubygems/package_task'
 require 'rake/testtask'
-require 'rcov/rcovtask'
 
 spec = Gem::Specification.new do |s|
   s.name = "eideticpdf"
-  s.version = "0.9.9"
-  s.date = "2013-03-13"
+  s.version = "1.0.0"
+  s.date = "2013-03-27"
   s.summary = "PDF Library"
-  s.requirements = "Ruby 1.8.x"
-  # s.require_path = '.'
-#  s.autorequire = 'epdfdw'
+  s.requirements = "Ruby 1.8.7 or 1.9.3"
   s.author = "Brent Rowland"
   s.email = "rowland@rowlandresearch.com"
   s.homepage = "https://github.com/rowland/eideticpdf"
   s.rubyforge_project = "eideticpdf"
   s.test_file = "test/pdf_tests.rb"
   s.has_rdoc = true
-  # s.extra_rdoc_files = ['README']
   s.rdoc_options << '--title' << 'Eidetic PDF' << '--main' << 'lib/epdfdw.rb' << '-x' << 'test'
   s.files = FileList["lib/*.rb"] + FileList["test/test*.rb"] + ['test/testimg.jpg'] + FileList["fonts/*.afm"] + FileList["fonts/*.inf"]
   s.platform = Gem::Platform::RUBY
 end
 
 Gem::PackageTask.new(spec) do |pkg|
-  pkg.need_tar = true
-  pkg.need_zip = true
+  pkg.need_tar = false
+  pkg.need_zip = false
 end
 
 Rake::TestTask.new do |t|
-  # t.libs << "test"
-  t.test_files = FileList['test/test*.rb']
-  t.verbose = true
-end
-
-Rcov::RcovTask.new do |t|
-  # t.libs << "test"
   t.test_files = FileList['test/test*.rb']
   t.verbose = true
 end
