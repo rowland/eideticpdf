@@ -197,6 +197,10 @@ class AdobeFontMetricsTestCases < Test::Unit::TestCase
     assert_equal(278, fm.widths[32])
     assert_equal(722, fm.widths[65])
     assert_not_nil(fm.differences)
-    assert_equal(77, fm.differences.values.size)
+    if ''.respond_to?(:encoding) # Ruby 1.9+
+      assert_equal(83, fm.differences.values.size)
+    else
+      assert_equal(77, fm.differences.values.size)
+    end
   end
 end

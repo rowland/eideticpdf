@@ -15,12 +15,20 @@ module EideticPDF
     FontPath = [File.join(File.dirname(__FILE__), '..', 'fonts')]
 
     class Codepoints
-      def self.for_encoding(encoding)
-        require 'iconv'
-        encoding = 'CP1252' if encoding == 'WinAnsiEncoding'
-        @@codepoints_by_encoding ||= {}
-        @@codepoints_by_encoding[encoding] ||= Iconv.open("UCS-2BE//IGNORE", encoding) do |ic|
-          (0..255).map { |c| ic.iconv(c.chr) }.map { |s| s.unpack('n') }.map { |a| a.first }
+      if ''.respond_to?(:encoding) # Ruby 1.9+
+        def self.for_encoding(encoding)
+          encoding = 'CP1252' if encoding == 'WinAnsiEncoding'
+          @@codepoints_by_encoding ||= {}
+          @@codepoints_by_encoding[encoding] ||= (0..255).inject('') { |m, n| m << n.chr }.encode('UCS-2BE', encoding, :undef => :replace).unpack('n*')
+        end
+      else
+        def self.for_encoding(encoding)
+          require 'iconv'
+          encoding = 'CP1252' if encoding == 'WinAnsiEncoding'
+          @@codepoints_by_encoding ||= {}
+          @@codepoints_by_encoding[encoding] ||= Iconv.open("UCS-2BE//IGNORE", encoding) do |ic|
+            (0..255).map { |c| ic.iconv(c.chr) }.map { |s| s.unpack('n') }.map { |a| a.first }
+          end
         end
       end
     end

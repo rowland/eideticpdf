@@ -100,4 +100,14 @@ module EideticPDF
     
     module_function :jpeg?, :jpeg_dimensions
   end
+
+  class FakeIconv
+    def initialize(to, from)
+      @to, @from = to, from
+    end
+
+    def iconv(text)
+      text.encode(@to, @from, :invalid => :replace, :undef => :replace)
+    end
+  end
 end

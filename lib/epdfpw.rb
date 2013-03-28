@@ -1542,7 +1542,11 @@ module EideticPDF
         end
       end
       unless text_encoding.nil? or (font.encoding == 'StandardEncoding') or (font.encoding == text_encoding)
-        @ic = Iconv.new(iconv_encoding(font.encoding)+'//IGNORE', iconv_encoding(text_encoding))
+        if ''.respond_to?(:encoding) # Ruby 1.9+
+          @ic = FakeIconv.new(iconv_encoding(font.encoding), iconv_encoding(text_encoding))
+        else
+          @ic = Iconv.new(iconv_encoding(font.encoding)+'//IGNORE', iconv_encoding(text_encoding))
+        end
       end
       font.widths, font.ascent, font.descent = metrics.widths, metrics.ascent, metrics.descent
       font.height = font.ascent + font.descent.abs

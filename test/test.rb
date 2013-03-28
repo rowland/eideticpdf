@@ -569,6 +569,8 @@ def text_encodings(w)
     ['Symbol', 'StandardEncoding'], 
     ['ZapfDingbats', 'StandardEncoding']
   ]
+  fonts.delete(['Helvetica', 'ISO-8859-16']) if ''.respond_to?(:encoding) # Ruby 1.9+
+  fonts.delete(['Courier', 'Macintosh']) if ''.respond_to?(:encoding) # Ruby 1.9+
   fonts.each do |name, encoding|
     w.page(:units => :in, :margins => 0.5) do |p|
       p.print "#{name} - #{encoding}", :underline => true
