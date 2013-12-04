@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-# encoding: ASCII-8BIT
+# encoding: US-ASCII
 #
 #  Created by Brent Rowland on 2007-12-18.
 #  Copyright (c) 2007, Eidetic Software. All rights reserved.
