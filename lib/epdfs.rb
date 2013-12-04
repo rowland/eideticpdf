@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-# encoding: ASCII-8BIT
+# encoding: US-ASCII
 #
 #  Created by Brent Rowland on 2008-01-12.
 #  Copyright (c) 2008, Eidetic Software. All rights reserved.
@@ -108,6 +108,9 @@ module EideticPDF
 
     def iconv(text)
       text.encode(@to, @from, :invalid => :replace, :undef => :replace)
+    end
+
+    def close
     end
   end
 end
