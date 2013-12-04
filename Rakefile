@@ -5,8 +5,8 @@ require 'rake/testtask'
 
 spec = Gem::Specification.new do |s|
   s.name = "eideticpdf"
-  s.version = "1.0.0"
-  s.date = "2013-03-27"
+  s.version = "1.0.1"
+  s.date = "2013-12-03"
   s.summary = "PDF Library"
   s.requirements = "Ruby 1.8.7 or 1.9.3"
   s.author = "Brent Rowland"
