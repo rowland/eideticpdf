@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-# encoding: ASCII-8BIT
+# encoding: US-ASCII
 #
 #  Created by Brent Rowland on 2007-07-13.
 #  Copyright (c) 2007, 2008 Eidetic Software. All rights reserved.
@@ -245,7 +245,8 @@ module EideticPDF
     end
 
     def show(s)
-      @stream << "(%s) Tj\n" % PdfObjects::PdfString.escape(s)
+      escaped = "(%s) Tj\n" % PdfObjects::PdfString.escape(s)
+      @stream << escaped.force_encoding(Encoding::ASCII_8BIT)
     end
 
     def show_wide(ws)

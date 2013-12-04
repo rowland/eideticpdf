@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-# encoding: ASCII-8BIT
+# encoding: US-ASCII
 #
 #  Created by Brent Rowland on 2007-07-13.
 #  Copyright (c) 2007, Eidetic Software. All rights reserved.
@@ -575,7 +575,7 @@ module EideticPDF
         @page.resources = @doc.resources
         @doc.file.body << @page
       end
-      @stream = ''
+      @stream = ''.force_encoding(Encoding::ASCII_8BIT)
       @annotations = []
       @char_spacing = @word_spacing = 0.0
       @last_char_spacing = @last_word_spacing = 0.0
